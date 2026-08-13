@@ -223,6 +223,8 @@
           </div>
         </div>
 
+        
+
         <!-- Controls & Table Card -->
         <div class="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
           <div class="p-4 border-b border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -258,79 +260,94 @@
           </div>
         </div>
       </section>
-
-      <!-- ========================================== -->
-      <!-- CLIENT HOME PAGE VIEW (DEFAULT)            -->
-      <!-- ========================================== -->
-      <section id="clientHomeView" class="hidden space-y-6">
-        <div class="border-b border-gray-200 pb-4">
-          <h2 class="text-2xl font-bold text-gray-800">Clients Page</h2>
-          <p class="text-xs text-gray-500 mt-1">Welcome to the CSWD Solo Parent Community Portal. Watch informative guides, view updates, and stay informed.</p>
+      <!-- ADMIN ANNOUNCEMENT & MEDIA CREATOR SECTION -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 my-6">
+  
+    <!-- Card 1: Post Important Update Banner -->
+    <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm space-y-4">
+      <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
+        <i class="fa-solid fa-bullhorn text-brand-purple"></i> Post Important Banner Update
+      </h3>
+      <form onsubmit="handlePostAnnouncement(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Announcement Title</label>
+          <input type="text" id="adminAnnTitle" required placeholder="e.g. Solo Parent ID Renewal 2026" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
         </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Content / Details</label>
+          <textarea id="adminAnnContent" required rows="3" placeholder="Enter announcement details..." class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple"></textarea>
+        </div>
+        <button type="submit" class="px-4 py-2 bg-brand-purple hover:bg-brand-purple/90 text-white text-xs font-semibold rounded-xl transition flex items-center gap-2">
+          <i class="fa-solid fa-paper-plane"></i> Publish Banner
+        </button>
+      </form>
+    </div>
+  
+    <!-- Card 2: Post Media / Community Update -->
+    <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm space-y-4">
+      <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
+        <i class="fa-solid fa-photo-film text-brand-blue"></i> Post Media & Community Update
+      </h3>
+      <form onsubmit="handlePostMedia(event)" class="space-y-3">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Title</label>
+            <input type="text" id="adminMediaTitle" required placeholder="Workshop Highlights" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Category</label>
+            <input type="text" id="adminMediaCategory" required placeholder="e.g. Livelihood Seminar" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Media Type</label>
+            <select id="adminMediaType" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
+              <option value="video">YouTube Embed Video</option>
+              <option value="image">Image URL</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Media URL (YouTube Embed or Image Direct Link)</label>
+            <input type="url" id="adminMediaUrl" required placeholder="https://..." class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Description</label>
+          <input type="text" id="adminMediaDesc" required placeholder="Short description..." class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
+        </div>
+        <button type="submit" class="px-4 py-2 bg-brand-blue hover:bg-brand-blue/90 text-white text-xs font-semibold rounded-xl transition flex items-center gap-2">
+          <i class="fa-solid fa-upload"></i> Publish Media Update
+        </button>
+      </form>
+    </div>
+  
+  </div>
 
-        <!-- Banner Announcement -->
-        <div class="bg-gradient-to-r from-brand-indigo via-brand-purple to-brand-blue rounded-2xl p-6 text-white shadow-lg">
+      <!-- CLIENT HOME PAGE VIEW -->
+<section id="clientHomeView" class="hidden space-y-6">
+  <div class="border-b border-gray-200 pb-4">
+    <h2 class="text-2xl font-bold text-gray-800">Clients Page</h2>
+    <p class="text-xs text-gray-500 mt-1">Welcome to the CSWD Solo Parent Community Portal.</p>
+  </div>
+
+        <!-- Dynamic Banner Announcement Container -->
+        <div id="clientBannerContainer" class="bg-gradient-to-r from-brand-indigo via-brand-purple to-brand-blue rounded-2xl p-6 text-white shadow-lg">
           <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-purple-200 mb-2">
             <i class="fa-solid fa-bullhorn"></i> Important Update
           </div>
-          <h3 class="text-xl font-bold mb-2">Solo Parent ID Renewal & Subsidy Distribution 2026</h3>
-          <p class="text-xs text-purple-100 max-w-2xl leading-relaxed">
-            All registered solo parents are encouraged to check their ID status. Make sure your profile details are up to date through the online intake form.
-          </p>
+          <h3 id="clientBannerTitle" class="text-xl font-bold mb-2">Loading announcements...</h3>
+          <p id="clientBannerContent" class="text-xs text-purple-100 max-w-2xl leading-relaxed">Please wait while updates are loaded from the server.</p>
         </div>
-
-        <!-- Content Feed (Videos & Pictures) -->
+      
+        <!-- Dynamic Content Feed (Videos & Pictures) -->
         <div class="space-y-4">
           <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
             <i class="fa-solid fa-photo-film text-brand-purple"></i> Media & Community Updates
           </h3>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            <!-- Video Card 1 -->
-            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-              <div class="relative pt-[56.25%] bg-black">
-                <iframe class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="CSWD Orientation Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-              </div>
-              <div class="p-4">
-                <span class="px-2.5 py-1 text-[10px] font-semibold bg-brand-purple/10 text-brand-purple rounded-full">Instructional Video</span>
-                <h4 class="font-bold text-sm text-gray-800 mt-2">Guide: How to Claim Your Solo Parent Benefits</h4>
-                <p class="text-xs text-gray-500 mt-1">A step-by-step walk-through on how to submit your assessment form and apply for government subsidies.</p>
-              </div>
-            </div>
-
-            <!-- Video Card 2 -->
-            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-              <div class="relative pt-[56.25%] bg-black">
-                <iframe class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Livelihood Programs" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-              </div>
-              <div class="p-4">
-                <span class="px-2.5 py-1 text-[10px] font-semibold bg-brand-blue/10 text-brand-blue rounded-full">Livelihood Seminar</span>
-                <h4 class="font-bold text-sm text-gray-800 mt-2">CSWD Free Skills & Livelihood Workshops</h4>
-                <p class="text-xs text-gray-500 mt-1">Learn about our upcoming livelihood training sessions available for all registered solo parents.</p>
-              </div>
-            </div>
-
-            <!-- Photo Card 1 -->
-            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-              <img src="https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?auto=format&fit=crop&w=800&q=80" alt="Community Event" class="w-full h-48 object-cover">
-              <div class="p-4">
-                <span class="px-2.5 py-1 text-[10px] font-semibold bg-emerald-100 text-emerald-700 rounded-full">Community Event</span>
-                <h4 class="font-bold text-sm text-gray-800 mt-2">Annual Solo Parent Wellness & Assembly Day</h4>
-                <p class="text-xs text-gray-500 mt-1">Highlights from our recently concluded wellness assembly held at the City Gymnasium.</p>
-              </div>
-            </div>
-
-            <!-- Photo Card 2 -->
-            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-              <img src="https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=800&q=80" alt="Financial Aid" class="w-full h-48 object-cover">
-              <div class="p-4">
-                <span class="px-2.5 py-1 text-[10px] font-semibold bg-brand-magenta/10 text-brand-magenta rounded-full">Financial Assistance</span>
-                <h4 class="font-bold text-sm text-gray-800 mt-2">Distribution of Educational Assistance</h4>
-                <p class="text-xs text-gray-500 mt-1">CSWD grants school allowance to qualified dependents of active solo parents.</p>
-              </div>
-            </div>
-
+      
+          <div id="clientMediaGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Media items will render dynamically here -->
           </div>
         </div>
       </section>
@@ -996,6 +1013,105 @@
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
     }
+
+    // 1. Post Banner Announcement (Admin Page)
+async function handlePostAnnouncement(e) {
+  e.preventDefault();
+  const payload = {
+    action: "postAnnouncement",
+    title: document.getElementById("adminAnnTitle").value,
+    content: document.getElementById("adminAnnContent").value
+  };
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.result === "success") {
+      alert("Announcement posted successfully!");
+      e.target.reset();
+      fetchClientFeed();
+    }
+  } catch (err) {
+    alert("Error posting announcement.");
+  }
+}
+
+// 2. Post Media Update (Admin Page)
+async function handlePostMedia(e) {
+  e.preventDefault();
+  const payload = {
+    action: "postMedia",
+    title: document.getElementById("adminMediaTitle").value,
+    description: document.getElementById("adminMediaDesc").value,
+    category: document.getElementById("adminMediaCategory").value,
+    mediaType: document.getElementById("adminMediaType").value,
+    url: document.getElementById("adminMediaUrl").value
+  };
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.result === "success") {
+      alert("Media update posted successfully!");
+      e.target.reset();
+      fetchClientFeed();
+    }
+  } catch (err) {
+    alert("Error posting media update.");
+  }
+}
+
+// 3. Fetch Feed for Client Home Page
+async function fetchClientFeed() {
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "getFeed" })
+    });
+    const data = await res.json();
+
+    if (data.result === "success") {
+      // Update Banner
+      if (data.announcements && data.announcements.length > 0) {
+        const latest = data.announcements[data.announcements.length - 1];
+        document.getElementById("clientBannerTitle").innerText = latest.title;
+        document.getElementById("clientBannerContent").innerText = latest.content;
+      }
+
+      // Update Media Grid
+      const grid = document.getElementById("clientMediaGrid");
+      grid.innerHTML = "";
+
+      if (data.media && data.media.length > 0) {
+        data.media.reverse().forEach(item => {
+          const mediaHtml = item.mediaType === "video"
+            ? `<div class="relative pt-[56.25%] bg-black">
+                 <iframe class="absolute top-0 left-0 w-full h-full" src="${item.url}" title="${item.title}" frameborder="0" allowfullscreen></iframe>
+               </div>`
+            : `<img src="${item.url}" alt="${item.title}" class="w-full h-48 object-cover">`;
+
+          grid.innerHTML += `
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+              ${mediaHtml}
+              <div class="p-4">
+                <span class="px-2.5 py-1 text-[10px] font-semibold bg-brand-purple/10 text-brand-purple rounded-full">${item.category}</span>
+                <h4 class="font-bold text-sm text-gray-800 mt-2">${item.title}</h4>
+                <p class="text-xs text-gray-500 mt-1">${item.description}</p>
+              </div>
+            </div>`;
+        });
+      }
+    }
+  } catch (err) {
+    console.error("Failed to load feed:", err);
+  }
+}
   </script>
 </body>
 </html>
