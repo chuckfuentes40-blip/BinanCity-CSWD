@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CSWD Solo Parent Management System</title>
+  <link rel="icon" href="data:,">
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -561,7 +562,6 @@
   <!-- 3. FRONTEND JAVASCRIPT LOGIC               -->
   <!-- ========================================== -->
   <script>
-    // Replace with your Google Apps Script Web App Deployment URL
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw1O3MPFomu4LoHN-oj0fhAc8lhp3aWDkOlCtjVYvOefeTKyT3M7WbR2AFlEokby_te/exec";
 
     let currentUser = null;
@@ -669,7 +669,6 @@
         navForm.className = "w-full px-4 py-3 rounded-xl flex items-center gap-3 transition text-brand-purple bg-brand-purple/10";
         navHome.className = "w-full px-4 py-3 rounded-xl flex items-center gap-3 transition text-gray-600 hover:bg-gray-100";
 
-        // Pre-fill user information if available
         if (currentUser) {
           if (currentUser.barangay) document.getElementById("f_barangay").value = currentUser.barangay;
           if (currentUser.fullname) document.getElementById("f_memberName").value = currentUser.fullname;
@@ -739,14 +738,12 @@
         const data = await res.json();
 
         if (data.result === "success") {
-          // Banner
           if (data.announcements && data.announcements.length > 0) {
             const latest = data.announcements[data.announcements.length - 1];
             document.getElementById("clientBannerTitle").innerText = latest.title;
             document.getElementById("clientBannerContent").innerText = latest.content;
           }
 
-          // Media Grid
           const mediaGrid = document.getElementById("clientMediaGrid");
           mediaGrid.innerHTML = "";
 
