@@ -1,924 +1,246 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CSWD Solo Parent Management System</title>
-  <link rel="icon" href="data:,">
-  
-  <!-- Tailwind CSS CDN -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Community Portal</title>
+  <link rel="manifest" href="manifest.json">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            'brand-purple': '#7c3aed',
-            'brand-blue': '#2563eb',
-            'brand-indigo': '#4f46e5',
-            'brand-magenta': '#c026d3',
-          }
-        }
-      }
-    }
-  </script>
-  
-  <!-- Font Awesome CDN -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
-<body class="bg-slate-50 text-gray-800 font-sans min-h-screen">
+<body class="bg-gray-100 text-gray-800 font-sans">
 
-  <!-- ========================================== -->
-  <!-- 1. LOGIN SCREEN CONTAINER                  -->
-  <!-- ========================================== -->
-  <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-brand-indigo to-slate-900">
-    <div class="bg-white/95 backdrop-blur-md p-8 rounded-2xl shadow-2xl border border-white/20 w-full max-w-md">
-      <div class="text-center mb-6">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-purple/10 text-brand-purple text-3xl mb-3">
-          <i class="fa-solid fa-users-rectangle"></i>
-        </div>
-        <h2 class="text-2xl font-bold text-gray-800">CSWD Solo Parent System</h2>
-        <p class="text-xs text-gray-500 mt-1">Please sign in to access management portal</p>
-      </div>
-
-      <div id="loginAlert" class="hidden mb-4 p-3 text-xs rounded-xl border"></div>
-
-      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+  <!-- LOGIN PAGE -->
+  <div id="page-login" class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+      <h2 class="text-2xl font-bold mb-6 text-center text-blue-600">Portal Login</h2>
+      <form id="loginForm" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Username</label>
-          <input type="text" id="loginUsername" required class="w-full p-3 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
+          <label class="block text-sm font-medium">Username</label>
+          <input type="text" id="loginUser" class="w-full border p-2 rounded mt-1" required>
         </div>
-        
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Password</label>
-          <div class="relative">
-            <input type="password" id="loginPassword" required class="w-full p-3 pr-10 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-            <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand-purple focus:outline-none transition">
-              <i id="togglePasswordIcon" class="fa-solid fa-eye"></i>
-            </button>
-          </div>
+          <label class="block text-sm font-medium">Password</label>
+          <input type="password" id="loginPass" class="w-full border p-2 rounded mt-1" required>
         </div>
-
-        <div class="flex items-center justify-between text-xs">
-          <label class="flex items-center gap-2 cursor-pointer text-gray-600 select-none">
-            <input type="checkbox" id="rememberMe" class="w-4 h-4 text-brand-purple rounded border-gray-300 focus:ring-brand-purple cursor-pointer">
-            <span>Remember me</span>
-          </label>
-        </div>
-
-        <button type="submit" id="loginBtn" class="w-full py-3 bg-gradient-to-r from-brand-blue via-brand-indigo to-brand-purple text-white font-semibold rounded-xl shadow-lg shadow-brand-indigo/30 hover:brightness-110 transition flex items-center justify-center gap-2 text-sm">
-          <span>Sign In</span>
-          <i class="fa-solid fa-right-to-bracket"></i>
-        </button>
+        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Sign In</button>
       </form>
     </div>
   </div>
 
-  <!-- ========================================== -->
-  <!-- 2. MAIN APPLICATION WORKSPACE              -->
-  <!-- ========================================== -->
-  <div id="mainApp" class="hidden min-h-screen flex flex-col md:flex-row">
-
-    <!-- FIXED SIDEBAR NAVIGATION -->
-    <aside class="w-full md:w-64 md:sticky md:top-0 md:h-screen bg-white border-r border-gray-200 flex flex-col justify-between shrink-0 overflow-y-auto">
-      <div>
-        <!-- App Header Logo -->
-        <div class="flex items-center gap-2.5 p-4 border-b border-gray-100">
-          <img src="https://raw.githubusercontent.com/chuckfuentes40-blip/BinanCity-CSWD/main/cswd.png" alt="CSWD Logo" class="h-9 w-9 object-contain shrink-0" />
-          <div>
-            <h1 class="m-0 text-sm font-bold text-gray-900 leading-tight">CSWD Solo Parent Registry</h1>
-            <p class="m-0 text-[11px] text-gray-500 leading-tight">Social Welfare & Development Office</p>
-          </div>
-        </div>
-
-        <!-- CLIENT SIDEBAR MENU -->
-        <div id="clientSidebar" class="hidden p-4 space-y-6">
-          <div class="p-4 bg-gradient-to-br from-brand-purple/10 to-brand-blue/10 rounded-2xl border border-brand-purple/20">
-            <div class="flex items-center gap-3 mb-2">
-              <div class="w-10 h-10 rounded-full bg-brand-purple text-white flex items-center justify-center font-bold text-sm shrink-0">
-                <i class="fa-solid fa-user"></i>
-              </div>
-              <div class="overflow-hidden">
-                <h3 id="sideClientName" class="font-bold text-sm text-gray-800 truncate">Client Name</h3>
-                <p id="sideClientBarangay" class="text-xs text-brand-purple font-medium truncate"><i class="fa-solid fa-location-dot text-[10px] mr-1"></i>Barangay</p>
-              </div>
-            </div>
-            <span class="inline-block px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-semibold rounded-full">Active Member</span>
-          </div>
-
-          <nav class="space-y-1.5 text-xs font-semibold">
-            <button type="button" id="navClientHome" onclick="switchClientTab('home')" class="w-full px-4 py-3 rounded-xl flex items-center gap-3 transition text-brand-purple bg-brand-purple/10">
-              <i class="fa-solid fa-house text-base w-5"></i>
-              <span>Home Page</span>
-            </button>
-
-            <button type="button" id="navClientForm" onclick="switchClientTab('form')" class="w-full px-4 py-3 rounded-xl flex items-center gap-3 transition text-gray-600 hover:bg-gray-100">
-              <i class="fa-solid fa-file-pen text-base w-5"></i>
-              <span>Solo Parent Form</span>
-            </button>
-          </nav>
-        </div>
-
-        <!-- ADMIN SIDEBAR MENU -->
-        <div id="adminSidebar" class="hidden p-4 space-y-6">
-          <div class="p-4 bg-slate-900 text-white rounded-2xl">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-xl bg-brand-indigo flex items-center justify-center text-white font-bold text-xs shrink-0">
-                <i class="fa-solid fa-user-shield"></i>
-              </div>
-              <div class="overflow-hidden">
-                <h3 id="sideAdminName" class="font-bold text-xs truncate">Administrator</h3>
-                <p class="text-[10px] text-gray-400">System Admin</p>
-              </div>
-            </div>
-          </div>
-
-          <nav class="space-y-1.5 text-xs font-semibold">
-            <button type="button" class="w-full px-4 py-3 rounded-xl flex items-center gap-3 text-brand-purple bg-brand-purple/10">
-              <i class="fa-solid fa-chart-pie text-base w-5"></i>
-              <span>Dashboard</span>
-            </button>
-          </nav>
-        </div>
-      </div>
-
-      <!-- Logout Footer -->
-      <div class="p-4 border-t border-gray-100 mt-auto">
-        <button type="button" onclick="handleLogout()" class="w-full px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-2">
-          <i class="fa-solid fa-right-from-bracket"></i>
-          <span>Sign Out</span>
-        </button>
-      </div>
+  <!-- ADMIN DASHBOARD -->
+  <div id="page-admin" class="hidden min-h-screen flex flex-col md:flex-row">
+    <!-- Sidebar -->
+    <aside class="w-full md:w-64 bg-slate-800 text-white p-4">
+      <h1 class="text-xl font-bold mb-6">Admin Panel</h1>
+      <nav class="space-y-2">
+        <button onclick="switchAdminSubpage('home')" class="block w-full text-left p-2 rounded hover:bg-slate-700">Home</button>
+        <button onclick="switchAdminSubpage('announcement')" class="block w-full text-left p-2 rounded hover:bg-slate-700">Announcement</button>
+        <button onclick="switchAdminSubpage('soloparent')" class="block w-full text-left p-2 rounded hover:bg-slate-700">Solo Parents Data</button>
+        <button onclick="switchAdminSubpage('pwd')" class="block w-full text-left p-2 rounded hover:bg-slate-700">PWD Data</button>
+        <button onclick="switchAdminSubpage('senior')" class="block w-full text-left p-2 rounded hover:bg-slate-700">Senior Citizens Data</button>
+      </nav>
+      <button onclick="logout()" class="mt-8 text-red-400 hover:underline">Logout</button>
     </aside>
-
-    <!-- MAIN WORKSPACE CONTENT -->
-    <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl">
-
-      <!-- ========================================== -->
-      <!-- A. ADMIN DASHBOARD VIEW                    -->
-      <!-- ========================================== -->
-      <section id="adminDashboardView" class="hidden space-y-6">
-        <div class="flex items-center justify-between">
-          <div>
-            <h2 class="text-xl font-bold text-gray-800">Administrator Dashboard</h2>
-            <p class="text-xs text-gray-500">Overview of registered solo parents, announcement controls, and welfare analytics.</p>
-          </div>
-          <div class="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-full border border-emerald-200">
-            <span class="relative flex h-2 w-2">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span>Live Syncing</span>
-          </div>
-        </div>
-
-        <!-- Stats Grid -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-            <div class="p-3 bg-brand-blue/10 text-brand-blue rounded-xl"><i class="fa-solid fa-users text-xl"></i></div>
-            <div>
-              <p class="text-xs text-gray-500 font-medium">Total Registered</p>
-              <p id="statTotal" class="text-2xl font-bold text-gray-800">0</p>
-            </div>
-          </div>
-          <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-            <div class="p-3 bg-brand-purple/10 text-brand-purple rounded-xl"><i class="fa-solid fa-hand-holding-heart text-xl"></i></div>
-            <div>
-              <p class="text-xs text-gray-500 font-medium">4Ps Beneficiaries</p>
-              <p id="stat4ps" class="text-2xl font-bold text-gray-800">0</p>
-            </div>
-          </div>
-          <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-            <div class="p-3 bg-brand-magenta/10 text-brand-magenta rounded-xl"><i class="fa-solid fa-id-card text-xl"></i></div>
-            <div>
-              <p class="text-xs text-gray-500 font-medium">For ID Renewal</p>
-              <p id="statRenewal" class="text-2xl font-bold text-gray-800">0</p>
-            </div>
-          </div>
-          <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-            <div class="p-3 bg-indigo-100 text-brand-indigo rounded-xl"><i class="fa-solid fa-wheelchair text-xl"></i></div>
-            <div>
-              <p class="text-xs text-gray-500 font-medium">PWD / Disability</p>
-              <p id="statPwd" class="text-2xl font-bold text-gray-800">0</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- POSTING CARDS (EXCLUSIVE TO ADMIN PAGE) -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 my-6">
-          
-          <!-- Post Important Banner Update -->
-          <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm space-y-4">
-            <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
-              <i class="fa-solid fa-bullhorn text-brand-purple"></i> Post Important Banner Update
-            </h3>
-            <form onsubmit="handlePostAnnouncement(event)" class="space-y-3">
-              <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Announcement Title</label>
-                <input type="text" id="adminAnnTitle" required placeholder="e.g. Solo Parent ID Renewal 2026" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Content / Details</label>
-                <textarea id="adminAnnContent" required rows="3" placeholder="Enter announcement details..." class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple"></textarea>
-              </div>
-              <button type="submit" class="px-4 py-2 bg-brand-purple hover:bg-brand-purple/90 text-white text-xs font-semibold rounded-xl transition flex items-center gap-2 shadow-md shadow-brand-purple/20">
-                <i class="fa-solid fa-paper-plane"></i> Publish Banner
-              </button>
-            </form>
-          </div>
-
-          <!-- Post Media & Community Update -->
-          <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm space-y-4">
-            <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
-              <i class="fa-solid fa-photo-film text-brand-blue"></i> Post Media & Community Update
-            </h3>
-            <form onsubmit="handlePostMedia(event)" class="space-y-3">
-              <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Title</label>
-                  <input type="text" id="adminMediaTitle" required placeholder="Workshop Highlights" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Category</label>
-                  <input type="text" id="adminMediaCategory" required placeholder="e.g. Livelihood Seminar" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
-                </div>
-              </div>
-              <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Media Type</label>
-                  <select id="adminMediaType" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
-                    <option value="video">YouTube Embed Video</option>
-                    <option value="image">Image Direct Link</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Media URL</label>
-                  <input type="url" id="adminMediaUrl" required placeholder="https://..." class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
-                </div>
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Description</label>
-                <input type="text" id="adminMediaDesc" required placeholder="Short description..." class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
-              </div>
-              <button type="submit" class="px-4 py-2 bg-brand-blue hover:bg-brand-blue/90 text-white text-xs font-semibold rounded-xl transition flex items-center gap-2 shadow-md shadow-brand-blue/20">
-                <i class="fa-solid fa-upload"></i> Publish Media Update
-              </button>
-            </form>
-          </div>
-
-        </div>
-
-        <!-- Admin Table Card -->
-        <div class="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
-          <div class="p-4 border-b border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="relative w-full sm:w-80">
-              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-              <input type="text" id="tableSearch" oninput="renderTable()" placeholder="Search name, control no, barangay..." class="w-full pl-9 pr-4 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-            </div>
-            <button type="button" onclick="exportToCSV()" class="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition flex items-center justify-center gap-2">
-              <i class="fa-solid fa-file-excel"></i>
-              <span>Export to CSV</span>
-            </button>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-sm">
-              <thead>
-                <tr class="bg-gray-50 text-gray-500 font-semibold text-xs border-b border-gray-200">
-                  <th class="py-3 px-4">Control No.</th>
-                  <th class="py-3 px-4">Member Name</th>
-                  <th class="py-3 px-4">Barangay</th>
-                  <th class="py-3 px-4">Contact</th>
-                  <th class="py-3 px-4">Classification</th>
-                  <th class="py-3 px-4">4Ps</th>
-                  <th class="py-3 px-4">ID Status</th>
-                </tr>
-              </thead>
-              <tbody id="recordsTableBody"></tbody>
-            </table>
-            <div id="emptyTableNotice" class="p-8 text-center text-gray-400 text-xs">
-              <i class="fa-solid fa-folder-open text-3xl mb-2 text-gray-300"></i>
-              <p>No records found.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ========================================== -->
-      <!-- B. CLIENT HOME PAGE VIEW                   -->
-      <!-- ========================================== -->
-      <section id="clientHomeView" class="hidden space-y-6">
-        <div class="border-b border-gray-200 pb-4">
-          <h2 class="text-2xl font-bold text-gray-800">Clients Page</h2>
-          <p class="text-xs text-gray-500 mt-1">Welcome to the CSWD Solo Parent Community Portal.</p>
-        </div>
-
-        <!-- Dynamic Banner Announcement Container -->
-        <div id="clientBannerContainer" class="bg-gradient-to-r from-brand-indigo via-brand-purple to-brand-blue rounded-2xl p-6 text-white shadow-lg">
-          <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-purple-200 mb-2">
-            <i class="fa-solid fa-bullhorn"></i> Important Update
-          </div>
-          <h3 id="clientBannerTitle" class="text-xl font-bold mb-2">Solo Parent ID Renewal & Subsidy Distribution</h3>
-          <p id="clientBannerContent" class="text-xs text-purple-100 max-w-2xl leading-relaxed">
-            All registered solo parents are encouraged to check their ID status. Make sure your profile details are up to date through the online intake form.
-          </p>
-        </div>
-
-        <!-- Dynamic Media Feed Grid -->
-        <div class="space-y-4">
-          <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
-            <i class="fa-solid fa-photo-film text-brand-purple"></i> Media & Community Updates
-          </h3>
-
-          <div id="clientMediaGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
-        </div>
-      </section>
-
-      <!-- ========================================== -->
-      <!-- C. CLIENT SOLO PARENT INTAKE FORM VIEW     -->
-      <!-- (SHOWN ONLY WHEN "Solo Parent Form" CLICKED)-->
-      <!-- ========================================== -->
-      <section id="clientFormView" class="hidden max-w-5xl mx-auto">
-        <div class="bg-white rounded-2xl border border-gray-200/80 shadow-md p-6 sm:p-8 space-y-6">
-
-          <div class="border-b border-gray-100 pb-4">
-            <h2 class="text-xl font-bold text-gray-800">Solo Parent Intake & Assessment Form</h2>
-            <p class="text-xs text-gray-500 mt-1">Please complete Sections A through F accurately.</p>
-          </div>
-
-          <div id="formAlert" class="hidden p-3 text-xs rounded-xl border"></div>
-
-          <form id="soloParentForm" onsubmit="submitSoloParentForm(event)" class="space-y-6">
-
-            <!-- SECTION A: GENERAL INFORMATION -->
-            <div>
-              <h3 class="text-xs font-bold uppercase tracking-wider text-brand-purple pb-2 border-b border-gray-100 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-clipboard-list"></i> Section A: General Information
-              </h3>
-              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Barangay</label>
-                  <input type="text" id="f_barangay" required class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Date</label>
-                  <input type="date" id="f_date" required class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Control No.</label>
-                  <input type="text" id="f_controlNo" required placeholder="e.g. SP-2026-001" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Interviewer Name</label>
-                  <input type="text" id="f_interviewer" required class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                </div>
-              </div>
-            </div>
-
-            <!-- SECTION B: MEMBER INFORMATION -->
-            <div>
-              <h3 class="text-xs font-bold uppercase tracking-wider text-brand-purple pb-2 border-b border-gray-100 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-user"></i> Section B: Member Information
-              </h3>
-              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="md:col-span-2">
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Member Full Name</label>
-                  <input type="text" id="f_memberName" required placeholder="Last Name, First Name, Middle Name" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Sex</label>
-                  <select id="f_sex" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                    <option value="Female">Female</option>
-                    <option value="Male">Male</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Age</label>
-                  <input type="number" id="f_age" min="1" max="120" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                </div>
-                <div class="md:col-span-2">
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Contact Number</label>
-                  <input type="text" id="f_contactNo" placeholder="09xxxxxxxxx" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                </div>
-                <div class="md:col-span-2">
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Home Address</label>
-                  <input type="text" id="f_address" placeholder="House No., Street, Subdivision" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                </div>
-              </div>
-            </div>
-
-            <!-- SECTION C: SOCIO-ECONOMIC INFORMATION -->
-            <div>
-              <h3 class="text-xs font-bold uppercase tracking-wider text-brand-purple pb-2 border-b border-gray-100 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-coins"></i> Section C: Socio-Economic Information
-              </h3>
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Solo Parent Classification</label>
-                  <input type="text" id="f_classification" placeholder="e.g. Unwed, Death of Spouse" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">No. of Dependents</label>
-                  <input type="number" id="f_dependentsCount" min="0" value="0" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Primary Source of Income</label>
-                  <input type="text" id="f_incomeSource" placeholder="e.g. Employment, Vendor" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                </div>
-              </div>
-            </div>
-
-            <!-- SECTION D: DISABILITY & ID STATUS -->
-            <div>
-              <h3 class="text-xs font-bold uppercase tracking-wider text-brand-purple pb-2 border-b border-gray-100 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-id-card"></i> Section D: Disability & ID Status
-              </h3>
-              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Member Disability?</label>
-                  <select id="f_memberDisability" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                    <option value="No">No</option>
-                    <option value="Yes">Yes</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Member Disability Type</label>
-                  <input type="text" id="f_memberDisabilityType" placeholder="If yes, specify" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Dependent Disability?</label>
-                  <select id="f_dependentDisability" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                    <option value="No">No</option>
-                    <option value="Yes">Yes</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Dependent Disability Type</label>
-                  <input type="text" id="f_dependentDisabilityType" placeholder="If yes, specify" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                </div>
-
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Solo Parent ID Number</label>
-                  <input type="text" id="f_idNumber" placeholder="ID Number" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">ID Expiration Date</label>
-                  <input type="date" id="f_idExpiration" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">ID Status</label>
-                  <select id="f_idStatus" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                    <option value="Active">Active</option>
-                    <option value="Expired">Expired</option>
-                    <option value="Pending">Pending</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">For Renewal?</label>
-                  <select id="f_forRenewal" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                    <option value="No">No</option>
-                    <option value="Yes">Yes</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <!-- SECTION E: PROGRAM AFFILIATIONS -->
-            <div>
-              <h3 class="text-xs font-bold uppercase tracking-wider text-brand-purple pb-2 border-b border-gray-100 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-hand-holding-heart"></i> Section E: Program Affiliations
-              </h3>
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Subsidy Recipient?</label>
-                  <select id="f_subsidyRecipient" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                    <option value="No">No</option>
-                    <option value="Yes">Yes</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">INB Recipient?</label>
-                  <select id="f_inbRecipient" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                    <option value="No">No</option>
-                    <option value="Yes">Yes</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">4Ps Beneficiary?</label>
-                  <select id="f_is4ps" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                    <option value="No">No</option>
-                    <option value="Yes">Yes</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <!-- SECTION F: CAPACITY & REMARKS -->
-            <div>
-              <h3 class="text-xs font-bold uppercase tracking-wider text-brand-purple pb-2 border-b border-gray-100 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-graduation-cap"></i> Section F: Capacity & Remarks
-              </h3>
-              <div class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Existing Skills</label>
-                    <input type="text" id="f_existingSkills" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                  </div>
-                  <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Skills Training Requested</label>
-                    <input type="text" id="f_skillsRequested" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                  </div>
-                  <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Preferred Livelihood</label>
-                    <input type="text" id="f_preferredLivelihood" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
-                  </div>
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Remarks / Other Concerns</label>
-                  <textarea id="f_remarks" rows="3" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none"></textarea>
-                </div>
-              </div>
-            </div>
-
-            <!-- FORM ACTIONS -->
-            <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
-              <button type="button" onclick="switchClientTab('home')" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-xl transition">
-                Back to Home
-              </button>
-              <button type="submit" class="px-5 py-2.5 bg-brand-purple hover:bg-brand-purple/90 text-white text-xs font-semibold rounded-xl shadow-lg shadow-brand-purple/20 transition flex items-center gap-2">
-                <span>Submit Form</span>
-                <i class="fa-solid fa-paper-plane"></i>
-              </button>
-            </div>
-
-          </form>
-        </div>
-      </section>
-
+    <!-- Content Area -->
+    <main class="flex-1 p-6">
+      <div id="admin-sub-home">
+        <h2 class="text-2xl font-bold">Admin Overview</h2>
+        <p class="mt-2 text-gray-600">Select an option from the sidebar to manage system data.</p>
+      </div>
+      <div id="admin-sub-announcement" class="hidden">
+        <h2 class="text-2xl font-bold mb-4">Manage Announcements</h2>
+        <form id="announcementForm" class="bg-white p-4 rounded shadow space-y-4 max-w-lg">
+          <input type="text" id="annTitle" placeholder="Title" class="w-full border p-2 rounded" required>
+          <textarea id="annContent" placeholder="Content" class="w-full border p-2 rounded" required></textarea>
+          <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Post Announcement</button>
+        </form>
+      </div>
+      <div id="admin-sub-soloparent" class="hidden">
+        <h2 class="text-2xl font-bold mb-4">Solo Parents Records</h2>
+        <div id="data-soloparent-table" class="bg-white p-4 rounded shadow overflow-x-auto">Loading...</div>
+      </div>
+      <div id="admin-sub-pwd" class="hidden">
+        <h2 class="text-2xl font-bold mb-4">PWD Records</h2>
+        <div id="data-pwd-table" class="bg-white p-4 rounded shadow overflow-x-auto">Loading...</div>
+      </div>
+      <div id="admin-sub-senior" class="hidden">
+        <h2 class="text-2xl font-bold mb-4">Senior Citizens Records</h2>
+        <div id="data-senior-table" class="bg-white p-4 rounded shadow overflow-x-auto">Loading...</div>
+      </div>
     </main>
   </div>
 
-  <!-- ========================================== -->
-  <!-- 3. FRONTEND JAVASCRIPT LOGIC               -->
-  <!-- ========================================== -->
+  <!-- CLIENT DASHBOARD -->
+  <div id="page-client" class="hidden min-h-screen flex flex-col md:flex-row">
+    <!-- Sidebar -->
+    <aside class="w-full md:w-64 bg-blue-900 text-white p-4">
+      <h1 class="text-xl font-bold mb-6">Client Portal</h1>
+      <nav class="space-y-2">
+        <button onclick="switchClientSubpage('home')" class="block w-full text-left p-2 rounded hover:bg-blue-800">Home</button>
+        <button onclick="switchClientSubpage('form')" class="block w-full text-left p-2 rounded hover:bg-blue-800">Application Form</button>
+      </nav>
+      <button onclick="logout()" class="mt-8 text-red-300 hover:underline">Logout</button>
+    </aside>
+    <!-- Content Area -->
+    <main class="flex-1 p-6">
+      <div id="client-sub-home">
+        <h2 class="text-2xl font-bold mb-4">Announcements</h2>
+        <div id="client-announcements-list" class="space-y-4">Loading announcements...</div>
+      </div>
+      <div id="client-sub-form" class="hidden">
+        <h2 id="client-form-title" class="text-2xl font-bold mb-4">Application Form</h2>
+        <form id="dynamicClientForm" class="bg-white p-6 rounded shadow max-w-lg space-y-4">
+          <!-- Dynamic Form Inputs Inserted Via JS -->
+        </form>
+      </div>
+    </main>
+  </div>
+
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw1O3MPFomu4LoHN-oj0fhAc8lhp3aWDkOlCtjVYvOefeTKyT3M7WbR2AFlEokby_te/exec";
-
+    const API_URL = "YOUR_DEPLOYED_GOOGLE_APPS_SCRIPT_WEB_APP_URL";
     let currentUser = null;
-    let allRecords = [];
 
-    // Toggle Password Visibility
-    function togglePasswordVisibility() {
-      const pwdInput = document.getElementById("loginPassword");
-      const icon = document.getElementById("togglePasswordIcon");
-      if (pwdInput.type === "password") {
-        pwdInput.type = "text";
-        icon.className = "fa-solid fa-eye-slash";
-      } else {
-        pwdInput.type = "password";
-        icon.className = "fa-solid fa-eye";
-      }
+    // Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
     }
 
     // Login Handler
-    async function handleLogin(e) {
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const loginBtn = document.getElementById("loginBtn");
-      const alertBox = document.getElementById("loginAlert");
-      
-      const usernameInput = document.getElementById("loginUsername").value.trim();
-      const passwordInput = document.getElementById("loginPassword").value.trim();
+      const username = document.getElementById('loginUser').value;
+      const password = document.getElementById('loginPass').value;
 
-      alertBox.className = "hidden";
-      loginBtn.disabled = true;
-      loginBtn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> Authenticating...`;
-
-      try {
-        const response = await fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify({
-            action: "login",
-            username: usernameInput,
-            password: passwordInput
-          })
-        });
-
-        const data = await response.json();
-
-        if (data.result === "success") {
-          currentUser = data.user;
-          document.getElementById("loginScreen").classList.add("hidden");
-          document.getElementById("mainApp").classList.remove("hidden");
-
-          if (currentUser.role.toLowerCase() === "admin") {
-            document.getElementById("adminSidebar").classList.remove("hidden");
-            document.getElementById("adminDashboardView").classList.remove("hidden");
-            document.getElementById("sideAdminName").innerText = currentUser.fullname || currentUser.username;
-            fetchAdminRecords();
-          } else {
-            document.getElementById("clientSidebar").classList.remove("hidden");
-            document.getElementById("sideClientName").innerText = currentUser.fullname || currentUser.username;
-            document.getElementById("sideClientBarangay").innerHTML = `<i class="fa-solid fa-location-dot text-[10px] mr-1"></i>${currentUser.barangay || 'General'}`;
-            switchClientTab('home');
-            fetchClientFeed();
-          }
-        } else {
-          alertBox.innerText = data.message || "Invalid credentials.";
-          alertBox.className = "mb-4 p-3 text-xs rounded-xl border bg-red-50 text-red-600 border-red-200 block";
-        }
-      } catch (err) {
-        alertBox.innerText = "Network error or invalid backend deployment URL.";
-        alertBox.className = "mb-4 p-3 text-xs rounded-xl border bg-red-50 text-red-600 border-red-200 block";
-      } finally {
-        loginBtn.disabled = false;
-        loginBtn.innerHTML = `<span>Sign In</span><i class="fa-solid fa-right-to-bracket"></i>`;
-      }
-    }
-
-    // Logout Handler
-    function handleLogout() {
-      currentUser = null;
-      document.getElementById("mainApp").classList.add("hidden");
-      document.getElementById("adminSidebar").classList.add("hidden");
-      document.getElementById("clientSidebar").classList.add("hidden");
-      document.getElementById("adminDashboardView").classList.add("hidden");
-      document.getElementById("clientHomeView").classList.add("hidden");
-      document.getElementById("clientFormView").classList.add("hidden");
-      document.getElementById("loginScreen").classList.remove("hidden");
-      document.getElementById("loginForm").reset();
-    }
-
-    // Client Tab Switcher
-    function switchClientTab(tabName) {
-      const homeView = document.getElementById("clientHomeView");
-      const formView = document.getElementById("clientFormView");
-      const navHome = document.getElementById("navClientHome");
-      const navForm = document.getElementById("navClientForm");
-
-      if (tabName === "home") {
-        homeView.classList.remove("hidden");
-        formView.classList.add("hidden");
-
-        navHome.className = "w-full px-4 py-3 rounded-xl flex items-center gap-3 transition text-brand-purple bg-brand-purple/10";
-        navForm.className = "w-full px-4 py-3 rounded-xl flex items-center gap-3 transition text-gray-600 hover:bg-gray-100";
-        fetchClientFeed();
-      } else if (tabName === "form") {
-        homeView.classList.add("hidden");
-        formView.classList.remove("hidden");
-
-        navForm.className = "w-full px-4 py-3 rounded-xl flex items-center gap-3 transition text-brand-purple bg-brand-purple/10";
-        navHome.className = "w-full px-4 py-3 rounded-xl flex items-center gap-3 transition text-gray-600 hover:bg-gray-100";
-
-        if (currentUser) {
-          if (currentUser.barangay) document.getElementById("f_barangay").value = currentUser.barangay;
-          if (currentUser.fullname) document.getElementById("f_memberName").value = currentUser.fullname;
-        }
-        document.getElementById("f_date").valueAsDate = new Date();
-      }
-    }
-
-    // Admin: Post Important Banner Update
-    async function handlePostAnnouncement(e) {
-      e.preventDefault();
-      const payload = {
-        action: "postAnnouncement",
-        title: document.getElementById("adminAnnTitle").value,
-        content: document.getElementById("adminAnnContent").value
-      };
-
-      try {
-        const res = await fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (data.result === "success") {
-          alert("Announcement published successfully!");
-          e.target.reset();
-        }
-      } catch (err) {
-        alert("Failed to publish announcement.");
-      }
-    }
-
-    // Admin: Post Media & Community Update
-    async function handlePostMedia(e) {
-      e.preventDefault();
-      const payload = {
-        action: "postMedia",
-        title: document.getElementById("adminMediaTitle").value,
-        category: document.getElementById("adminMediaCategory").value,
-        mediaType: document.getElementById("adminMediaType").value,
-        url: document.getElementById("adminMediaUrl").value,
-        description: document.getElementById("adminMediaDesc").value
-      };
-
-      try {
-        const res = await fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (data.result === "success") {
-          alert("Media update published successfully!");
-          e.target.reset();
-        }
-      } catch (err) {
-        alert("Failed to publish media update.");
-      }
-    }
-
-    // Client: Fetch Dynamic Feed
-    async function fetchClientFeed() {
-      try {
-        const res = await fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify({ action: "getFeed" })
-        });
-        const data = await res.json();
-
-        if (data.result === "success") {
-          if (data.announcements && data.announcements.length > 0) {
-            const latest = data.announcements[data.announcements.length - 1];
-            document.getElementById("clientBannerTitle").innerText = latest.title;
-            document.getElementById("clientBannerContent").innerText = latest.content;
-          }
-
-          const mediaGrid = document.getElementById("clientMediaGrid");
-          mediaGrid.innerHTML = "";
-
-          if (data.media && data.media.length > 0) {
-            data.media.reverse().forEach(item => {
-              const mediaHtml = item.mediaType === "video"
-                ? `<div class="relative pt-[56.25%] bg-black">
-                     <iframe class="absolute top-0 left-0 w-full h-full" src="${item.url}" title="${item.title}" frameborder="0" allowfullscreen></iframe>
-                   </div>`
-                : `<img src="${item.url}" alt="${item.title}" class="w-full h-48 object-cover">`;
-
-              mediaGrid.innerHTML += `
-                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                  ${mediaHtml}
-                  <div class="p-4">
-                    <span class="px-2.5 py-1 text-[10px] font-semibold bg-brand-purple/10 text-brand-purple rounded-full">${item.category}</span>
-                    <h4 class="font-bold text-sm text-gray-800 mt-2">${item.title}</h4>
-                    <p class="text-xs text-gray-500 mt-1">${item.description}</p>
-                  </div>
-                </div>`;
-            });
-          } else {
-            mediaGrid.innerHTML = `<p class="text-xs text-gray-400 col-span-2">No community updates available.</p>`;
-          }
-        }
-      } catch (err) {
-        console.error("Feed load error:", err);
-      }
-    }
-
-    // Client: Submit Solo Parent Intake Form
-    async function submitSoloParentForm(e) {
-      e.preventDefault();
-      const formAlert = document.getElementById("formAlert");
-      formAlert.className = "hidden";
-
-      const formData = {
-        action: "submitForm",
-        timestamp: new Date().toISOString(),
-        barangay: document.getElementById("f_barangay").value,
-        date: document.getElementById("f_date").value,
-        controlNo: document.getElementById("f_controlNo").value,
-        interviewer: document.getElementById("f_interviewer").value,
-        memberName: document.getElementById("f_memberName").value,
-        sex: document.getElementById("f_sex").value,
-        age: document.getElementById("f_age").value,
-        contactNo: document.getElementById("f_contactNo").value,
-        address: document.getElementById("f_address").value,
-        classification: document.getElementById("f_classification").value,
-        dependentsCount: document.getElementById("f_dependentsCount").value,
-        incomeSource: document.getElementById("f_incomeSource").value,
-        memberDisability: document.getElementById("f_memberDisability").value,
-        memberDisabilityType: document.getElementById("f_memberDisabilityType").value,
-        dependentDisability: document.getElementById("f_dependentDisability").value,
-        dependentDisabilityType: document.getElementById("f_dependentDisabilityType").value,
-        idNumber: document.getElementById("f_idNumber").value,
-        idExpiration: document.getElementById("f_idExpiration").value,
-        idStatus: document.getElementById("f_idStatus").value,
-        forRenewal: document.getElementById("f_forRenewal").value,
-        subsidyRecipient: document.getElementById("f_subsidyRecipient").value,
-        inbRecipient: document.getElementById("f_inbRecipient").value,
-        is4ps: document.getElementById("f_is4ps").value,
-        existingSkills: document.getElementById("f_existingSkills").value,
-        skillsRequested: document.getElementById("f_skillsRequested").value,
-        preferredLivelihood: document.getElementById("f_preferredLivelihood").value,
-        remarks: document.getElementById("f_remarks").value
-      };
-
-      try {
-        const res = await fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify(formData)
-        });
-        const data = await res.json();
-
-        if (data.result === "success") {
-          formAlert.innerText = "Assessment form submitted successfully!";
-          formAlert.className = "mb-4 p-3 text-xs rounded-xl border bg-emerald-50 text-emerald-700 border-emerald-200 block";
-          document.getElementById("soloParentForm").reset();
-        } else {
-          formAlert.innerText = "Error submitting form. Please try again.";
-          formAlert.className = "mb-4 p-3 text-xs rounded-xl border bg-red-50 text-red-600 border-red-200 block";
-        }
-      } catch (err) {
-        formAlert.innerText = "Submission failed. Check network connectivity.";
-        formAlert.className = "mb-4 p-3 text-xs rounded-xl border bg-red-50 text-red-600 border-red-200 block";
-      }
-    }
-
-    // Admin: Fetch Records & Update Analytics
-    async function fetchAdminRecords() {
-      try {
-        const res = await fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify({ action: "getRecords" })
-        });
-        const data = await res.json();
-
-        if (data.result === "success" && data.records) {
-          allRecords = data.records;
-          renderTable();
-          updateAdminStats();
-        }
-      } catch (err) {
-        console.error("Failed to fetch admin records:", err);
-      }
-    }
-
-    // Admin: Render Table
-    function renderTable() {
-      const tbody = document.getElementById("recordsTableBody");
-      const emptyNotice = document.getElementById("emptyTableNotice");
-      const query = document.getElementById("tableSearch").value.toLowerCase();
-
-      tbody.innerHTML = "";
-
-      const filtered = allRecords.filter(r => {
-        const text = Object.values(r).join(" ").toLowerCase();
-        return text.includes(query);
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'login', username, password })
       });
+      const data = await res.json();
 
-      if (filtered.length === 0) {
-        emptyNotice.classList.remove("hidden");
+      if (data.success) {
+        currentUser = data.user;
+        routeUser(data.user);
+      } else {
+        alert(data.message);
+      }
+    });
+
+    // Routing Logic
+    function routeUser(user) {
+      document.getElementById('page-login').classList.add('hidden');
+      if (user.role === 'Admin') {
+        document.getElementById('page-admin').classList.remove('hidden');
+        switchAdminSubpage('home');
+      } else if (user.role === 'Client') {
+        document.getElementById('page-client').classList.remove('hidden');
+        switchClientSubpage('home');
+        loadAnnouncements();
+        renderClientForm(user.clientType);
+      }
+    }
+
+    // Admin Subpage Routing
+    function switchAdminSubpage(tab) {
+      ['home', 'announcement', 'soloparent', 'pwd', 'senior'].forEach(t => {
+        document.getElementById(`admin-sub-${t}`).classList.add('hidden');
+      });
+      document.getElementById(`admin-sub-${tab}`).classList.remove('hidden');
+
+      if (['soloparent', 'pwd', 'senior'].includes(tab)) {
+        loadAdminTableData(tab);
+      }
+    }
+
+    // Client Subpage Routing
+    function switchClientSubpage(tab) {
+      document.getElementById('client-sub-home').classList.add('hidden');
+      document.getElementById('client-sub-form').classList.add('hidden');
+      document.getElementById(`client-sub-${tab}`).classList.remove('hidden');
+    }
+
+    // Dynamic Form Rendering Based on Client Type
+    function renderClientForm(type) {
+      const form = document.getElementById('dynamicClientForm');
+      document.getElementById('client-form-title').innerText = `${type} Registration Form`;
+
+      let targetTab = "SoloParent";
+      if (type === "PWD") targetTab = "PWD";
+      if (type === "Senior Citizen") targetTab = "SeniorCitizen";
+
+      form.innerHTML = `
+        <input type="hidden" name="tabName" value="${targetTab}">
+        <div>
+          <label class="block text-sm font-medium">Full Name</label>
+          <input type="text" name="fullName" class="w-full border p-2 rounded mt-1" required>
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Contact Number</label>
+          <input type="text" name="contact" class="w-full border p-2 rounded mt-1" required>
+        </div>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Submit Registration</button>
+      `;
+
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+        const formData = {
+          username: currentUser.username,
+          fullName: form.fullName.value,
+          contact: form.contact.value
+        };
+
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'submitForm', tabName: targetTab, formData })
+        });
+        const result = await res.json();
+        alert(result.message);
+      };
+    }
+
+    // Fetch Announcements
+    async function loadAnnouncements() {
+      const res = await fetch(`${API_URL}?action=getAnnouncements`);
+      const data = await res.json();
+      const container = document.getElementById('client-announcements-list');
+      container.innerHTML = data.map(item => `
+        <div class="bg-white p-4 rounded shadow">
+          <h3 class="font-bold text-lg">${item.Title}</h3>
+          <p class="text-xs text-gray-500 mb-2">${item.Date}</p>
+          <p class="text-gray-700">${item.Content}</p>
+        </div>
+      `).join('');
+    }
+
+    // Fetch Table Data for Admin
+    async function loadAdminTableData(type) {
+      const tabMap = { soloparent: 'SoloParent', pwd: 'PWD', senior: 'SeniorCitizen' };
+      const res = await fetch(`${API_URL}?action=getData&tabName=${tabMap[type]}`);
+      const data = await res.json();
+      const container = document.getElementById(`data-${type}-table`);
+
+      if (!data.length) {
+        container.innerHTML = "<p>No data found.</p>";
         return;
       }
 
-      emptyNotice.classList.add("hidden");
-
-      filtered.forEach(r => {
-        tbody.innerHTML += `
-          <tr class="border-b border-gray-100 hover:bg-gray-50/50 transition text-xs text-gray-700">
-            <td class="py-3 px-4 font-semibold text-brand-purple">${r.controlNo || '-'}</td>
-            <td class="py-3 px-4 font-medium">${r.memberName || '-'}</td>
-            <td class="py-3 px-4">${r.barangay || '-'}</td>
-            <td class="py-3 px-4">${r.contactNo || '-'}</td>
-            <td class="py-3 px-4">${r.classification || '-'}</td>
-            <td class="py-3 px-4">${r.is4ps || 'No'}</td>
-            <td class="py-3 px-4">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${r.idStatus === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
-                ${r.idStatus || 'Pending'}
-              </span>
-            </td>
-          </tr>`;
+      const headers = Object.keys(data[0]);
+      let html = `<table class="w-full text-left border-collapse"><thead><tr>`;
+      headers.forEach(h => html += `<th class="border-b p-2 font-semibold">${h}</th>`);
+      html += `</tr></thead><tbody>`;
+      data.forEach(row => {
+        html += `<tr>`;
+        headers.forEach(h => html += `<td class="border-b p-2">${row[h]}</td>`);
+        html += `</tr>`;
       });
+      html += `</tbody></table>`;
+      container.innerHTML = html;
     }
 
-    // Admin: Update Dashboard Stats
-    function updateAdminStats() {
-      document.getElementById("statTotal").innerText = allRecords.length;
-      
-      const count4ps = allRecords.filter(r => String(r.is4ps).toLowerCase() === 'yes').length;
-      document.getElementById("stat4ps").innerText = count4ps;
-
-      const countRenewal = allRecords.filter(r => String(r.forRenewal).toLowerCase() === 'yes').length;
-      document.getElementById("statRenewal").innerText = countRenewal;
-
-      const countPwd = allRecords.filter(r => String(r.memberDisability).toLowerCase() === 'yes' || String(r.dependentDisability).toLowerCase() === 'yes').length;
-      document.getElementById("statPwd").innerText = countPwd;
-    }
-
-    // Admin: CSV Export
-    function exportToCSV() {
-      if (allRecords.length === 0) return alert("No records available to export.");
-      
-      const headers = Object.keys(allRecords[0]).join(",");
-      const rows = allRecords.map(r => Object.values(r).map(v => `"${v}"`).join(","));
-      const csvContent = "data:text/csv;charset=utf-8," + [headers, ...rows].join("\n");
-
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", "CSWD_Solo_Parents_Report.csv");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    function logout() {
+      currentUser = null;
+      document.getElementById('page-admin').classList.add('hidden');
+      document.getElementById('page-client').classList.add('hidden');
+      document.getElementById('page-login').classList.remove('hidden');
     }
   </script>
 </body>
