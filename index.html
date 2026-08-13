@@ -3,429 +3,369 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CSWD Web Portal - City of Biñan</title>
+  <title>CSWD Solo Parent Survey & Management Portal</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons CDN -->
+  <!-- Font Awesome Icons CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              headerFrom: '#1e1b4b',
-              headerVia: '#1e3a8a',
-              headerTo: '#312e81',
-            }
-          }
-        }
-      }
-    }
-  </script>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col justify-between antialiased">
+<body class="bg-slate-100 font-sans text-slate-800 antialiased min-h-screen flex flex-col">
 
-  <!-- OVERLAY BACKDROP FOR SIDEBAR -->
-  <div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/60 z-40 hidden transition-opacity duration-300"></div>
+  <!-- SIDEBAR BACKDROP -->
+  <div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 z-40 hidden transition-opacity"></div>
 
-  <!-- OFF-CANVAS SIDE NAVBAR (RESPONSIVE & HIDDEN BY DEFAULT) -->
-  <aside id="sideNavbar" class="fixed top-0 left-0 h-full w-80 bg-white shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between">
-    <div>
-      <!-- Drawer Header -->
-      <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-        <span class="text-xs font-bold tracking-wider text-slate-500 uppercase"><i class="fa-solid fa-bars-staggered mr-1.5 text-indigo-600"></i> Navigation Menu</span>
-        <button onclick="toggleSidebar()" class="p-2 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-200 transition">
+  <!-- SIDEBAR NAVIGATION -->
+  <aside id="sideNavbar" class="fixed top-0 left-0 bottom-0 w-72 bg-slate-900 text-white z-50 transform -translate-x-full transition-transform duration-300 p-5 flex flex-col justify-between shadow-2xl">
+    <div class="space-y-6">
+      <!-- Sidebar Header -->
+      <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center font-black text-white text-lg shadow-md">
+            CSWD
+          </div>
+          <div>
+            <h2 class="text-sm font-extrabold text-slate-100 leading-tight">City Welfare Dept.</h2>
+            <p class="text-[11px] text-slate-400">Biñan Registry System</p>
+          </div>
+        </div>
+        <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
           <i class="fa-solid fa-xmark text-lg"></i>
         </button>
       </div>
 
-      <!-- ADMIN SIDEBAR CONTENT -->
-      <div id="adminSidebarContent" class="p-6">
-        <div class="flex flex-col items-center text-center pb-6 border-b border-slate-100">
-          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256" 
-               alt="Admin Profile" 
-               class="w-24 h-24 rounded-full border-4 border-indigo-600 shadow-md object-cover mb-3" />
-          <h3 class="font-bold text-slate-800 text-lg">Atty. Elena Rostata</h3>
-          <p class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full mt-1">CSWD Focal Officer</p>
-          <p class="text-xs text-slate-500 mt-2"><i class="fa-solid fa-location-dot mr-1 text-red-500"></i>Barangay San Vicente</p>
-        </div>
-
-        <nav class="mt-6 space-y-2">
-          <button id="navBtnSoloParent" onclick="switchAdminCategory('solo-parent')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs text-indigo-700 bg-indigo-50 border border-indigo-200 shadow-sm transition">
-            <i class="fa-solid fa-person-breastfeeding text-indigo-600 text-base w-5"></i>
-            <span>Solo Parent</span>
-          </button>
-          <button id="navBtnSeniorCitizen" onclick="switchAdminCategory('senior-citizen')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition">
-            <i class="fa-solid fa-person-cane text-amber-600 text-base w-5"></i>
-            <span>Senior Citizen</span>
-          </button>
-          <button id="navBtnPWD" onclick="switchAdminCategory('pwd')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition">
-            <i class="fa-solid fa-wheelchair text-blue-600 text-base w-5"></i>
-            <span>PWD</span>
-          </button>
-        </nav>
+      <!-- Admin Sidebar Content -->
+      <div id="adminSidebarContent" class="space-y-2">
+        <p class="text-[10px] font-black uppercase text-slate-400 tracking-wider px-2">Program Directories</p>
+        <button id="navBtnSoloParent" onclick="switchAdminCategory('solo-parent')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs text-indigo-700 bg-indigo-50 border border-indigo-200 shadow-sm transition">
+          <i class="fa-solid fa-hands-holding-child text-sm"></i> Solo Parent Directory
+        </button>
+        <button id="navBtnSeniorCitizen" onclick="switchAdminCategory('senior-citizen')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs text-slate-400 hover:bg-slate-800 hover:text-white transition">
+          <i class="fa-solid fa-person-cane text-sm"></i> Senior Citizen Registry
+        </button>
+        <button id="navBtnPWD" onclick="switchAdminCategory('pwd')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs text-slate-400 hover:bg-slate-800 hover:text-white transition">
+          <i class="fa-solid fa-wheelchair text-sm"></i> PWD Assistance Portal
+        </button>
       </div>
 
-      <!-- CLIENT SIDEBAR CONTENT -->
-      <div id="clientSidebarContent" class="p-6 hidden">
-        <div class="flex flex-col items-center text-center pb-6 border-b border-slate-100">
-          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=256" 
-               alt="Client Profile" 
-               class="w-24 h-24 rounded-full border-4 border-emerald-600 shadow-md object-cover mb-3" />
-          <h3 class="font-bold text-slate-800 text-lg">Maria Dela Cruz</h3>
-          <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-location-dot mr-1 text-red-500"></i>Barangay Canlalay</p>
+      <!-- Client Sidebar Content -->
+      <div id="clientSidebarContent" class="space-y-2 hidden">
+        <p class="text-[10px] font-black uppercase text-slate-400 tracking-wider px-2">Member Navigation</p>
+        <div class="p-3 bg-slate-800/80 rounded-xl border border-slate-700/60 text-xs text-slate-300 space-y-2">
+          <div class="flex items-center gap-2 font-bold text-emerald-400">
+            <i class="fa-solid fa-circle-info"></i> Member Registration
+          </div>
+          <p class="text-[11px] leading-relaxed">Fill out the official survey form to submit your profile directly to the CSWD database.</p>
         </div>
-
-        <nav class="mt-6 space-y-2">
-          <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm">
-            <i class="fa-solid fa-file-signature text-emerald-600 text-base w-5"></i>
-            <span>Solo Parent Form</span>
-          </button>
-        </nav>
       </div>
     </div>
 
-    <!-- Page View Switcher -->
-    <div class="p-4 bg-slate-50 border-t border-slate-100">
-      <p class="text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-wider text-center">Page View Switcher</p>
-      <div class="grid grid-cols-2 gap-2 bg-slate-200 p-1 rounded-xl">
-        <button id="btnSwitchAdmin" onclick="setRole('admin')" class="py-1.5 text-xs font-bold rounded-lg bg-white shadow-sm text-indigo-900 transition">Admin Page</button>
-        <button id="btnSwitchClient" onclick="setRole('client')" class="py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition">Client Page</button>
-      </div>
+    <div class="pt-4 border-t border-slate-800 text-center text-[11px] text-slate-500">
+      Biñan CSWD System v2.6
     </div>
   </aside>
 
-  <!-- TOP HEADER -->
-  <header class="bg-gradient-to-r from-brand-headerFrom via-brand-headerVia to-brand-headerTo text-white shadow-xl relative z-30">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-      
-      <!-- Top Navigation Ribbon -->
-      <div class="flex items-center justify-between gap-4 mb-4 pb-3 border-b border-indigo-800/60">
-        <div class="flex items-center gap-3">
-          <button onclick="toggleSidebar()" class="p-2.5 rounded-xl bg-indigo-900/80 hover:bg-indigo-800 text-white transition focus:ring-2 focus:ring-amber-400" title="Open Navigation Drawer">
-            <i class="fa-solid fa-bars text-xl"></i>
-          </button>
-          
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-amber-400/20 border border-amber-300/40 flex items-center justify-center text-amber-300 shadow-inner">
-              <i class="fa-solid fa-building-columns text-xl"></i>
-            </div>
-            <div>
-              <span class="text-[10px] sm:text-xs uppercase tracking-widest text-indigo-200 block font-bold leading-tight">Republic of the Philippines | City of Biñan</span>
-              <h1 class="text-sm sm:text-base font-black text-white tracking-wide leading-tight">CITY SOCIAL WELFARE DEPARTMENT (CSWD)</h1>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3">
-          <span class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            System Online (2026)
-          </span>
-          <button onclick="toggleRoleQuick()" id="roleBadge" class="px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-amber-400 text-slate-950 hover:bg-amber-300 shadow-md transition">
-            Admin View
-          </button>
+  <!-- TOP HEADER / NAVIGATION BAR -->
+  <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition">
+          <i class="fa-solid fa-bars text-base"></i>
+        </button>
+        <div class="flex items-center gap-2.5">
+          <i class="fa-solid fa-shield-halved text-emerald-400 text-xl"></i>
+          <span class="font-black text-sm sm:text-base tracking-wide uppercase">CSWD Biñan Portal</span>
         </div>
       </div>
 
-      <!-- Banner Hero Section -->
-      <div class="text-center py-4 sm:py-6">
-        <h2 id="pageBannerTitle" class="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-2">
-          CSWD Admin Management Portal
-        </h2>
-        <p id="pageBannerSubtitle" class="text-xs sm:text-sm text-indigo-200 max-w-2xl mx-auto leading-relaxed">
-          Centralized portal for Social Welfare Services, Barangay Registrations, and Automated Community Support Operations.
-        </p>
-
-        <!-- Search Bar -->
-        <div class="mt-6 max-w-xl mx-auto relative">
-          <div class="relative flex items-center">
-            <i class="fa-solid fa-magnifying-glass absolute left-4 text-slate-400"></i>
-            <input type="text" id="globalSearchInput" onkeyup="filterTable()" placeholder="Search records, control numbers, or resident name..." class="w-full pl-11 pr-4 py-3 bg-white text-slate-800 text-sm rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-400 transition" />
-          </div>
+      <!-- View Switcher Controls -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <div class="bg-slate-800 p-1 rounded-xl flex items-center border border-slate-700 text-xs">
+          <button id="btnSwitchAdmin" onclick="setRole('admin')" class="py-1.5 px-3 font-bold rounded-lg bg-white shadow-sm text-indigo-900 transition">
+            Admin
+          </button>
+          <button id="btnSwitchClient" onclick="setRole('client')" class="py-1.5 px-3 font-bold rounded-lg text-slate-400 hover:text-white transition">
+            Client View
+          </button>
         </div>
+        <button id="roleBadge" onclick="toggleRoleQuick()" class="px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-amber-400 text-slate-950 hover:bg-amber-300 shadow-md transition">
+          Admin View
+        </button>
       </div>
-
     </div>
   </header>
 
-  <!-- MAIN CONTAINER -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+  <!-- PAGE HERO BANNER -->
+  <div class="bg-slate-800 text-white py-6 border-b border-slate-700">
+    <div class="max-w-7xl mx-auto px-4">
+      <h1 id="pageBannerTitle" class="text-xl sm:text-2xl font-black tracking-tight">CSWD Admin Management Portal</h1>
+      <p id="pageBannerSubtitle" class="text-xs sm:text-sm text-slate-300 mt-1">Centralized portal for Social Welfare Services, Barangay Registrations, and Automated Community Support Operations.</p>
+    </div>
+  </div>
 
-    <!-- ==================== ADMIN PAGE CONTENT ==================== -->
+  <!-- GLOBAL ALERT NOTIFICATION BOX -->
+  <div id="formAlert" class="max-w-7xl mx-auto px-4 w-full mt-4 hidden border rounded-2xl p-4 flex items-center gap-3 transition-all shadow-sm">
+    <i id="alertIcon" class="text-xl"></i>
+    <span id="alertMessage" class="text-xs font-semibold"></span>
+  </div>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 py-6 w-full flex-grow flex flex-col gap-6">
+
+    <!-- ==================== ADMIN VIEW SECTION ==================== -->
     <section id="adminPage" class="space-y-6">
       
-      <!-- API URL CONFIGURATION CARD FOR GOOGLE SHEETS -->
-      <div class="bg-amber-50/90 border border-amber-300 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div class="flex items-start gap-3">
-          <div class="p-2.5 bg-amber-500 text-white rounded-xl shadow-sm mt-0.5">
-            <i class="fa-solid fa-link text-lg"></i>
-          </div>
-          <div>
-            <h4 class="text-xs font-extrabold uppercase text-amber-900 tracking-wider">Google Sheets Integration API Config</h4>
-            <p class="text-xs text-amber-800 mt-0.5">Submissions will save directly to tab <span class="font-bold font-mono bg-amber-100 px-1.5 py-0.5 rounded text-amber-950 border border-amber-300">SoloParent</span> in your connected Google Sheet.</p>
+      <!-- API CONFIGURATION & EXPORT BAR -->
+      <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+        <div class="w-full lg:w-1/2 space-y-1">
+          <label class="block text-xs font-bold uppercase text-slate-600">Google Apps Script Web App Endpoint URL</label>
+          <div class="flex gap-2">
+            <input type="url" id="apiUrlInput" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+            <button onclick="saveApiUrl()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap">
+              <i class="fa-solid fa-floppy-disk"></i> Save URL
+            </button>
           </div>
         </div>
-        <div class="w-full md:w-auto flex items-center gap-2">
-          <input type="url" id="apiUrlInput" placeholder="Paste Apps Script Web App URL here..." class="w-full md:w-80 px-3 py-2 text-xs border border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none bg-white font-mono" />
-          <button onclick="saveApiUrl()" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow transition whitespace-nowrap">
-            Save Web App URL
+
+        <div class="flex items-center gap-3 w-full lg:w-auto justify-end">
+          <button onclick="exportToCSV()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow transition flex items-center gap-2">
+            <i class="fa-solid fa-file-csv text-sm"></i> Export CSV
           </button>
         </div>
       </div>
 
-      <!-- Admin Stats Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
-          <div>
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Solo Parents</p>
-            <h3 id="statSoloParents" class="text-2xl font-black text-slate-800 mt-1">1,428</h3>
-            <span class="text-[11px] text-emerald-600 font-bold"><i class="fa-solid fa-arrow-trend-up mr-1"></i>+12% this month</span>
+      <!-- SUMMARY DASHBOARD STATS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-xl font-bold">
+            <i class="fa-solid fa-users"></i>
           </div>
-          <div class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl"><i class="fa-solid fa-person-breastfeeding text-xl"></i></div>
+          <div>
+            <p class="text-xs font-bold uppercase text-slate-500">Total Registered Solo Parents</p>
+            <p id="statSoloParents" class="text-2xl font-black text-slate-800">1,428</p>
+          </div>
         </div>
 
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
-          <div>
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Senior Citizens</p>
-            <h3 class="text-2xl font-black text-slate-800 mt-1">3,890</h3>
-            <span class="text-[11px] text-emerald-600 font-bold"><i class="fa-solid fa-arrow-trend-up mr-1"></i>+5% this month</span>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl font-bold">
+            <i class="fa-solid fa-clipboard-check"></i>
           </div>
-          <div class="p-3 bg-amber-50 text-amber-600 rounded-2xl"><i class="fa-solid fa-person-cane text-xl"></i></div>
+          <div>
+            <p class="text-xs font-bold uppercase text-slate-500">Current Session Submissions</p>
+            <p id="statSubmitted" class="text-2xl font-black text-slate-800">3</p>
+          </div>
         </div>
 
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
-          <div>
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">PWD Members</p>
-            <h3 class="text-2xl font-black text-slate-800 mt-1">954</h3>
-            <span class="text-[11px] text-indigo-600 font-bold"><i class="fa-solid fa-minus mr-1"></i>Stable</span>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4 sm:col-span-2 lg:col-span-1">
+          <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl font-bold">
+            <i class="fa-solid fa-city"></i>
           </div>
-          <div class="p-3 bg-blue-50 text-blue-600 rounded-2xl"><i class="fa-solid fa-wheelchair text-xl"></i></div>
-        </div>
-
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
           <div>
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Submitted Submissions</p>
-            <h3 id="statSubmitted" class="text-2xl font-black text-emerald-600 mt-1">3</h3>
-            <span class="text-[11px] text-emerald-600 font-bold"><i class="fa-solid fa-circle-check mr-1"></i>Synced with Sheet</span>
+            <p class="text-xs font-bold uppercase text-slate-500">Coverage Jurisdiction</p>
+            <p class="text-2xl font-black text-slate-800">24 Barangays</p>
           </div>
-          <div class="p-3 bg-emerald-50 text-emerald-600 rounded-2xl"><i class="fa-solid fa-file-circle-check text-xl"></i></div>
         </div>
       </div>
 
-      <!-- Main Admin Table Section -->
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-          <div>
-            <h3 id="adminTabTitle" class="text-lg font-bold text-slate-800">Solo Parent Database</h3>
-            <p class="text-xs text-slate-500">Registered citizens under Solo Parent Federation - City of Biñan</p>
-          </div>
-          <div class="flex gap-2">
-            <button onclick="exportToCSV()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition flex items-center gap-2 shadow-sm">
-              <i class="fa-solid fa-file-csv text-sm"></i> Export CSV
-            </button>
-            <button onclick="setRole('client')" class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition flex items-center gap-2 shadow-sm">
-              <i class="fa-solid fa-plus text-sm"></i> New Application Form
-            </button>
+      <!-- MAIN DATABASE TABLE CONTAINER -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <!-- Table Header & Filters -->
+        <div class="p-4 sm:p-5 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <h3 id="adminTabTitle" class="text-base font-extrabold text-slate-800">Solo Parent Database</h3>
+          
+          <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+            <!-- Barangay Filter Dropdown -->
+            <select onchange="filterByBarangay(this.value)" class="w-full sm:w-auto px-3 py-2 border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              <option value="ALL">All Barangays</option>
+              <option value="Canlalay">Canlalay</option>
+              <option value="San Vicente">San Vicente</option>
+              <option value="Platero">Platero</option>
+              <option value="Poblacion">Poblacion</option>
+              <option value="Santo Tomas">Santo Tomas</option>
+            </select>
+
+            <!-- Search Input -->
+            <div class="relative w-full sm:w-64">
+              <input type="text" id="globalSearchInput" onkeyup="filterTable()" placeholder="Search name or ID..." class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+            </div>
           </div>
         </div>
 
-        <!-- Filter Pills -->
-        <div class="px-6 py-3 bg-slate-50 border-b border-slate-100 flex gap-2 overflow-x-auto">
-          <button onclick="filterByBarangay('ALL')" class="px-3.5 py-1.5 bg-indigo-600 text-white font-bold text-xs rounded-full shadow-sm">All Barangays</button>
-          <button onclick="filterByBarangay('San Vicente')" class="px-3.5 py-1.5 bg-white text-slate-700 border border-slate-200 font-semibold text-xs rounded-full hover:bg-slate-100 transition">San Vicente</button>
-          <button onclick="filterByBarangay('Canlalay')" class="px-3.5 py-1.5 bg-white text-slate-700 border border-slate-200 font-semibold text-xs rounded-full hover:bg-slate-100 transition">Canlalay</button>
-          <button onclick="filterByBarangay('Platero')" class="px-3.5 py-1.5 bg-white text-slate-700 border border-slate-200 font-semibold text-xs rounded-full hover:bg-slate-100 transition">Platero</button>
-          <button onclick="filterByBarangay('Poblacion')" class="px-3.5 py-1.5 bg-white text-slate-700 border border-slate-200 font-semibold text-xs rounded-full hover:bg-slate-100 transition">Poblacion</button>
-        </div>
-
-        <!-- Responsive Table -->
+        <!-- Table View -->
         <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs text-slate-600" id="recordsTable">
-            <thead class="bg-slate-50 text-slate-700 uppercase font-bold text-[11px] border-b border-slate-200">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-100 text-slate-600 uppercase font-black tracking-wider border-b border-slate-200">
               <tr>
-                <th class="py-3.5 px-4">Control No.</th>
-                <th class="py-3.5 px-4">Member Name</th>
-                <th class="py-3.5 px-4">Barangay</th>
-                <th class="py-3.5 px-4">Classification</th>
-                <th class="py-3.5 px-4">ID Status</th>
-                <th class="py-3.5 px-4">Program Status</th>
-                <th class="py-3.5 px-4 text-right">Actions</th>
+                <th class="py-3 px-4">Control No.</th>
+                <th class="py-3 px-4">Member Name</th>
+                <th class="py-3 px-4">Barangay</th>
+                <th class="py-3 px-4">Classification</th>
+                <th class="py-3 px-4">ID Status</th>
+                <th class="py-3 px-4">Program Status</th>
+                <th class="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100" id="recordsTableBody">
-              <!-- Dynamically populated rows -->
+            <tbody id="recordsTableBody" class="divide-y divide-slate-100">
+              <!-- Rendered via JavaScript -->
             </tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <!-- ==================== CLIENT PAGE CONTENT (SOLO PARENT FORM) ==================== -->
-    <section id="clientPage" class="hidden max-w-4xl mx-auto">
-      
-      <!-- Submission Alert Container -->
-      <div id="formAlert" class="hidden mb-6 p-4 rounded-2xl shadow-md border text-sm flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <i id="alertIcon" class="text-xl"></i>
-          <span id="alertMessage" class="font-medium"></span>
-        </div>
-        <button onclick="document.getElementById('formAlert').classList.add('hidden')" class="text-slate-500 hover:text-slate-800"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-
-      <form id="soloParentForm" onsubmit="submitSoloParentForm(event)" class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+    <!-- ==================== CLIENT SURVEY FORM SECTION ==================== -->
+    <section id="clientPage" class="hidden">
+      <form id="soloParentForm" onsubmit="submitSoloParentForm(event)" class="bg-white rounded-3xl shadow-xl border border-slate-200 p-6 sm:p-8 space-y-8">
         
-        <!-- Document Branding Header -->
-        <div class="p-6 text-center border-b border-slate-200 bg-slate-50">
-          <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-wide uppercase">SOLO PARENT FEDERATION - CITY OF BIÑAN</h2>
-          <p class="text-xs sm:text-sm font-bold text-slate-700 tracking-wider uppercase mt-1">MEMBER PROFILE AND SURVEY FORM</p>
-        </div>
-
-        <div class="p-6 sm:p-8 space-y-8">
-
-          <!-- TOP METADATA BLOCK -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-200">
-            <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Barangay <span class="text-red-500">*</span></label>
-              <input type="text" name="barangay" id="field_barangay" required placeholder="e.g. Canlalay" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Date <span class="text-red-500">*</span></label>
-              <input type="date" name="date" id="field_date" required class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Control No.</label>
-              <input type="text" name="controlNo" id="field_controlNo" placeholder="e.g. SP-2026-00901" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none font-mono" />
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Interviewer</label>
-              <input type="text" name="interviewer" id="field_interviewer" placeholder="Name of Interviewer / Officer" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
-            </div>
+        <!-- FORM HEADER META SECTION -->
+        <div class="border-b border-slate-200 pb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Barangay <span class="text-red-500">*</span></label>
+            <select name="barangay" required class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+              <option value="">-- Select Barangay --</option>
+              <option value="Canlalay">Canlalay</option>
+              <option value="San Vicente">San Vicente</option>
+              <option value="Platero">Platero</option>
+              <option value="Poblacion">Poblacion</option>
+              <option value="Santo Tomas">Santo Tomas</option>
+              <option value="Malamig">Malamig</option>
+              <option value="Tubigan">Tubigan</option>
+            </select>
           </div>
 
-          <!-- SECTION A: MEMBER INFORMATION -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Date</label>
+            <input type="date" name="date" id="field_date" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Control No.</label>
+            <input type="text" name="controlNo" placeholder="SP-2026-XXXX" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none font-mono" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Interviewer / Officer</label>
+            <input type="text" name="interviewer" placeholder="Name of Officer" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+          </div>
+        </div>
+
+        <div class="space-y-8">
+
+          <!-- SECTION A: GENERAL / PERSONAL INFORMATION -->
           <div>
             <div class="bg-sky-100 text-sky-950 px-4 py-2 font-black text-xs sm:text-sm rounded-xl mb-4 uppercase tracking-wider border border-sky-200 flex items-center gap-2">
-              <i class="fa-solid fa-user-check text-sky-700"></i>
-              <span>A. MEMBER INFORMATION</span>
+              <i class="fa-solid fa-user text-sky-700"></i>
+              <span>A. GENERAL INFORMATION</span>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div class="sm:col-span-3">
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Name of Member <span class="text-red-500">*</span></label>
-                <input type="text" name="memberName" id="field_memberName" required placeholder="Full Name (First Name, Middle Name, Last Name)" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Full Name (Last Name, First Name, Middle Name) <span class="text-red-500">*</span></label>
+                <input type="text" name="memberName" required placeholder="e.g. Santos, Maria Clara" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Sex <span class="text-red-500">*</span></label>
-                <div class="flex flex-wrap gap-3 text-xs pt-1">
-                  <label class="inline-flex items-center gap-1.5 cursor-pointer"><input type="radio" name="sex" value="Male" required class="text-emerald-600 focus:ring-emerald-500" /> Male</label>
-                  <label class="inline-flex items-center gap-1.5 cursor-pointer"><input type="radio" name="sex" value="Female" class="text-emerald-600 focus:ring-emerald-500" /> Female</label>
-                  <label class="inline-flex items-center gap-1.5 cursor-pointer"><input type="radio" name="sex" value="Prefer not to say" class="text-emerald-600 focus:ring-emerald-500" /> Prefer not to say</label>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Sex</label>
+                <div class="flex gap-4 pt-2 text-xs font-medium">
+                  <label class="inline-flex items-center gap-1 cursor-pointer"><input type="radio" name="sex" value="Female" checked class="text-emerald-600" /> Female</label>
+                  <label class="inline-flex items-center gap-1 cursor-pointer"><input type="radio" name="sex" value="Male" class="text-emerald-600" /> Male</label>
                 </div>
               </div>
 
               <div>
                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Age</label>
-                <div class="flex items-center gap-2">
-                  <input type="number" name="age" id="field_age" min="1" max="120" placeholder="Age" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
-                  <span class="text-xs text-slate-500 font-semibold whitespace-nowrap">years old</span>
-                </div>
+                <input type="number" name="age" min="15" max="100" placeholder="e.g. 34" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Contact Number <span class="text-red-500">*</span></label>
-                <input type="tel" name="contactNo" id="field_contactNo" required placeholder="0912 345 6789" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Contact Number</label>
+                <input type="text" name="contactNo" placeholder="0917XXXXXXX" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
               </div>
 
-              <div class="sm:col-span-3">
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Complete Address <span class="text-red-500">*</span></label>
-                <input type="text" name="address" id="field_address" required placeholder="House No., Street, Subdivision, Barangay, City of Biñan, Laguna" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Classification Category</label>
+                <select name="classification" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                  <option value="Spouse Deceased">Spouse Deceased</option>
+                  <option value="Unmarried Parent">Unmarried Parent</option>
+                  <option value="Legal Separation">Legal Separation</option>
+                  <option value="Abandoned">Abandoned Spouse</option>
+                  <option value="Incarcerated Spouse">Incarcerated Spouse</option>
+                </select>
               </div>
 
               <div class="sm:col-span-2">
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Classification of Solo Parent</label>
-                <input type="text" name="classification" id="field_classification" placeholder="e.g. Spouse deceased, Legal separation, Unmarried, Abandonment" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Complete Address</label>
+                <input type="text" name="address" placeholder="House/Block No., Street, Barangay, City" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">No. of Dependents</label>
-                <input type="number" name="dependentsCount" id="field_dependentsCount" min="0" placeholder="0" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Number of Dependents</label>
+                <input type="number" name="dependentsCount" min="0" placeholder="e.g. 2" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
               </div>
 
-              <div class="sm:col-span-3">
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Source of Income / Livelihood</label>
-                <input type="text" name="incomeSource" id="field_incomeSource" placeholder="e.g. Employed, Small Business, Freelance, None" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Source of Income / Employment</label>
+                <input type="text" name="incomeSource" placeholder="e.g. Minimum Wage Employee, Vendor, Freelancer" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
               </div>
             </div>
           </div>
 
-          <!-- SECTION B: DISABILITY INFORMATION -->
+          <!-- SECTION B: DISABILITY PROFILE -->
           <div>
             <div class="bg-sky-100 text-sky-950 px-4 py-2 font-black text-xs sm:text-sm rounded-xl mb-4 uppercase tracking-wider border border-sky-200 flex items-center gap-2">
               <i class="fa-solid fa-wheelchair text-sky-700"></i>
-              <span>B. DISABILITY INFORMATION</span>
+              <span>B. DISABILITY PROFILE</span>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                <label class="block text-xs font-bold text-slate-700 uppercase">Does the member have a disability?</label>
-                <div class="flex gap-6 text-xs">
-                  <label class="inline-flex items-center gap-1.5 cursor-pointer font-medium"><input type="radio" name="hasDisability" value="Yes" class="text-emerald-600" /> Yes</label>
-                  <label class="inline-flex items-center gap-1.5 cursor-pointer font-medium"><input type="radio" name="hasDisability" value="No" checked class="text-emerald-600" /> No</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-xs font-bold text-slate-700 uppercase">Solo Parent Person with Disability?</span>
+                  <div class="flex gap-3 text-xs">
+                    <label class="inline-flex items-center gap-1 cursor-pointer font-medium"><input type="radio" name="hasDisability" value="Yes" class="text-emerald-600" /> Yes</label>
+                    <label class="inline-flex items-center gap-1 cursor-pointer font-medium"><input type="radio" name="hasDisability" value="No" checked class="text-emerald-600" /> No</label>
+                  </div>
                 </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Type of Disability (if any):</label>
-                  <input type="text" name="disabilityType" id="field_disabilityType" placeholder="e.g. Visual, Hearing, Physical" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white" />
-                </div>
+                <input type="text" name="disabilityType" placeholder="Specify disability (if applicable)" class="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
               </div>
 
-              <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                <label class="block text-xs font-bold text-slate-700 uppercase">Does any dependent have a disability?</label>
-                <div class="flex gap-6 text-xs">
-                  <label class="inline-flex items-center gap-1.5 cursor-pointer font-medium"><input type="radio" name="depHasDisability" value="Yes" class="text-emerald-600" /> Yes</label>
-                  <label class="inline-flex items-center gap-1.5 cursor-pointer font-medium"><input type="radio" name="depHasDisability" value="No" checked class="text-emerald-600" /> No</label>
+              <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-xs font-bold text-slate-700 uppercase">Dependent with Disability?</span>
+                  <div class="flex gap-3 text-xs">
+                    <label class="inline-flex items-center gap-1 cursor-pointer font-medium"><input type="radio" name="depHasDisability" value="Yes" class="text-emerald-600" /> Yes</label>
+                    <label class="inline-flex items-center gap-1 cursor-pointer font-medium"><input type="radio" name="depHasDisability" value="No" checked class="text-emerald-600" /> No</label>
+                  </div>
                 </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Type of Disability (if any):</label>
-                  <input type="text" name="depDisabilityType" id="field_depDisabilityType" placeholder="e.g. Speech, Psychosocial" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white" />
-                </div>
+                <input type="text" name="depDisabilityType" placeholder="Specify dependent's disability (if applicable)" class="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
               </div>
             </div>
           </div>
 
-          <!-- SECTION C: SOLO PARENT ID DETAILS -->
+          <!-- SECTION C: SOLO PARENT ID STATUS -->
           <div>
             <div class="bg-sky-100 text-sky-950 px-4 py-2 font-black text-xs sm:text-sm rounded-xl mb-4 uppercase tracking-wider border border-sky-200 flex items-center gap-2">
               <i class="fa-solid fa-id-card text-sky-700"></i>
-              <span>C. SOLO PARENT ID DETAILS</span>
+              <span>C. SOLO PARENT ID INFORMATION</span>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">ID Number</label>
-                <input type="text" name="idNumber" id="field_idNumber" placeholder="e.g. BIN-SP-10928" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none font-mono" />
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Solo Parent ID No.</label>
+                <input type="text" name="idNumber" placeholder="SP-ID-XXXXX" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
               </div>
 
               <div>
                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Expiration Date</label>
-                <input type="date" name="idExpiration" id="field_idExpiration" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+                <input type="date" name="idExpiration" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
               </div>
 
-              <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-2">ID Status</label>
-                <div class="flex gap-6 text-xs">
-                  <label class="inline-flex items-center gap-1.5 cursor-pointer font-medium"><input type="radio" name="idStatus" value="Valid" class="text-emerald-600" /> Valid</label>
-                  <label class="inline-flex items-center gap-1.5 cursor-pointer font-medium"><input type="radio" name="idStatus" value="Expired" class="text-emerald-600" /> Expired</label>
-                </div>
-              </div>
-
-              <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-2">For Renewal</label>
-                <div class="flex gap-6 text-xs">
-                  <label class="inline-flex items-center gap-1.5 cursor-pointer font-medium"><input type="radio" name="forRenewal" value="Yes" class="text-emerald-600" /> Yes</label>
-                  <label class="inline-flex items-center gap-1.5 cursor-pointer font-medium"><input type="radio" name="forRenewal" value="No" class="text-emerald-600" /> No</label>
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">ID Validity Status</label>
+                <div class="flex gap-4 pt-2 text-xs font-medium">
+                  <label class="inline-flex items-center gap-1 cursor-pointer"><input type="radio" name="idStatus" value="Valid" checked class="text-emerald-600" /> Valid</label>
+                  <label class="inline-flex items-center gap-1 cursor-pointer"><input type="radio" name="idStatus" value="Expired" class="text-emerald-600" /> Expired</label>
+                  <label class="inline-flex items-center gap-1 cursor-pointer"><input type="radio" name="idStatus" value="For Renewal" class="text-emerald-600" /> For Renewal</label>
                 </div>
               </div>
             </div>
@@ -583,8 +523,9 @@
         dateInput.value = new Date().toISOString().split('T')[0];
       }
 
-      if (googleScriptUrl) {
-        document.getElementById('apiUrlInput').value = googleScriptUrl;
+      const apiUrlInput = document.getElementById('apiUrlInput');
+      if (googleScriptUrl && apiUrlInput) {
+        apiUrlInput.value = googleScriptUrl;
       }
 
       renderTable(localDatabase);
@@ -594,6 +535,7 @@
       const sidebar = document.getElementById('sideNavbar');
       const backdrop = document.getElementById('sidebarBackdrop');
       
+      if (!sidebar || !backdrop) return;
       const isHidden = sidebar.classList.contains('-translate-x-full');
       if (isHidden) {
         sidebar.classList.remove('-translate-x-full');
@@ -618,33 +560,37 @@
       const btnClient = document.getElementById('btnSwitchClient');
 
       if (role === 'admin') {
-        adminPage.classList.remove('hidden');
-        clientPage.classList.add('hidden');
-        adminSide.classList.remove('hidden');
-        clientSide.classList.add('hidden');
+        adminPage?.classList.remove('hidden');
+        clientPage?.classList.add('hidden');
+        adminSide?.classList.remove('hidden');
+        clientSide?.classList.add('hidden');
 
-        roleBadge.innerText = 'Admin View';
-        roleBadge.className = 'px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-amber-400 text-slate-950 hover:bg-amber-300 shadow-md transition';
+        if (roleBadge) {
+          roleBadge.innerText = 'Admin View';
+          roleBadge.className = 'px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-amber-400 text-slate-950 hover:bg-amber-300 shadow-md transition';
+        }
 
-        bannerTitle.innerText = 'CSWD Admin Management Portal';
-        bannerSubtitle.innerText = 'Centralized portal for Social Welfare Services, Barangay Registrations, and Automated Community Support Operations.';
+        if (bannerTitle) bannerTitle.innerText = 'CSWD Admin Management Portal';
+        if (bannerSubtitle) bannerSubtitle.innerText = 'Centralized portal for Social Welfare Services, Barangay Registrations, and Automated Community Support Operations.';
 
-        btnAdmin.className = 'py-1.5 text-xs font-bold rounded-lg bg-white shadow-sm text-indigo-900 transition';
-        btnClient.className = 'py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition';
+        if (btnAdmin) btnAdmin.className = 'py-1.5 text-xs font-bold rounded-lg bg-white shadow-sm text-indigo-900 transition';
+        if (btnClient) btnClient.className = 'py-1.5 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition';
       } else {
-        adminPage.classList.add('hidden');
-        clientPage.classList.remove('hidden');
-        adminSide.classList.add('hidden');
-        clientSide.classList.remove('hidden');
+        adminPage?.classList.add('hidden');
+        clientPage?.classList.remove('hidden');
+        adminSide?.classList.add('hidden');
+        clientSide?.classList.remove('hidden');
 
-        roleBadge.innerText = 'Client View';
-        roleBadge.className = 'px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-emerald-400 text-slate-950 hover:bg-emerald-300 shadow-md transition';
+        if (roleBadge) {
+          roleBadge.innerText = 'Client View';
+          roleBadge.className = 'px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-emerald-400 text-slate-950 hover:bg-emerald-300 shadow-md transition';
+        }
 
-        bannerTitle.innerText = 'Member Profile Registration Hub';
-        bannerSubtitle.innerText = 'Fill out and submit your official Solo Parent Federation & CSWD survey form below.';
+        if (bannerTitle) bannerTitle.innerText = 'Member Profile Registration Hub';
+        if (bannerSubtitle) bannerSubtitle.innerText = 'Fill out and submit your official Solo Parent Federation & CSWD survey form below.';
 
-        btnClient.className = 'py-1.5 text-xs font-bold rounded-lg bg-white shadow-sm text-emerald-900 transition';
-        btnAdmin.className = 'py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition';
+        if (btnClient) btnClient.className = 'py-1.5 text-xs font-bold rounded-lg bg-white shadow-sm text-emerald-900 transition';
+        if (btnAdmin) btnAdmin.className = 'py-1.5 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition';
       }
     }
 
@@ -653,7 +599,7 @@
     }
 
     function saveApiUrl() {
-      const url = document.getElementById('apiUrlInput').value.trim();
+      const url = document.getElementById('apiUrlInput')?.value.trim();
       if (url) {
         googleScriptUrl = url;
         localStorage.setItem('cswd_google_script_url', url);
@@ -665,6 +611,7 @@
 
     function renderTable(data) {
       const tbody = document.getElementById('recordsTableBody');
+      if (!tbody) return;
       tbody.innerHTML = '';
 
       if (data.length === 0) {
@@ -697,8 +644,10 @@
         tbody.appendChild(row);
       });
 
-      document.getElementById('statSoloParents').innerText = (1428 + localDatabase.length - 3).toLocaleString();
-      document.getElementById('statSubmitted').innerText = localDatabase.length.toString();
+      const statSoloParents = document.getElementById('statSoloParents');
+      const statSubmitted = document.getElementById('statSubmitted');
+      if (statSoloParents) statSoloParents.innerText = (1428 + localDatabase.length - 3).toLocaleString();
+      if (statSubmitted) statSubmitted.innerText = localDatabase.length.toString();
     }
 
     function filterByBarangay(barangay) {
@@ -711,7 +660,7 @@
     }
 
     function filterTable() {
-      const query = document.getElementById('globalSearchInput').value.toLowerCase();
+      const query = document.getElementById('globalSearchInput')?.value.toLowerCase() || '';
       const filtered = localDatabase.filter(x => 
         x.memberName.toLowerCase().includes(query) ||
         x.barangay.toLowerCase().includes(query) ||
@@ -726,19 +675,19 @@
       const b2 = document.getElementById('navBtnSeniorCitizen');
       const b3 = document.getElementById('navBtnPWD');
 
-      b1.className = 'w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs text-slate-600 hover:bg-slate-50 transition';
-      b2.className = 'w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs text-slate-600 hover:bg-slate-50 transition';
-      b3.className = 'w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs text-slate-600 hover:bg-slate-50 transition';
+      if (b1) b1.className = 'w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs text-slate-400 hover:bg-slate-800 hover:text-white transition';
+      if (b2) b2.className = 'w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs text-slate-400 hover:bg-slate-800 hover:text-white transition';
+      if (b3) b3.className = 'w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs text-slate-400 hover:bg-slate-800 hover:text-white transition';
 
       if (cat === 'solo-parent') {
-        title.innerText = 'Solo Parent Database';
-        b1.className = 'w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs text-indigo-700 bg-indigo-50 border border-indigo-200 shadow-sm transition';
+        if (title) title.innerText = 'Solo Parent Database';
+        if (b1) b1.className = 'w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs text-indigo-700 bg-indigo-50 border border-indigo-200 shadow-sm transition';
       } else if (cat === 'senior-citizen') {
-        title.innerText = 'Senior Citizen Registry';
-        b2.className = 'w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs text-amber-700 bg-amber-50 border border-amber-200 shadow-sm transition';
+        if (title) title.innerText = 'Senior Citizen Registry';
+        if (b2) b2.className = 'w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs text-amber-700 bg-amber-50 border border-amber-200 shadow-sm transition';
       } else if (cat === 'pwd') {
-        title.innerText = 'PWD Assistance Portal';
-        b3.className = 'w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs text-blue-700 bg-blue-50 border border-blue-200 shadow-sm transition';
+        if (title) title.innerText = 'PWD Assistance Portal';
+        if (b3) b3.className = 'w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs text-blue-700 bg-blue-50 border border-blue-200 shadow-sm transition';
       }
       toggleSidebar();
     }
@@ -747,6 +696,8 @@
       const alertBox = document.getElementById('formAlert');
       const alertMsg = document.getElementById('alertMessage');
       const alertIcon = document.getElementById('alertIcon');
+
+      if (!alertBox || !alertMsg || !alertIcon) return;
 
       alertBox.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-200', 'text-emerald-900', 'bg-red-50', 'border-red-200', 'text-red-900');
 
@@ -766,39 +717,41 @@
       event.preventDefault();
       
       const submitBtn = document.getElementById('submitBtn');
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Submitting to Google Sheets...`;
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Submitting to Google Sheets...`;
+      }
 
       const form = event.target;
       
       const payload = {
-        barangay: form.querySelector('[name="barangay"]').value,
-        date: form.querySelector('[name="date"]').value,
-        controlNo: form.querySelector('[name="controlNo"]').value,
-        interviewer: form.querySelector('[name="interviewer"]').value,
-        memberName: form.querySelector('[name="memberName"]').value,
+        barangay: form.querySelector('[name="barangay"]')?.value || '',
+        date: form.querySelector('[name="date"]')?.value || '',
+        controlNo: form.querySelector('[name="controlNo"]')?.value || '',
+        interviewer: form.querySelector('[name="interviewer"]')?.value || '',
+        memberName: form.querySelector('[name="memberName"]')?.value || '',
         sex: form.querySelector('input[name="sex"]:checked')?.value || '',
-        age: form.querySelector('[name="age"]').value,
-        contactNo: form.querySelector('[name="contactNo"]').value,
-        address: form.querySelector('[name="address"]').value,
-        classification: form.querySelector('[name="classification"]').value,
-        dependentsCount: form.querySelector('[name="dependentsCount"]').value,
-        incomeSource: form.querySelector('[name="incomeSource"]').value,
+        age: form.querySelector('[name="age"]')?.value || '',
+        contactNo: form.querySelector('[name="contactNo"]')?.value || '',
+        address: form.querySelector('[name="address"]')?.value || '',
+        classification: form.querySelector('[name="classification"]')?.value || '',
+        dependentsCount: form.querySelector('[name="dependentsCount"]')?.value || '',
+        incomeSource: form.querySelector('[name="incomeSource"]')?.value || '',
         hasDisability: form.querySelector('input[name="hasDisability"]:checked')?.value || 'No',
-        disabilityType: form.querySelector('[name="disabilityType"]').value,
+        disabilityType: form.querySelector('[name="disabilityType"]')?.value || '',
         depHasDisability: form.querySelector('input[name="depHasDisability"]:checked')?.value || 'No',
-        depDisabilityType: form.querySelector('[name="depDisabilityType"]').value,
-        idNumber: form.querySelector('[name="idNumber"]').value,
-        idExpiration: form.querySelector('[name="idExpiration"]').value,
+        depDisabilityType: form.querySelector('[name="depDisabilityType"]')?.value || '',
+        idNumber: form.querySelector('[name="idNumber"]')?.value || '',
+        idExpiration: form.querySelector('[name="idExpiration"]')?.value || '',
         idStatus: form.querySelector('input[name="idStatus"]:checked')?.value || '',
         forRenewal: form.querySelector('input[name="forRenewal"]:checked')?.value || '',
         subsidyRecipient: form.querySelector('input[name="subsidyRecipient"]:checked')?.value || 'No',
         inbRecipient: form.querySelector('input[name="inbRecipient"]:checked')?.value || 'No',
         fourPsRecipient: form.querySelector('input[name="fourPsRecipient"]:checked')?.value || 'No',
-        existingSkills: form.querySelector('[name="existingSkills"]').value,
-        skillsTraining: form.querySelector('[name="skillsTraining"]').value,
-        preferredLivelihood: form.querySelector('[name="preferredLivelihood"]').value,
-        remarks: form.querySelector('[name="remarks"]').value
+        existingSkills: form.querySelector('[name="existingSkills"]')?.value || '',
+        skillsTraining: form.querySelector('[name="skillsTraining"]')?.value || '',
+        preferredLivelihood: form.querySelector('[name="preferredLivelihood"]')?.value || '',
+        remarks: form.querySelector('[name="remarks"]')?.value || ''
       };
 
       localDatabase.unshift({
@@ -812,14 +765,17 @@
       });
       renderTable(localDatabase);
 
-      const targetUrl = googleScriptUrl || document.getElementById('apiUrlInput').value.trim();
+      const targetUrl = googleScriptUrl || document.getElementById('apiUrlInput')?.value.trim();
 
       if (!targetUrl) {
         showAlert('Submitted locally! (Tip: Paste your Google Apps Script Web App URL in Admin Settings to record directly into tab "SoloParent").', 'success');
         form.reset();
-        document.getElementById('field_date').value = new Date().toISOString().split('T')[0];
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Submit Survey Form to Google Sheets`;
+        const dateInput = document.getElementById('field_date');
+        if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Submit Survey Form to Google Sheets`;
+        }
         return;
       }
 
@@ -827,19 +783,22 @@
         await fetch(targetUrl, {
           method: 'POST',
           mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify(payload)
         });
 
         showAlert('Survey Form submitted successfully! Your data was recorded into Google Sheets tab "SoloParent".', 'success');
         form.reset();
-        document.getElementById('field_date').value = new Date().toISOString().split('T')[0];
+        const dateInput = document.getElementById('field_date');
+        if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
       } catch (err) {
         console.error('Submission error:', err);
         showAlert('Network error sending to Google Sheets: ' + err.message + '. (Record saved in local session)', 'error');
       } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Submit Survey Form to Google Sheets`;
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Submit Survey Form to Google Sheets`;
+        }
       }
     }
 
@@ -855,6 +814,37 @@
       a.href = url;
       a.download = 'CSWD_Solo_Parent_Registry_2026.csv';
       a.click();
+    }
+
+    async function handleLogin(usernameInput, passwordInput) {
+      const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw1O3MPFomu4LoHN-oj0fhAc8lhp3aWDkOlCtjVYvOefeTKyT3M7WbR2AFlEokby_te/exec";
+
+      try {
+        const response = await fetch(APPS_SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "login",
+            username: usernameInput,
+            password: passwordInput
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.result === "success") {
+          localStorage.setItem("cswd_user", JSON.stringify(data.user));
+          if (data.user.role.toLowerCase() === "admin") {
+            window.location.href = "admin-dashboard.html";
+          } else {
+            window.location.href = "user-dashboard.html";
+          }
+        } else {
+          alert(data.message || "Invalid username or password.");
+        }
+      } catch (err) {
+        console.error("Login request failed:", err);
+      }
     }
   </script>
 </body>
