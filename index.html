@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Community Portal</title>
-  <link rel="manifest" href="manifest.json">
+  <title>CSWD Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans">
@@ -12,7 +11,7 @@
   <!-- LOGIN PAGE -->
   <div id="page-login" class="min-h-screen flex items-center justify-center p-4">
     <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-      <h2 class="text-2xl font-bold mb-6 text-center text-blue-600">Portal Login</h2>
+      <h2 class="text-2xl font-bold mb-6 text-center text-blue-600">CSWD Portal Login</h2>
       <form id="loginForm" class="space-y-4">
         <div>
           <label class="block text-sm font-medium">Username</label>
@@ -22,16 +21,15 @@
           <label class="block text-sm font-medium">Password</label>
           <input type="password" id="loginPass" class="w-full border p-2 rounded mt-1" required>
         </div>
-        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Sign In</button>
+        <button type="submit" id="loginBtn" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Sign In</button>
       </form>
     </div>
   </div>
 
   <!-- ADMIN DASHBOARD -->
   <div id="page-admin" class="hidden min-h-screen flex flex-col md:flex-row">
-    <!-- Sidebar -->
     <aside class="w-full md:w-64 bg-slate-800 text-white p-4">
-      <h1 class="text-xl font-bold mb-6">Admin Panel</h1>
+      <h1 class="text-xl font-bold mb-6">CSWD Admin</h1>
       <nav class="space-y-2">
         <button onclick="switchAdminSubpage('home')" class="block w-full text-left p-2 rounded hover:bg-slate-700">Home</button>
         <button onclick="switchAdminSubpage('announcement')" class="block w-full text-left p-2 rounded hover:bg-slate-700">Announcement</button>
@@ -39,20 +37,19 @@
         <button onclick="switchAdminSubpage('pwd')" class="block w-full text-left p-2 rounded hover:bg-slate-700">PWD Data</button>
         <button onclick="switchAdminSubpage('senior')" class="block w-full text-left p-2 rounded hover:bg-slate-700">Senior Citizens Data</button>
       </nav>
-      <button onclick="logout()" class="mt-8 text-red-400 hover:underline">Logout</button>
+      <button onclick="logout()" class="mt-8 text-red-400 hover:underline block">Logout</button>
     </aside>
-    <!-- Content Area -->
     <main class="flex-1 p-6">
       <div id="admin-sub-home">
-        <h2 class="text-2xl font-bold">Admin Overview</h2>
-        <p class="mt-2 text-gray-600">Select an option from the sidebar to manage system data.</p>
+        <h2 class="text-2xl font-bold">Admin Dashboard</h2>
+        <p class="mt-2 text-gray-600">Welcome. Choose a tab from the sidebar navigation to view and manage records.</p>
       </div>
       <div id="admin-sub-announcement" class="hidden">
-        <h2 class="text-2xl font-bold mb-4">Manage Announcements</h2>
+        <h2 class="text-2xl font-bold mb-4">Post Announcement</h2>
         <form id="announcementForm" class="bg-white p-4 rounded shadow space-y-4 max-w-lg">
-          <input type="text" id="annTitle" placeholder="Title" class="w-full border p-2 rounded" required>
-          <textarea id="annContent" placeholder="Content" class="w-full border p-2 rounded" required></textarea>
-          <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Post Announcement</button>
+          <input type="text" id="annTitle" placeholder="Announcement Title" class="w-full border p-2 rounded" required>
+          <textarea id="annContent" placeholder="Announcement Content" class="w-full border p-2 rounded h-32" required></textarea>
+          <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Publish</button>
         </form>
       </div>
       <div id="admin-sub-soloparent" class="hidden">
@@ -61,71 +58,73 @@
       </div>
       <div id="admin-sub-pwd" class="hidden">
         <h2 class="text-2xl font-bold mb-4">PWD Records</h2>
-        <div id="data-pwd-table" class="bg-white p-4 rounded shadow overflow-x-auto">Loading...</div>
+        <div id="data-pwd-table" class="bg-white p-4 rounded shadow overflow-x-auto">No PWD Tab configured yet.</div>
       </div>
       <div id="admin-sub-senior" class="hidden">
         <h2 class="text-2xl font-bold mb-4">Senior Citizens Records</h2>
-        <div id="data-senior-table" class="bg-white p-4 rounded shadow overflow-x-auto">Loading...</div>
+        <div id="data-senior-table" class="bg-white p-4 rounded shadow overflow-x-auto">No Senior Citizen Tab configured yet.</div>
       </div>
     </main>
   </div>
 
   <!-- CLIENT DASHBOARD -->
   <div id="page-client" class="hidden min-h-screen flex flex-col md:flex-row">
-    <!-- Sidebar -->
     <aside class="w-full md:w-64 bg-blue-900 text-white p-4">
       <h1 class="text-xl font-bold mb-6">Client Portal</h1>
       <nav class="space-y-2">
         <button onclick="switchClientSubpage('home')" class="block w-full text-left p-2 rounded hover:bg-blue-800">Home</button>
         <button onclick="switchClientSubpage('form')" class="block w-full text-left p-2 rounded hover:bg-blue-800">Application Form</button>
       </nav>
-      <button onclick="logout()" class="mt-8 text-red-300 hover:underline">Logout</button>
+      <button onclick="logout()" class="mt-8 text-red-300 hover:underline block">Logout</button>
     </aside>
-    <!-- Content Area -->
     <main class="flex-1 p-6">
       <div id="client-sub-home">
         <h2 class="text-2xl font-bold mb-4">Announcements</h2>
         <div id="client-announcements-list" class="space-y-4">Loading announcements...</div>
       </div>
       <div id="client-sub-form" class="hidden">
-        <h2 id="client-form-title" class="text-2xl font-bold mb-4">Application Form</h2>
-        <form id="dynamicClientForm" class="bg-white p-6 rounded shadow max-w-lg space-y-4">
-          <!-- Dynamic Form Inputs Inserted Via JS -->
-        </form>
+        <h2 id="client-form-title" class="text-2xl font-bold mb-4">Registration Form</h2>
+        <div id="formContainer"></div>
       </div>
     </main>
   </div>
 
   <script>
-    const API_URL = "YOUR_DEPLOYED_GOOGLE_APPS_SCRIPT_WEB_APP_URL";
+    // PASTE YOUR GOOGLE APPS SCRIPT EXEC WEB APP URL HERE:
+    const API_URL = "https://script.google.com/macros/s/YOUR_DEPLOYED_SCRIPT_ID/exec"; 
+
     let currentUser = null;
 
-    // Service Worker Registration
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
-    }
-
-    // Login Handler
+    // Login Submission
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const loginBtn = document.getElementById('loginBtn');
+      loginBtn.innerText = "Authenticating...";
+      
       const username = document.getElementById('loginUser').value;
       const password = document.getElementById('loginPass').value;
 
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'login', username, password })
-      });
-      const data = await res.json();
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'login', username, password })
+        });
+        const data = await res.json();
 
-      if (data.success) {
-        currentUser = data.user;
-        routeUser(data.user);
-      } else {
-        alert(data.message);
+        if (data.success) {
+          currentUser = data.user;
+          routeUser(data.user);
+        } else {
+          alert(data.message);
+        }
+      } catch(err) {
+        alert("Connection Error: Check API URL deployment.");
+      } finally {
+        loginBtn.innerText = "Sign In";
       }
     });
 
-    // Routing Logic
     function routeUser(user) {
       document.getElementById('page-login').classList.add('hidden');
       if (user.role === 'Admin') {
@@ -135,101 +134,162 @@
         document.getElementById('page-client').classList.remove('hidden');
         switchClientSubpage('home');
         loadAnnouncements();
-        renderClientForm(user.clientType);
+        renderClientForm(user);
       }
     }
 
-    // Admin Subpage Routing
     function switchAdminSubpage(tab) {
       ['home', 'announcement', 'soloparent', 'pwd', 'senior'].forEach(t => {
         document.getElementById(`admin-sub-${t}`).classList.add('hidden');
       });
       document.getElementById(`admin-sub-${tab}`).classList.remove('hidden');
 
-      if (['soloparent', 'pwd', 'senior'].includes(tab)) {
-        loadAdminTableData(tab);
+      if (tab === 'soloparent') {
+        loadAdminTableData('SoloParent', 'data-soloparent-table');
       }
     }
 
-    // Client Subpage Routing
     function switchClientSubpage(tab) {
       document.getElementById('client-sub-home').classList.add('hidden');
       document.getElementById('client-sub-form').classList.add('hidden');
       document.getElementById(`client-sub-${tab}`).classList.remove('hidden');
     }
 
-    // Dynamic Form Rendering Based on Client Type
-    function renderClientForm(type) {
-      const form = document.getElementById('dynamicClientForm');
-      document.getElementById('client-form-title').innerText = `${type} Registration Form`;
+    // Dynamic Form render matching Solo Parent columns
+    function renderClientForm(user) {
+      const container = document.getElementById('formContainer');
+      document.getElementById('client-form-title').innerText = `${user.clientType} Registration Form`;
 
-      let targetTab = "SoloParent";
-      if (type === "PWD") targetTab = "PWD";
-      if (type === "Senior Citizen") targetTab = "SeniorCitizen";
+      if (user.clientType === "Solo Parent") {
+        container.innerHTML = `
+          <form id="soloParentForm" class="bg-white p-6 rounded shadow max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium">Barangay</label>
+              <input type="text" name="barangay" value="${user.barangay || ''}" class="w-full border p-2 rounded mt-1">
+            </div>
+            <div>
+              <label class="block text-sm font-medium">Date</label>
+              <input type="date" name="date" class="w-full border p-2 rounded mt-1">
+            </div>
+            <div>
+              <label class="block text-sm font-medium">Member Name</label>
+              <input type="text" name="memberName" value="${user.fullname || ''}" class="w-full border p-2 rounded mt-1" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium">Sex</label>
+              <select name="sex" class="w-full border p-2 rounded mt-1">
+                <option value="Female">Female</option>
+                <option value="Male">Male</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium">Age</label>
+              <input type="number" name="age" class="w-full border p-2 rounded mt-1">
+            </div>
+            <div>
+              <label class="block text-sm font-medium">Contact Number</label>
+              <input type="text" name="contactNumber" value="${user.contact || ''}" class="w-full border p-2 rounded mt-1">
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium">Classification of Solo Parent</label>
+              <input type="text" name="classification" class="w-full border p-2 rounded mt-1">
+            </div>
+            <div>
+              <label class="block text-sm font-medium">No. of Dependents</label>
+              <input type="number" name="noOfDependents" class="w-full border p-2 rounded mt-1">
+            </div>
+            <div>
+              <label class="block text-sm font-medium">Source of Income / Livelihood</label>
+              <input type="text" name="sourceOfIncome" class="w-full border p-2 rounded mt-1">
+            </div>
+            <div class="md:col-span-2">
+              <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 w-full">Submit Application</button>
+            </div>
+          </form>
+        `;
 
-      form.innerHTML = `
-        <input type="hidden" name="tabName" value="${targetTab}">
-        <div>
-          <label class="block text-sm font-medium">Full Name</label>
-          <input type="text" name="fullName" class="w-full border p-2 rounded mt-1" required>
-        </div>
-        <div>
-          <label class="block text-sm font-medium">Contact Number</label>
-          <input type="text" name="contact" class="w-full border p-2 rounded mt-1" required>
-        </div>
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Submit Registration</button>
-      `;
+        document.getElementById('soloParentForm').onsubmit = async (e) => {
+          e.preventDefault();
+          const f = e.target;
+          const formData = {
+            barangay: f.barangay.value,
+            date: f.date.value,
+            memberName: f.memberName.value,
+            sex: f.sex.value,
+            age: f.age.value,
+            contactNumber: f.contactNumber.value,
+            classification: f.classification.value,
+            noOfDependents: f.noOfDependents.value,
+            sourceOfIncome: f.sourceOfIncome.value
+          };
 
-      form.onsubmit = async (e) => {
-        e.preventDefault();
-        const formData = {
-          username: currentUser.username,
-          fullName: form.fullName.value,
-          contact: form.contact.value
+          const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: 'submitSoloParent', formData })
+          });
+          const result = await res.json();
+          alert(result.message);
         };
-
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          body: JSON.stringify({ action: 'submitForm', tabName: targetTab, formData })
-        });
-        const result = await res.json();
-        alert(result.message);
-      };
+      } else {
+        container.innerHTML = `<p class="text-gray-600">Form for ${user.clientType} is currently under development.</p>`;
+      }
     }
+
+    // Post Announcement (Admin)
+    document.getElementById('announcementForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const title = document.getElementById('annTitle').value;
+      const content = document.getElementById('annContent').value;
+
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'postAnnouncement', title, content })
+      });
+      const data = await res.json();
+      alert(data.message);
+      document.getElementById('announcementForm').reset();
+    });
 
     // Fetch Announcements
     async function loadAnnouncements() {
       const res = await fetch(`${API_URL}?action=getAnnouncements`);
       const data = await res.json();
       const container = document.getElementById('client-announcements-list');
+      
+      if(!data.length) {
+        container.innerHTML = "<p>No announcements found.</p>";
+        return;
+      }
+
       container.innerHTML = data.map(item => `
         <div class="bg-white p-4 rounded shadow">
-          <h3 class="font-bold text-lg">${item.Title}</h3>
-          <p class="text-xs text-gray-500 mb-2">${item.Date}</p>
-          <p class="text-gray-700">${item.Content}</p>
+          <h3 class="font-bold text-lg text-blue-900">${item.Title || ''}</h3>
+          <p class="text-xs text-gray-400 mb-2">${item.Timestamp || ''}</p>
+          <p class="text-gray-700">${item.Content || ''}</p>
         </div>
       `).join('');
     }
 
     // Fetch Table Data for Admin
-    async function loadAdminTableData(type) {
-      const tabMap = { soloparent: 'SoloParent', pwd: 'PWD', senior: 'SeniorCitizen' };
-      const res = await fetch(`${API_URL}?action=getData&tabName=${tabMap[type]}`);
+    async function loadAdminTableData(tabName, targetId) {
+      const res = await fetch(`${API_URL}?action=getData&tabName=${tabName}`);
       const data = await res.json();
-      const container = document.getElementById(`data-${type}-table`);
+      const container = document.getElementById(targetId);
 
       if (!data.length) {
-        container.innerHTML = "<p>No data found.</p>";
+        container.innerHTML = "<p class='p-2 text-gray-500'>No records found.</p>";
         return;
       }
 
       const headers = Object.keys(data[0]);
-      let html = `<table class="w-full text-left border-collapse"><thead><tr>`;
-      headers.forEach(h => html += `<th class="border-b p-2 font-semibold">${h}</th>`);
+      let html = `<table class="w-full text-left text-sm border-collapse"><thead><tr class="bg-gray-200">`;
+      headers.forEach(h => html += `<th class="border p-2 font-semibold">${h}</th>`);
       html += `</tr></thead><tbody>`;
       data.forEach(row => {
-        html += `<tr>`;
-        headers.forEach(h => html += `<td class="border-b p-2">${row[h]}</td>`);
+        html += `<tr class="hover:bg-gray-50">`;
+        headers.forEach(h => html += `<td class="border p-2">${row[h]}</td>`);
         html += `</tr>`;
       });
       html += `</tbody></table>`;
