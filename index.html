@@ -45,10 +45,25 @@
           <label class="block text-xs font-semibold text-gray-600 mb-1">Username</label>
           <input type="text" id="loginUsername" required class="w-full p-3 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
         </div>
+        
         <div>
           <label class="block text-xs font-semibold text-gray-600 mb-1">Password</label>
-          <input type="password" id="loginPassword" required class="w-full p-3 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
+          <div class="relative">
+            <input type="password" id="loginPassword" required class="w-full p-3 pr-10 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
+            <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand-purple focus:outline-none transition">
+              <i id="togglePasswordIcon" class="fa-solid fa-eye"></i>
+            </button>
+          </div>
         </div>
+
+        <!-- REMEMBER ME CHECKBOX -->
+        <div class="flex items-center justify-between text-xs">
+          <label class="flex items-center gap-2 cursor-pointer text-gray-600 select-none">
+            <input type="checkbox" id="rememberMe" class="w-4 h-4 text-brand-purple rounded border-gray-300 focus:ring-brand-purple cursor-pointer">
+            <span>Remember me</span>
+          </label>
+        </div>
+
         <button type="submit" id="loginBtn" class="w-full py-3 bg-gradient-to-r from-brand-blue via-brand-indigo to-brand-purple text-white font-semibold rounded-xl shadow-lg shadow-brand-indigo/30 hover:brightness-110 transition flex items-center justify-center gap-2 text-sm">
           <span>Sign In</span>
           <i class="fa-solid fa-right-to-bracket"></i>
@@ -75,13 +90,13 @@
         </div>
 
         <div class="flex items-center gap-3">
-          <div class="hidden sm:block text-right">
+          <div class="text-right">
             <div id="navUserFullname" class="text-xs font-semibold text-gray-800">User</div>
             <div id="navUserRole" class="text-[10px] text-gray-500">Role</div>
           </div>
-          <button type="button" onclick="toggleView()" class="px-3 py-1.5 text-xs bg-brand-purple/10 text-brand-purple font-semibold rounded-xl hover:bg-brand-purple/20 transition flex items-center gap-1.5">
+          <button type="button" id="viewToggleBtn" onclick="toggleView()" class="hidden px-3 py-1.5 text-xs bg-brand-purple/10 text-brand-purple font-semibold rounded-xl hover:bg-brand-purple/20 transition flex items-center gap-1.5">
             <i class="fa-solid fa-arrows-rotate"></i>
-            <span id="viewToggleText">Client Survey Form</span>
+            <span id="viewToggleText">Switch View</span>
           </button>
           <button type="button" onclick="handleLogout()" class="px-3 py-1.5 text-xs bg-red-50 text-red-600 font-semibold rounded-xl hover:bg-red-100 transition flex items-center gap-1.5" title="Sign Out">
             <i class="fa-solid fa-arrow-right-from-bracket"></i>
@@ -96,7 +111,19 @@
       <!-- ========================================== -->
       <!-- ADMIN DASHBOARD VIEW                       -->
       <!-- ========================================== -->
-      <section id="adminDashboardView" class="space-y-6">
+      <section id="adminDashboardView" class="hidden space-y-6">
+        <!-- Header & Realtime Indicator -->
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-bold text-gray-800">Administrator Dashboard</h2>
+          <div class="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-full border border-emerald-200">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span>Live Syncing (10s)</span>
+          </div>
+        </div>
+
         <!-- Stats Grid -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
@@ -159,7 +186,7 @@
             </table>
             <div id="emptyTableNotice" class="p-8 text-center text-gray-400 text-xs">
               <i class="fa-solid fa-folder-open text-3xl mb-2 text-gray-300"></i>
-              <p>No records found. Click "Client Survey Form" to add standard records.</p>
+              <p>No records found.</p>
             </div>
           </div>
         </div>
@@ -369,7 +396,7 @@
             </div>
 
             <div class="pt-4 border-t border-gray-200 flex justify-end gap-3">
-              <button type="button" onclick="toggleView()" class="px-5 py-2.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition">
+              <button type="button" onclick="handleLogout()" class="px-5 py-2.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition">
                 Cancel
               </button>
               <button type="submit" id="submitFormBtn" class="px-6 py-2.5 text-sm bg-gradient-to-r from-brand-blue via-brand-indigo to-brand-purple hover:brightness-110 text-white font-semibold rounded-xl shadow-md shadow-brand-indigo/20 transition flex items-center gap-2">
@@ -389,25 +416,63 @@
   <!-- 3. JAVASCRIPT LOGIC & CONTROLLERS          -->
   <!-- ========================================== -->
   <script>
-    // Configured Google Apps Script Web App Deployment Endpoint
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw1O3MPFomu4LoHN-oj0fhAc8lhp3aWDkOlCtjVYvOefeTKyT3M7WbR2AFlEokby_te/exec";
 
-    // System State Variables
-    let currentAppView = 'admin'; // 'admin' or 'client'
+    let currentAppView = 'admin';
     let recordsStore = [];
+    let realtimeTimer = null; // Background polling timer reference
 
-    // On Page Load Initialization
     document.addEventListener("DOMContentLoaded", () => {
       const dateEl = document.getElementById("f_date");
       if (dateEl) dateEl.valueAsDate = new Date();
+      
+      // Load Remembered Username if exists
+      const savedUser = localStorage.getItem("cswd_remembered_username");
+      if (savedUser) {
+        document.getElementById("loginUsername").value = savedUser;
+        document.getElementById("rememberMe").checked = true;
+      }
+
       checkAuthState();
     });
 
-    // Check Authentication & User Profile
+    // 1. Password Visibility Toggle Function
+    function togglePasswordVisibility() {
+      const passInput = document.getElementById("loginPassword");
+      const icon = document.getElementById("togglePasswordIcon");
+      if (passInput.type === "password") {
+        passInput.type = "text";
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+      } else {
+        passInput.type = "password";
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+      }
+    }
+
+    // 2. Realtime Background Polling Start/Stop
+    function startRealtimePolling() {
+      stopRealtimePolling(); // Avoid duplicate intervals
+      realtimeTimer = setInterval(() => {
+        if (currentAppView === 'admin' && !document.hidden) {
+          loadRecords(true); // Silent background fetch
+        }
+      }, 10000); // Syncs every 10 seconds
+    }
+
+    function stopRealtimePolling() {
+      if (realtimeTimer) {
+        clearInterval(realtimeTimer);
+        realtimeTimer = null;
+      }
+    }
+
     function checkAuthState() {
       const user = JSON.parse(localStorage.getItem("cswd_active_user"));
 
       if (!user) {
+        stopRealtimePolling();
         document.getElementById("loginScreen").classList.remove("hidden");
         document.getElementById("mainApp").classList.add("hidden");
       } else {
@@ -417,23 +482,50 @@
         document.getElementById("navUserFullname").textContent = user.fullname || user.username;
         document.getElementById("navUserRole").textContent = user.role || "User";
 
-        if (user.barangay && document.getElementById("f_barangay")) {
-          document.getElementById("f_barangay").value = user.barangay;
-        }
-        if (user.fullname && document.getElementById("f_interviewer")) {
-          document.getElementById("f_interviewer").value = user.fullname;
-        }
+        const adminSec = document.getElementById("adminDashboardView");
+        const clientSec = document.getElementById("clientFormView");
+        const toggleBtn = document.getElementById("viewToggleBtn");
 
-        loadRecords();
+        const isAdmin = (user.role || '').toLowerCase() === 'admin';
+
+        if (isAdmin) {
+          // ADMIN ROLE: Show Admin Dashboard only
+          currentAppView = 'admin';
+          adminSec.classList.remove("hidden");
+          clientSec.classList.add("hidden");
+          if (toggleBtn) toggleBtn.classList.add("hidden");
+          
+          loadRecords();
+          startRealtimePolling(); // Start real-time sync for Admin view
+        } else {
+          // CLIENT ROLE: Show Client Form only
+          currentAppView = 'client';
+          adminSec.classList.add("hidden");
+          clientSec.classList.remove("hidden");
+          if (toggleBtn) toggleBtn.classList.add("hidden");
+          stopRealtimePolling();
+
+          // Auto-fill Client inputs from account session
+          if (user.barangay && document.getElementById("f_barangay")) {
+            document.getElementById("f_barangay").value = user.barangay;
+          }
+          if (user.fullname && document.getElementById("f_interviewer")) {
+            document.getElementById("f_interviewer").value = user.fullname;
+          }
+          // Set classification based on Column H (Type_of_client)
+          if (user.typeOfClient && document.getElementById("f_classification")) {
+            document.getElementById("f_classification").value = user.typeOfClient;
+          }
+        }
       }
     }
 
-    // Login Form Handler
     async function handleLogin(e) {
       e.preventDefault();
       
       const username = document.getElementById("loginUsername").value.trim();
       const password = document.getElementById("loginPassword").value.trim();
+      const rememberMe = document.getElementById("rememberMe").checked;
       const alertBox = document.getElementById("loginAlert");
       const btn = document.getElementById("loginBtn");
 
@@ -459,6 +551,13 @@
         const resData = await response.json();
 
         if (resData.result === "success") {
+          // Handle "Remember Me"
+          if (rememberMe) {
+            localStorage.setItem("cswd_remembered_username", username);
+          } else {
+            localStorage.removeItem("cswd_remembered_username");
+          }
+
           localStorage.setItem("cswd_active_user", JSON.stringify(resData.user));
           showNotification(alertBox, "Login successful!", "success");
           setTimeout(() => {
@@ -477,8 +576,7 @@
       }
     }
 
-    // Fetch Existing Records from Backend
-    async function loadRecords() {
+    async function loadRecords(isSilent = false) {
       try {
         const response = await fetch(SCRIPT_URL, {
           method: "POST",
@@ -490,13 +588,12 @@
           recordsStore = resData.records;
         }
       } catch (err) {
-        console.warn("Could not load initial records from backend:", err);
+        if (!isSilent) console.warn("Could not load initial records from backend:", err);
       } finally {
         renderTable();
       }
     }
 
-    // Survey Form Submission Handler
     async function submitSoloParentForm(e) {
       e.preventDefault();
 
@@ -560,8 +657,6 @@
 
           setTimeout(() => {
             alertBox.classList.add("hidden");
-            if (currentAppView === 'client') toggleView();
-            renderTable();
           }, 1200);
 
         } else {
@@ -576,27 +671,6 @@
       }
     }
 
-    // Toggle View Between Admin Dashboard & Client Intake Form
-    function toggleView() {
-      const adminSec = document.getElementById("adminDashboardView");
-      const clientSec = document.getElementById("clientFormView");
-      const btnText = document.getElementById("viewToggleText");
-
-      if (currentAppView === 'admin') {
-        currentAppView = 'client';
-        adminSec.classList.add("hidden");
-        clientSec.classList.remove("hidden");
-        btnText.textContent = "Admin Dashboard";
-      } else {
-        currentAppView = 'admin';
-        clientSec.classList.add("hidden");
-        adminSec.classList.remove("hidden");
-        btnText.textContent = "Client Survey Form";
-        renderTable();
-      }
-    }
-
-    // Render Data Table & Statistics Summary
     function renderTable() {
       const tbody = document.getElementById("recordsTableBody");
       const notice = document.getElementById("emptyTableNotice");
@@ -640,7 +714,6 @@
       document.getElementById("statPwd").textContent = recordsStore.filter(r => r.hasDisability === 'Yes' || r.depHasDisability === 'Yes').length;
     }
 
-    // CSV Exporter (RFC 4180 Standard Compliant)
     function exportToCSV() {
       if (recordsStore.length === 0) {
         alert("No records available to export.");
@@ -667,13 +740,12 @@
       a.click();
     }
 
-    // Logout Helper
     function handleLogout() {
+      stopRealtimePolling();
       localStorage.removeItem("cswd_active_user");
       location.reload();
     }
 
-    // Notification UI Helper
     function showNotification(container, message, type) {
       container.classList.remove("hidden", "bg-red-50", "text-red-700", "border-red-200", "bg-brand-purple/10", "text-brand-indigo", "border-brand-purple/30");
       if (type === "error") {
@@ -684,7 +756,6 @@
       container.textContent = message;
     }
 
-    // XSS Escape Utility
     function escapeHtml(str) {
       if (!str) return '';
       return String(str)
