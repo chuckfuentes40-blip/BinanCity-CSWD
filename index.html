@@ -74,12 +74,6 @@
           </div>
         </div>
 
-        <!-- Web App Endpoint URL Config -->
-        <div class="pt-2 border-t border-gray-100">
-          <label class="block text-xs font-medium text-gray-500 mb-1">Google Apps Script Web App URL</label>
-          <input type="url" id="scriptUrlInput" class="w-full text-xs p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent" placeholder="https://script.google.com/macros/s/.../exec">
-        </div>
-
         <button type="submit" id="loginBtn" class="w-full bg-gradient-to-r from-brand-blue via-brand-indigo to-brand-purple hover:opacity-95 text-white font-semibold py-3 rounded-xl shadow-lg shadow-brand-indigo/25 hover:shadow-xl transition duration-200 flex items-center justify-center gap-2">
           <span>Sign In</span>
           <i class="fa-solid fa-right-to-bracket"></i>
@@ -454,20 +448,22 @@
   <!-- 3. JAVASCRIPT LOGIC & CONTROLLERS          -->
   <!-- ========================================== -->
   <script>
+    // ==========================================
+    // BACKEND ENDPOINT CONFIGURATION
+    // Replace the URL string below with your deployed Google Apps Script Web App URL
+    // ==========================================
+    const SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
+
     // System State Variables
     let currentAppView = 'admin'; // 'admin' or 'client'
     let recordsStore = [];
 
     // On Page Load Initialization
     document.addEventListener("DOMContentLoaded", () => {
-      // 1. Load saved Apps Script URL from local storage
-      const savedUrl = localStorage.getItem("cswd_script_url") || "";
-      document.getElementById("scriptUrlInput").value = savedUrl;
-
-      // 2. Default Today's Date in Survey Form
+      // 1. Default Today's Date in Survey Form
       document.getElementById("f_date").valueAsDate = new Date();
 
-      // 3. FORCE AUTHENTICATION CHECK
+      // 2. FORCE AUTHENTICATION CHECK
       checkAuthState();
     });
 
@@ -500,25 +496,21 @@
     async function handleLogin(e) {
       e.preventDefault();
       
-      const scriptUrl = document.getElementById("scriptUrlInput").value.trim();
       const username = document.getElementById("loginUsername").value.trim();
       const password = document.getElementById("loginPassword").value.trim();
       const alertBox = document.getElementById("loginAlert");
       const btn = document.getElementById("loginBtn");
 
-      if (!scriptUrl) {
-        showNotification(alertBox, "Please provide the Google Apps Script Web App URL.", "error");
+      if (!SCRIPT_URL || SCRIPT_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) {
+        showNotification(alertBox, "Please configure SCRIPT_URL in the JavaScript code.", "error");
         return;
       }
-
-      // Save Web App URL
-      localStorage.setItem("cswd_script_url", scriptUrl);
 
       btn.disabled = true;
       btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Authenticating...`;
 
       try {
-        const response = await fetch(scriptUrl, {
+        const response = await fetch(SCRIPT_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({
@@ -543,7 +535,7 @@
           showNotification(alertBox, resData.message || "Invalid credentials.", "error");
         }
       } catch (err) {
-        showNotification(alertBox, "Network/API Connection Error. Verify Script URL.", "error");
+        showNotification(alertBox, "Network/API Connection Error. Verify SCRIPT_URL.", "error");
         console.error(err);
       } finally {
         btn.disabled = false;
@@ -555,12 +547,11 @@
     async function submitSoloParentForm(e) {
       e.preventDefault();
 
-      const scriptUrl = localStorage.getItem("cswd_script_url");
       const alertBox = document.getElementById("formAlert");
       const btn = document.getElementById("submitFormBtn");
 
-      if (!scriptUrl) {
-        showNotification(alertBox, "Script URL missing. Log out and configure script URL.", "error");
+      if (!SCRIPT_URL || SCRIPT_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) {
+        showNotification(alertBox, "SCRIPT_URL missing or unconfigured in source code.", "error");
         return;
       }
 
@@ -598,7 +589,7 @@
       btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Submitting...`;
 
       try {
-        const response = await fetch(scriptUrl, {
+        const response = await fetch(SCRIPT_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify(formData)
