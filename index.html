@@ -1,28 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CSWD Data Hub</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CSWD Solo Parent Management System</title>
+  
   <!-- Tailwind CSS CDN -->
-  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/chuckfuentes40-blip/BinanCity-CSWD/main/cswd.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            'brand-indigo': '#4F46E5',
-            'brand-purple': '#9333EA',
-            'brand-blue': '#2563EB',
-            'brand-magenta': '#D946EF'
+            'brand-purple': '#7c3aed',
+            'brand-blue': '#2563eb',
+            'brand-indigo': '#4f46e5',
+            'brand-magenta': '#c026d3',
           }
         }
       }
     }
   </script>
-  <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
 <body class="bg-slate-50 text-gray-800 font-sans min-h-screen">
 
@@ -46,7 +47,7 @@
           <label class="block text-xs font-semibold text-gray-600 mb-1">Username</label>
           <input type="text" id="loginUsername" required class="w-full p-3 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
         </div>
-
+        
         <div>
           <label class="block text-xs font-semibold text-gray-600 mb-1">Password</label>
           <div class="relative">
@@ -57,7 +58,6 @@
           </div>
         </div>
 
-        <!-- REMEMBER ME CHECKBOX -->
         <div class="flex items-center justify-between text-xs">
           <label class="flex items-center gap-2 cursor-pointer text-gray-600 select-none">
             <input type="checkbox" id="rememberMe" class="w-4 h-4 text-brand-purple rounded border-gray-300 focus:ring-brand-purple cursor-pointer">
@@ -78,31 +78,20 @@
   <!-- ========================================== -->
   <div id="mainApp" class="hidden min-h-screen flex flex-col md:flex-row">
 
-    <!-- ========================================== -->
-    <!-- FIXED SIDEBAR NAVIGATION (ADMIN & CLIENT)  -->
-    <!-- ========================================== -->
+    <!-- FIXED SIDEBAR NAVIGATION -->
     <aside class="w-full md:w-64 md:sticky md:top-0 md:h-screen bg-white border-r border-gray-200 flex flex-col justify-between shrink-0 overflow-y-auto">
       <div>
         <!-- App Header Logo -->
-        <div style="display: flex; align-items: center; gap: 10px; padding: 16px 12px;">
-          <img 
-            src="https://raw.githubusercontent.com/chuckfuentes40-blip/BinanCity-CSWD/main/cswd.png" 
-            alt="CSWD Logo" 
-            style="height: 36px; width: 36px; object-fit: contain; flex-shrink: 0;"
-          />
+        <div class="flex items-center gap-2.5 p-4 border-b border-gray-100">
+          <img src="https://raw.githubusercontent.com/chuckfuentes40-blip/BinanCity-CSWD/main/cswd.png" alt="CSWD Logo" class="h-9 w-9 object-contain shrink-0" />
           <div>
-            <h1 style="margin: 0; font-size: 14px; font-weight: 700; line-height: 1.2; color: #111827;">
-              CSWD Solo Parent Registry
-            </h1>
-            <p style="margin: 2px 0 0 0; font-size: 11px; line-height: 1.2; color: #6b7280;">
-              Social Welfare & Development Office
-            </p>
+            <h1 class="m-0 text-sm font-bold text-gray-900 leading-tight">CSWD Solo Parent Registry</h1>
+            <p class="m-0 text-[11px] text-gray-500 leading-tight">Social Welfare & Development Office</p>
           </div>
         </div>
 
-        <!-- CLIENT SIDEBAR PROFILE & NAV MENU -->
-        <div id="clientSidebar" class="hidden p-4 pt-0 space-y-6">
-          <!-- Client Profile Box -->
+        <!-- CLIENT SIDEBAR MENU -->
+        <div id="clientSidebar" class="hidden p-4 space-y-6">
           <div class="p-4 bg-gradient-to-br from-brand-purple/10 to-brand-blue/10 rounded-2xl border border-brand-purple/20">
             <div class="flex items-center gap-3 mb-2">
               <div class="w-10 h-10 rounded-full bg-brand-purple text-white flex items-center justify-center font-bold text-sm shrink-0">
@@ -116,7 +105,6 @@
             <span class="inline-block px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-semibold rounded-full">Active Member</span>
           </div>
 
-          <!-- Client Navigation Buttons -->
           <nav class="space-y-1.5 text-xs font-semibold">
             <button type="button" id="navClientHome" onclick="switchClientTab('home')" class="w-full px-4 py-3 rounded-xl flex items-center gap-3 transition text-brand-purple bg-brand-purple/10">
               <i class="fa-solid fa-house text-base w-5"></i>
@@ -127,16 +115,11 @@
               <i class="fa-solid fa-file-pen text-base w-5"></i>
               <span>Solo Parent Form</span>
             </button>
-
-            <button type="button" id="navClientAnnouncements" onclick="switchClientTab('announcements')" class="w-full px-4 py-3 rounded-xl flex items-center gap-3 transition text-gray-600 hover:bg-gray-100">
-              <i class="fa-solid fa-bullhorn text-base w-5"></i>
-              <span>Announcements</span>
-            </button>
           </nav>
         </div>
 
-        <!-- ADMIN SIDEBAR NAV MENU -->
-        <div id="adminSidebar" class="hidden p-4 pt-0 space-y-6">
+        <!-- ADMIN SIDEBAR MENU -->
+        <div id="adminSidebar" class="hidden p-4 space-y-6">
           <div class="p-4 bg-slate-900 text-white rounded-2xl">
             <div class="flex items-center gap-3">
               <div class="w-9 h-9 rounded-xl bg-brand-indigo flex items-center justify-center text-white font-bold text-xs shrink-0">
@@ -167,27 +150,24 @@
       </div>
     </aside>
 
-    <!-- ========================================== -->
-    <!-- MAIN CONTENT CONTAINER                     -->
-    <!-- ========================================== -->
+    <!-- MAIN WORKSPACE CONTENT -->
     <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl">
 
       <!-- ========================================== -->
-      <!-- ADMIN DASHBOARD VIEW                       -->
+      <!-- A. ADMIN DASHBOARD VIEW                    -->
       <!-- ========================================== -->
       <section id="adminDashboardView" class="hidden space-y-6">
-        <!-- Header & Realtime Indicator -->
         <div class="flex items-center justify-between">
           <div>
             <h2 class="text-xl font-bold text-gray-800">Administrator Dashboard</h2>
-            <p class="text-xs text-gray-500">Overview of registered solo parents and welfare analytics.</p>
+            <p class="text-xs text-gray-500">Overview of registered solo parents, announcement controls, and welfare analytics.</p>
           </div>
           <div class="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-full border border-emerald-200">
             <span class="relative flex h-2 w-2">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            <span>Live Syncing (10s)</span>
+            <span>Live Syncing</span>
           </div>
         </div>
 
@@ -223,9 +203,71 @@
           </div>
         </div>
 
+        <!-- POSTING CARDS (EXCLUSIVE TO ADMIN PAGE) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 my-6">
+          
+          <!-- Post Important Banner Update -->
+          <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
+              <i class="fa-solid fa-bullhorn text-brand-purple"></i> Post Important Banner Update
+            </h3>
+            <form onsubmit="handlePostAnnouncement(event)" class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Announcement Title</label>
+                <input type="text" id="adminAnnTitle" required placeholder="e.g. Solo Parent ID Renewal 2026" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Content / Details</label>
+                <textarea id="adminAnnContent" required rows="3" placeholder="Enter announcement details..." class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple"></textarea>
+              </div>
+              <button type="submit" class="px-4 py-2 bg-brand-purple hover:bg-brand-purple/90 text-white text-xs font-semibold rounded-xl transition flex items-center gap-2 shadow-md shadow-brand-purple/20">
+                <i class="fa-solid fa-paper-plane"></i> Publish Banner
+              </button>
+            </form>
+          </div>
 
+          <!-- Post Media & Community Update -->
+          <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
+              <i class="fa-solid fa-photo-film text-brand-blue"></i> Post Media & Community Update
+            </h3>
+            <form onsubmit="handlePostMedia(event)" class="space-y-3">
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">Title</label>
+                  <input type="text" id="adminMediaTitle" required placeholder="Workshop Highlights" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">Category</label>
+                  <input type="text" id="adminMediaCategory" required placeholder="e.g. Livelihood Seminar" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">Media Type</label>
+                  <select id="adminMediaType" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
+                    <option value="video">YouTube Embed Video</option>
+                    <option value="image">Image Direct Link</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">Media URL</label>
+                  <input type="url" id="adminMediaUrl" required placeholder="https://..." class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Description</label>
+                <input type="text" id="adminMediaDesc" required placeholder="Short description..." class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
+              </div>
+              <button type="submit" class="px-4 py-2 bg-brand-blue hover:bg-brand-blue/90 text-white text-xs font-semibold rounded-xl transition flex items-center gap-2 shadow-md shadow-brand-blue/20">
+                <i class="fa-solid fa-upload"></i> Publish Media Update
+              </button>
+            </form>
+          </div>
 
-        <!-- Controls & Table Card -->
+        </div>
+
+        <!-- Admin Table Card -->
         <div class="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
           <div class="p-4 border-b border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="relative w-full sm:w-80">
@@ -260,107 +302,47 @@
           </div>
         </div>
       </section>
-      <!-- ADMIN ANNOUNCEMENT & MEDIA CREATOR SECTION -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 my-6">
 
-    <!-- Card 1: Post Important Update Banner -->
-    <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm space-y-4">
-      <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
-        <i class="fa-solid fa-bullhorn text-brand-purple"></i> Post Important Banner Update
-      </h3>
-      <form onsubmit="handlePostAnnouncement(event)" class="space-y-3">
-        <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Announcement Title</label>
-          <input type="text" id="adminAnnTitle" required placeholder="e.g. Solo Parent ID Renewal 2026" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
+      <!-- ========================================== -->
+      <!-- B. CLIENT HOME PAGE VIEW                   -->
+      <!-- ========================================== -->
+      <section id="clientHomeView" class="hidden space-y-6">
+        <div class="border-b border-gray-200 pb-4">
+          <h2 class="text-2xl font-bold text-gray-800">Clients Page</h2>
+          <p class="text-xs text-gray-500 mt-1">Welcome to the CSWD Solo Parent Community Portal.</p>
         </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Content / Details</label>
-          <textarea id="adminAnnContent" required rows="3" placeholder="Enter announcement details..." class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple"></textarea>
-        </div>
-        <button type="submit" class="px-4 py-2 bg-brand-purple hover:bg-brand-purple/90 text-white text-xs font-semibold rounded-xl transition flex items-center gap-2">
-          <i class="fa-solid fa-paper-plane"></i> Publish Banner
-        </button>
-      </form>
-    </div>
-
-    <!-- Card 2: Post Media / Community Update -->
-    <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm space-y-4">
-      <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
-        <i class="fa-solid fa-photo-film text-brand-blue"></i> Post Media & Community Update
-      </h3>
-      <form onsubmit="handlePostMedia(event)" class="space-y-3">
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">Title</label>
-            <input type="text" id="adminMediaTitle" required placeholder="Workshop Highlights" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">Category</label>
-            <input type="text" id="adminMediaCategory" required placeholder="e.g. Livelihood Seminar" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">Media Type</label>
-            <select id="adminMediaType" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
-              <option value="video">YouTube Embed Video</option>
-              <option value="image">Image URL</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">Media URL (YouTube Embed or Image Direct Link)</label>
-            <input type="url" id="adminMediaUrl" required placeholder="https://..." class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Description</label>
-          <input type="text" id="adminMediaDesc" required placeholder="Short description..." class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-purple">
-        </div>
-        <button type="submit" class="px-4 py-2 bg-brand-blue hover:bg-brand-blue/90 text-white text-xs font-semibold rounded-xl transition flex items-center gap-2">
-          <i class="fa-solid fa-upload"></i> Publish Media Update
-        </button>
-      </form>
-    </div>
-
-  </div>
-
-      <!-- CLIENT HOME PAGE VIEW -->
-<section id="clientHomeView" class="hidden space-y-6">
-  <div class="border-b border-gray-200 pb-4">
-    <h2 class="text-2xl font-bold text-gray-800">Clients Page</h2>
-    <p class="text-xs text-gray-500 mt-1">Welcome to the CSWD Solo Parent Community Portal.</p>
-  </div>
 
         <!-- Dynamic Banner Announcement Container -->
         <div id="clientBannerContainer" class="bg-gradient-to-r from-brand-indigo via-brand-purple to-brand-blue rounded-2xl p-6 text-white shadow-lg">
           <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-purple-200 mb-2">
             <i class="fa-solid fa-bullhorn"></i> Important Update
           </div>
-          <h3 id="clientBannerTitle" class="text-xl font-bold mb-2">Loading announcements...</h3>
-          <p id="clientBannerContent" class="text-xs text-purple-100 max-w-2xl leading-relaxed">Please wait while updates are loaded from the server.</p>
+          <h3 id="clientBannerTitle" class="text-xl font-bold mb-2">Solo Parent ID Renewal & Subsidy Distribution</h3>
+          <p id="clientBannerContent" class="text-xs text-purple-100 max-w-2xl leading-relaxed">
+            All registered solo parents are encouraged to check their ID status. Make sure your profile details are up to date through the online intake form.
+          </p>
         </div>
 
-        <!-- Dynamic Content Feed (Videos & Pictures) -->
+        <!-- Dynamic Media Feed Grid -->
         <div class="space-y-4">
           <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
             <i class="fa-solid fa-photo-film text-brand-purple"></i> Media & Community Updates
           </h3>
 
-          <div id="clientMediaGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Media items will render dynamically here -->
-          </div>
+          <div id="clientMediaGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
         </div>
       </section>
 
       <!-- ========================================== -->
-      <!-- CLIENT SURVEY FORM VIEW                    -->
+      <!-- C. CLIENT SOLO PARENT INTAKE FORM VIEW     -->
+      <!-- (SHOWN ONLY WHEN "Solo Parent Form" CLICKED)-->
       <!-- ========================================== -->
-      <section id="clientFormView" class="hidden max-w-4xl mx-auto">
+      <section id="clientFormView" class="hidden max-w-5xl mx-auto">
         <div class="bg-white rounded-2xl border border-gray-200/80 shadow-md p-6 sm:p-8 space-y-6">
 
           <div class="border-b border-gray-100 pb-4">
             <h2 class="text-xl font-bold text-gray-800">Solo Parent Intake & Assessment Form</h2>
-            <p class="text-xs text-gray-500 mt-1">Fill out the detailed socio-demographic information below.</p>
+            <p class="text-xs text-gray-500 mt-1">Please complete Sections A through F accurately.</p>
           </div>
 
           <div id="formAlert" class="hidden p-3 text-xs rounded-xl border"></div>
@@ -369,133 +351,130 @@
 
             <!-- SECTION A: GENERAL INFORMATION -->
             <div>
-              <h3 class="text-sm font-bold uppercase tracking-wider text-brand-indigo pb-2 border-b border-brand-purple/20 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-clipboard-list text-brand-purple"></i> Section A: General Information
+              <h3 class="text-xs font-bold uppercase tracking-wider text-brand-purple pb-2 border-b border-gray-100 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-clipboard-list"></i> Section A: General Information
               </h3>
               <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <label class="block text-xs font-semibold text-gray-600 mb-1">Barangay</label>
-                  <input type="text" id="f_barangay" required class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                  <input type="text" id="f_barangay" required class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-600 mb-1">Date</label>
-                  <input type="date" id="f_date" required class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                  <input type="date" id="f_date" required class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-600 mb-1">Control No.</label>
-                  <input type="text" id="f_controlNo" required placeholder="e.g. SP-2026-001" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                  <input type="text" id="f_controlNo" required placeholder="e.g. SP-2026-001" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-600 mb-1">Interviewer Name</label>
-                  <input type="text" id="f_interviewer" required class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                  <input type="text" id="f_interviewer" required class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
                 </div>
               </div>
             </div>
 
             <!-- SECTION B: MEMBER INFORMATION -->
             <div>
-              <h3 class="text-sm font-bold uppercase tracking-wider text-brand-indigo pb-2 border-b border-brand-purple/20 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-user text-brand-purple"></i> Section B: Member Information
+              <h3 class="text-xs font-bold uppercase tracking-wider text-brand-purple pb-2 border-b border-gray-100 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-user"></i> Section B: Member Information
               </h3>
               <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="md:col-span-2">
                   <label class="block text-xs font-semibold text-gray-600 mb-1">Member Full Name</label>
-                  <input type="text" id="f_memberName" required placeholder="Last Name, First Name, Middle Name" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                  <input type="text" id="f_memberName" required placeholder="Last Name, First Name, Middle Name" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-600 mb-1">Sex</label>
-                  <select id="f_sex" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                  <select id="f_sex" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
                     <option value="Female">Female</option>
                     <option value="Male">Male</option>
                   </select>
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-600 mb-1">Age</label>
-                  <input type="number" id="f_age" min="1" max="120" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                  <input type="number" id="f_age" min="1" max="120" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
                 </div>
                 <div class="md:col-span-2">
                   <label class="block text-xs font-semibold text-gray-600 mb-1">Contact Number</label>
-                  <input type="text" id="f_contactNo" placeholder="09xxxxxxxxx" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                  <input type="text" id="f_contactNo" placeholder="09xxxxxxxxx" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
                 </div>
                 <div class="md:col-span-2">
                   <label class="block text-xs font-semibold text-gray-600 mb-1">Home Address</label>
-                  <input type="text" id="f_address" placeholder="House No., Street, Subdivision" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                  <input type="text" id="f_address" placeholder="House No., Street, Subdivision" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
                 </div>
               </div>
             </div>
 
             <!-- SECTION C: SOCIO-ECONOMIC INFORMATION -->
             <div>
-              <h3 class="text-sm font-bold uppercase tracking-wider text-brand-indigo pb-2 border-b border-brand-purple/20 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-coins text-brand-purple"></i> Section C: Socio-Economic Information
+              <h3 class="text-xs font-bold uppercase tracking-wider text-brand-purple pb-2 border-b border-gray-100 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-coins"></i> Section C: Socio-Economic Information
               </h3>
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label class="block text-xs font-semibold text-gray-600 mb-1">Solo Parent Classification</label>
-                  <input type="text" id="f_classification" placeholder="e.g. Unwed, Death of Spouse, Abandoned" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                  <input type="text" id="f_classification" placeholder="e.g. Unwed, Death of Spouse" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-600 mb-1">No. of Dependents</label>
-                  <input type="number" id="f_dependentsCount" min="0" value="0" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                  <input type="number" id="f_dependentsCount" min="0" value="0" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-600 mb-1">Primary Source of Income</label>
-                  <input type="text" id="f_incomeSource" placeholder="e.g. Employment, Vendor, OFW" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                  <input type="text" id="f_incomeSource" placeholder="e.g. Employment, Vendor" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
                 </div>
               </div>
             </div>
-          </form>
-        </div>
-      </section>
 
             <!-- SECTION D: DISABILITY & ID STATUS -->
             <div>
-              <h3 class="text-sm font-bold uppercase tracking-wider text-brand-indigo pb-2 border-b border-brand-purple/20 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-address-card text-brand-purple"></i> Section D: Disability & ID Status
+              <h3 class="text-xs font-bold uppercase tracking-wider text-brand-purple pb-2 border-b border-gray-100 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-id-card"></i> Section D: Disability & ID Status
               </h3>
               <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <label class="block text-xs font-semibold text-gray-600 mb-1">Member Disability?</label>
-                  <select id="f_hasDisability" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                  <select id="f_memberDisability" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
                     <option value="No">No</option>
                     <option value="Yes">Yes</option>
                   </select>
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-600 mb-1">Member Disability Type</label>
-                  <input type="text" id="f_disabilityType" placeholder="If yes, specify" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                  <input type="text" id="f_memberDisabilityType" placeholder="If yes, specify" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-600 mb-1">Dependent Disability?</label>
-                  <select id="f_depHasDisability" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                  <select id="f_dependentDisability" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
                     <option value="No">No</option>
                     <option value="Yes">Yes</option>
                   </select>
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-600 mb-1">Dependent Disability Type</label>
-                  <input type="text" id="f_depDisabilityType" placeholder="If yes, specify" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                  <input type="text" id="f_dependentDisabilityType" placeholder="If yes, specify" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
                 </div>
 
                 <div>
                   <label class="block text-xs font-semibold text-gray-600 mb-1">Solo Parent ID Number</label>
-                  <input type="text" id="f_idNumber" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                  <input type="text" id="f_idNumber" placeholder="ID Number" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-600 mb-1">ID Expiration Date</label>
-                  <input type="date" id="f_idExpiration" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                  <input type="date" id="f_idExpiration" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-600 mb-1">ID Status</label>
-                  <select id="f_idStatus" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                  <select id="f_idStatus" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
                     <option value="Active">Active</option>
                     <option value="Expired">Expired</option>
-                    <option value="New / Pending">New / Pending</option>
+                    <option value="Pending">Pending</option>
                   </select>
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-600 mb-1">For Renewal?</label>
-                  <select id="f_forRenewal" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                  <select id="f_forRenewal" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
                     <option value="No">No</option>
                     <option value="Yes">Yes</option>
                   </select>
@@ -503,29 +482,29 @@
               </div>
             </div>
 
-            <!-- SECTION E: SOCIAL BENEFIT PROGRAMS -->
+            <!-- SECTION E: PROGRAM AFFILIATIONS -->
             <div>
-              <h3 class="text-sm font-bold uppercase tracking-wider text-brand-indigo pb-2 border-b border-brand-purple/20 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-handshake-angle text-brand-purple"></i> Section E: Program Affiliations
+              <h3 class="text-xs font-bold uppercase tracking-wider text-brand-purple pb-2 border-b border-gray-100 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-hand-holding-heart"></i> Section E: Program Affiliations
               </h3>
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label class="block text-xs font-semibold text-gray-600 mb-1">Subsidy Recipient?</label>
-                  <select id="f_subsidyRecipient" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                  <select id="f_subsidyRecipient" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
                     <option value="No">No</option>
                     <option value="Yes">Yes</option>
                   </select>
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-600 mb-1">INB Recipient?</label>
-                  <select id="f_inbRecipient" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                  <select id="f_inbRecipient" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
                     <option value="No">No</option>
                     <option value="Yes">Yes</option>
                   </select>
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-600 mb-1">4Ps Beneficiary?</label>
-                  <select id="f_fourPsRecipient" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                  <select id="f_is4ps" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
                     <option value="No">No</option>
                     <option value="Yes">Yes</option>
                   </select>
@@ -533,36 +512,39 @@
               </div>
             </div>
 
-            <!-- SECTION F: SKILLS & REMARKS -->
+            <!-- SECTION F: CAPACITY & REMARKS -->
             <div>
-              <h3 class="text-sm font-bold uppercase tracking-wider text-brand-indigo pb-2 border-b border-brand-purple/20 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-graduation-cap text-brand-purple"></i> Section F: Capacity & Remarks
+              <h3 class="text-xs font-bold uppercase tracking-wider text-brand-purple pb-2 border-b border-gray-100 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-graduation-cap"></i> Section F: Capacity & Remarks
               </h3>
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Existing Skills</label>
-                  <input type="text" id="f_existingSkills" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+              <div class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Existing Skills</label>
+                    <input type="text" id="f_existingSkills" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Skills Training Requested</label>
+                    <input type="text" id="f_skillsRequested" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Preferred Livelihood</label>
+                    <input type="text" id="f_preferredLivelihood" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
+                  </div>
                 </div>
                 <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Skills Training Requested</label>
-                  <input type="text" id="f_skillsTraining" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Preferred Livelihood</label>
-                  <input type="text" id="f_preferredLivelihood" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
-                </div>
-                <div class="md:col-span-3">
                   <label class="block text-xs font-semibold text-gray-600 mb-1">Remarks / Other Concerns</label>
-                  <textarea id="f_remarks" rows="2" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple"></textarea>
+                  <textarea id="f_remarks" rows="3" class="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none"></textarea>
                 </div>
               </div>
             </div>
 
-            <div class="pt-4 border-t border-gray-200 flex justify-end gap-3">
-              <button type="button" onclick="switchClientTab('home')" class="px-5 py-2.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition">
+            <!-- FORM ACTIONS -->
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+              <button type="button" onclick="switchClientTab('home')" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-xl transition">
                 Back to Home
               </button>
-              <button type="submit" id="submitFormBtn" class="px-6 py-2.5 text-sm bg-gradient-to-r from-brand-blue via-brand-indigo to-brand-purple hover:brightness-110 text-white font-semibold rounded-xl shadow-md shadow-brand-indigo/20 transition flex items-center gap-2">
+              <button type="submit" class="px-5 py-2.5 bg-brand-purple hover:bg-brand-purple/90 text-white text-xs font-semibold rounded-xl shadow-lg shadow-brand-purple/20 transition flex items-center gap-2">
                 <span>Submit Form</span>
                 <i class="fa-solid fa-paper-plane"></i>
               </button>
@@ -572,288 +554,238 @@
         </div>
       </section>
 
-      <!-- ========================================== -->
-      <!-- CLIENT ANNOUNCEMENTS VIEW                  -->
-      <!-- ========================================== -->
-      <section id="clientAnnouncementsView" class="hidden space-y-6">
-        <div class="border-b border-gray-200 pb-4">
-          <h2 class="text-xl font-bold text-gray-800">Community Announcements</h2>
-          <p class="text-xs text-gray-500 mt-1">Stay informed with official notices, schedule distributions, and social welfare updates.</p>
-        </div>
-
-        <div class="space-y-4">
-          <div class="p-5 bg-white border border-gray-200 rounded-2xl shadow-sm">
-            <div class="flex items-center justify-between mb-2">
-              <span class="px-2.5 py-1 text-[10px] font-bold bg-brand-purple/10 text-brand-purple rounded-full">Schedule Notice</span>
-              <span class="text-xs text-gray-400"><i class="fa-regular fa-clock mr-1"></i> August 10, 2026</span>
-            </div>
-            <h3 class="font-bold text-gray-800 text-base">Quarterly Solo Parent Identification Card Issuance</h3>
-            <p class="text-xs text-gray-600 mt-2 leading-relaxed">
-              New applicants and those with pending renewals may claim their official CSWD Solo Parent ID at the Social Welfare Office from Mondays to Fridays, 8:00 AM to 5:00 PM. Please bring valid government identification.
-            </p>
-          </div>
-
-          <div class="p-5 bg-white border border-gray-200 rounded-2xl shadow-sm">
-            <div class="flex items-center justify-between mb-2">
-              <span class="px-2.5 py-1 text-[10px] font-bold bg-brand-blue/10 text-brand-blue rounded-full">Medical Assistance</span>
-              <span class="text-xs text-gray-400"><i class="fa-regular fa-clock mr-1"></i> August 05, 2026</span>
-            </div>
-            <h3 class="font-bold text-gray-800 text-base">Free Health Screening and Medical Support Seminar</h3>
-            <p class="text-xs text-gray-600 mt-2 leading-relaxed">
-              In cooperation with the City Health Office, free health check-ups and medical checkups will be offered to all solo parent ID holders and their registered dependents next Friday at the City Convention Hall.
-            </p>
-          </div>
-        </div>
-      </section>
-
     </main>
   </div>
 
   <!-- ========================================== -->
-  <!-- 3. JAVASCRIPT LOGIC & CONTROLLERS          -->
+  <!-- 3. FRONTEND JAVASCRIPT LOGIC               -->
   <!-- ========================================== -->
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw1O3MPFomu4LoHN-oj0fhAc8lhp3aWDkOlCtjVYvOefeTKyT3M7WbR2AFlEokby_te/exec";
+    // Replace with your Google Apps Script Web App Deployment URL
+    const SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
 
-    let currentAppView = 'admin';
-    let recordsStore = [];
-    let realtimeTimer = null; // Background polling timer reference
+    let currentUser = null;
+    let allRecords = [];
 
-    document.addEventListener("DOMContentLoaded", () => {
-      const dateEl = document.getElementById("f_date");
-      if (dateEl) dateEl.valueAsDate = new Date();
-
-      // Load Remembered Username if exists
-      const savedUser = localStorage.getItem("cswd_remembered_username");
-      if (savedUser) {
-        document.getElementById("loginUsername").value = savedUser;
-        document.getElementById("rememberMe").checked = true;
-      }
-
-      checkAuthState();
-    });
-
-    // 1. Password Visibility Toggle
+    // Toggle Password Visibility
     function togglePasswordVisibility() {
-      const passInput = document.getElementById("loginPassword");
+      const pwdInput = document.getElementById("loginPassword");
       const icon = document.getElementById("togglePasswordIcon");
-      if (passInput.type === "password") {
-        passInput.type = "text";
-        icon.classList.remove("fa-eye");
-        icon.classList.add("fa-eye-slash");
+      if (pwdInput.type === "password") {
+        pwdInput.type = "text";
+        icon.className = "fa-solid fa-eye-slash";
       } else {
-        passInput.type = "password";
-        icon.classList.remove("fa-eye-slash");
-        icon.classList.add("fa-eye");
+        pwdInput.type = "password";
+        icon.className = "fa-solid fa-eye";
       }
     }
 
-    // 2. Client Side Navigation Switching
-    function switchClientTab(tabName) {
-      const homeSec = document.getElementById("clientHomeView");
-      const formSec = document.getElementById("clientFormView");
-      const annSec = document.getElementById("clientAnnouncementsView");
-
-      const btnHome = document.getElementById("navClientHome");
-      const btnForm = document.getElementById("navClientForm");
-      const btnAnn = document.getElementById("navClientAnnouncements");
-
-      // Reset section visibility
-      homeSec.classList.add("hidden");
-      formSec.classList.add("hidden");
-      annSec.classList.add("hidden");
-
-      // Reset button active styles
-      [btnHome, btnForm, btnAnn].forEach(btn => {
-        if (btn) {
-          btn.classList.remove("text-brand-purple", "bg-brand-purple/10");
-          btn.classList.add("text-gray-600", "hover:bg-gray-100");
-        }
-      });
-
-      if (tabName === 'form') {
-        formSec.classList.remove("hidden");
-        btnForm.classList.add("text-brand-purple", "bg-brand-purple/10");
-        btnForm.classList.remove("text-gray-600", "hover:bg-gray-100");
-      } else if (tabName === 'announcements') {
-        annSec.classList.remove("hidden");
-        btnAnn.classList.add("text-brand-purple", "bg-brand-purple/10");
-        btnAnn.classList.remove("text-gray-600", "hover:bg-gray-100");
-      } else {
-        // Default: Home Page
-        homeSec.classList.remove("hidden");
-        btnHome.classList.add("text-brand-purple", "bg-brand-purple/10");
-        btnHome.classList.remove("text-gray-600", "hover:bg-gray-100");
-      }
-    }
-
-    // 3. Realtime Background Polling Start/Stop
-    function startRealtimePolling() {
-      stopRealtimePolling(); // Avoid duplicate intervals
-      realtimeTimer = setInterval(() => {
-        if (currentAppView === 'admin' && !document.hidden) {
-          loadRecords(true); // Silent background fetch
-        }
-      }, 10000); // Syncs every 10 seconds
-    }
-
-    function stopRealtimePolling() {
-      if (realtimeTimer) {
-        clearInterval(realtimeTimer);
-        realtimeTimer = null;
-      }
-    }
-
-    function checkAuthState() {
-      const user = JSON.parse(localStorage.getItem("cswd_active_user"));
-
-      if (!user) {
-        stopRealtimePolling();
-        document.getElementById("loginScreen").classList.remove("hidden");
-        document.getElementById("mainApp").classList.add("hidden");
-      } else {
-        document.getElementById("loginScreen").classList.add("hidden");
-        document.getElementById("mainApp").classList.remove("hidden");
-
-        const adminSec = document.getElementById("adminDashboardView");
-        const adminSidebar = document.getElementById("adminSidebar");
-        const clientSidebar = document.getElementById("clientSidebar");
-
-        const isAdmin = (user.role || '').toLowerCase() === 'admin';
-
-        if (isAdmin) {
-          // ADMIN ROLE: Show Admin Dashboard & Admin Side Navigation
-          currentAppView = 'admin';
-          adminSec.classList.remove("hidden");
-          document.getElementById("clientHomeView").classList.add("hidden");
-          document.getElementById("clientFormView").classList.add("hidden");
-          document.getElementById("clientAnnouncementsView").classList.add("hidden");
-
-          adminSidebar.classList.remove("hidden");
-          clientSidebar.classList.add("hidden");
-
-          document.getElementById("sideAdminName").textContent = user.fullname || user.username;
-
-          loadRecords();
-          startRealtimePolling(); // Start real-time sync for Admin view
-        } else {
-          // CLIENT ROLE: Show Client Side Navigation & Default Home View
-          currentAppView = 'client';
-          adminSec.classList.add("hidden");
-
-          adminSidebar.classList.add("hidden");
-          clientSidebar.classList.remove("hidden");
-
-          // Populate Client Sidebar Info
-          document.getElementById("sideClientName").textContent = user.fullname || user.username || "Client User";
-          document.getElementById("sideClientBarangay").innerHTML = `<i class="fa-solid fa-location-dot text-[10px] mr-1"></i>${user.barangay || "Barangay Unassigned"}`;
-
-          stopRealtimePolling();
-
-          // Auto-fill Client inputs for form
-          if (user.barangay && document.getElementById("f_barangay")) {
-            document.getElementById("f_barangay").value = user.barangay;
-          }
-          if (user.fullname && document.getElementById("f_interviewer")) {
-            document.getElementById("f_interviewer").value = user.fullname;
-          }
-          if (user.typeOfClient && document.getElementById("f_classification")) {
-            document.getElementById("f_classification").value = user.typeOfClient;
-          }
-
-          // Default View: Home Page
-          switchClientTab('home');
-        }
-      }
-    }
-
+    // Login Handler
     async function handleLogin(e) {
       e.preventDefault();
-
-      const username = document.getElementById("loginUsername").value.trim();
-      const password = document.getElementById("loginPassword").value.trim();
-      const rememberMe = document.getElementById("rememberMe").checked;
+      const loginBtn = document.getElementById("loginBtn");
       const alertBox = document.getElementById("loginAlert");
-      const btn = document.getElementById("loginBtn");
+      
+      const usernameInput = document.getElementById("loginUsername").value.trim();
+      const passwordInput = document.getElementById("loginPassword").value.trim();
 
-      if (!SCRIPT_URL || SCRIPT_URL.trim() === "") {
-        showNotification(alertBox, "Please configure SCRIPT_URL in the JavaScript code.", "error");
-        return;
-      }
-
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Authenticating...`;
+      alertBox.className = "hidden";
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> Authenticating...`;
 
       try {
         const response = await fetch(SCRIPT_URL, {
           method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({
             action: "login",
-            username: username,
-            password: password
+            username: usernameInput,
+            password: passwordInput
           })
         });
 
-        const resData = await response.json();
+        const data = await response.json();
 
-        if (resData.result === "success") {
-          // Handle "Remember Me"
-          if (rememberMe) {
-            localStorage.setItem("cswd_remembered_username", username);
+        if (data.result === "success") {
+          currentUser = data.user;
+          document.getElementById("loginScreen").classList.add("hidden");
+          document.getElementById("mainApp").classList.remove("hidden");
+
+          if (currentUser.role.toLowerCase() === "admin") {
+            document.getElementById("adminSidebar").classList.remove("hidden");
+            document.getElementById("adminDashboardView").classList.remove("hidden");
+            document.getElementById("sideAdminName").innerText = currentUser.fullname || currentUser.username;
+            fetchAdminRecords();
           } else {
-            localStorage.removeItem("cswd_remembered_username");
+            document.getElementById("clientSidebar").classList.remove("hidden");
+            document.getElementById("sideClientName").innerText = currentUser.fullname || currentUser.username;
+            document.getElementById("sideClientBarangay").innerHTML = `<i class="fa-solid fa-location-dot text-[10px] mr-1"></i>${currentUser.barangay || 'General'}`;
+            switchClientTab('home');
+            fetchClientFeed();
+          }
+        } else {
+          alertBox.innerText = data.message || "Invalid credentials.";
+          alertBox.className = "mb-4 p-3 text-xs rounded-xl border bg-red-50 text-red-600 border-red-200 block";
+        }
+      } catch (err) {
+        alertBox.innerText = "Network error or invalid backend deployment URL.";
+        alertBox.className = "mb-4 p-3 text-xs rounded-xl border bg-red-50 text-red-600 border-red-200 block";
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = `<span>Sign In</span><i class="fa-solid fa-right-to-bracket"></i>`;
+      }
+    }
+
+    // Logout Handler
+    function handleLogout() {
+      currentUser = null;
+      document.getElementById("mainApp").classList.add("hidden");
+      document.getElementById("adminSidebar").classList.add("hidden");
+      document.getElementById("clientSidebar").classList.add("hidden");
+      document.getElementById("adminDashboardView").classList.add("hidden");
+      document.getElementById("clientHomeView").classList.add("hidden");
+      document.getElementById("clientFormView").classList.add("hidden");
+      document.getElementById("loginScreen").classList.remove("hidden");
+      document.getElementById("loginForm").reset();
+    }
+
+    // Client Tab Switcher
+    function switchClientTab(tabName) {
+      const homeView = document.getElementById("clientHomeView");
+      const formView = document.getElementById("clientFormView");
+      const navHome = document.getElementById("navClientHome");
+      const navForm = document.getElementById("navClientForm");
+
+      if (tabName === "home") {
+        homeView.classList.remove("hidden");
+        formView.classList.add("hidden");
+
+        navHome.className = "w-full px-4 py-3 rounded-xl flex items-center gap-3 transition text-brand-purple bg-brand-purple/10";
+        navForm.className = "w-full px-4 py-3 rounded-xl flex items-center gap-3 transition text-gray-600 hover:bg-gray-100";
+        fetchClientFeed();
+      } else if (tabName === "form") {
+        homeView.classList.add("hidden");
+        formView.classList.remove("hidden");
+
+        navForm.className = "w-full px-4 py-3 rounded-xl flex items-center gap-3 transition text-brand-purple bg-brand-purple/10";
+        navHome.className = "w-full px-4 py-3 rounded-xl flex items-center gap-3 transition text-gray-600 hover:bg-gray-100";
+
+        // Pre-fill user information if available
+        if (currentUser) {
+          if (currentUser.barangay) document.getElementById("f_barangay").value = currentUser.barangay;
+          if (currentUser.fullname) document.getElementById("f_memberName").value = currentUser.fullname;
+        }
+        document.getElementById("f_date").valueAsDate = new Date();
+      }
+    }
+
+    // Admin: Post Important Banner Update
+    async function handlePostAnnouncement(e) {
+      e.preventDefault();
+      const payload = {
+        action: "postAnnouncement",
+        title: document.getElementById("adminAnnTitle").value,
+        content: document.getElementById("adminAnnContent").value
+      };
+
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.result === "success") {
+          alert("Announcement published successfully!");
+          e.target.reset();
+        }
+      } catch (err) {
+        alert("Failed to publish announcement.");
+      }
+    }
+
+    // Admin: Post Media & Community Update
+    async function handlePostMedia(e) {
+      e.preventDefault();
+      const payload = {
+        action: "postMedia",
+        title: document.getElementById("adminMediaTitle").value,
+        category: document.getElementById("adminMediaCategory").value,
+        mediaType: document.getElementById("adminMediaType").value,
+        url: document.getElementById("adminMediaUrl").value,
+        description: document.getElementById("adminMediaDesc").value
+      };
+
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.result === "success") {
+          alert("Media update published successfully!");
+          e.target.reset();
+        }
+      } catch (err) {
+        alert("Failed to publish media update.");
+      }
+    }
+
+    // Client: Fetch Dynamic Feed
+    async function fetchClientFeed() {
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify({ action: "getFeed" })
+        });
+        const data = await res.json();
+
+        if (data.result === "success") {
+          // Banner
+          if (data.announcements && data.announcements.length > 0) {
+            const latest = data.announcements[data.announcements.length - 1];
+            document.getElementById("clientBannerTitle").innerText = latest.title;
+            document.getElementById("clientBannerContent").innerText = latest.content;
           }
 
-          localStorage.setItem("cswd_active_user", JSON.stringify(resData.user));
-          showNotification(alertBox, "Login successful!", "success");
-          setTimeout(() => {
-            alertBox.classList.add("hidden");
-            checkAuthState();
-          }, 600);
-        } else {
-          showNotification(alertBox, resData.message || "Invalid credentials.", "error");
+          // Media Grid
+          const mediaGrid = document.getElementById("clientMediaGrid");
+          mediaGrid.innerHTML = "";
+
+          if (data.media && data.media.length > 0) {
+            data.media.reverse().forEach(item => {
+              const mediaHtml = item.mediaType === "video"
+                ? `<div class="relative pt-[56.25%] bg-black">
+                     <iframe class="absolute top-0 left-0 w-full h-full" src="${item.url}" title="${item.title}" frameborder="0" allowfullscreen></iframe>
+                   </div>`
+                : `<img src="${item.url}" alt="${item.title}" class="w-full h-48 object-cover">`;
+
+              mediaGrid.innerHTML += `
+                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                  ${mediaHtml}
+                  <div class="p-4">
+                    <span class="px-2.5 py-1 text-[10px] font-semibold bg-brand-purple/10 text-brand-purple rounded-full">${item.category}</span>
+                    <h4 class="font-bold text-sm text-gray-800 mt-2">${item.title}</h4>
+                    <p class="text-xs text-gray-500 mt-1">${item.description}</p>
+                  </div>
+                </div>`;
+            });
+          } else {
+            mediaGrid.innerHTML = `<p class="text-xs text-gray-400 col-span-2">No community updates available.</p>`;
+          }
         }
       } catch (err) {
-        showNotification(alertBox, "Network connection error. Verify SCRIPT_URL deployment.", "error");
-        console.error(err);
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = `<span>Sign In</span> <i class="fa-solid fa-right-to-bracket"></i>`;
+        console.error("Feed load error:", err);
       }
     }
 
-    async function loadRecords(isSilent = false) {
-      try {
-        const response = await fetch(SCRIPT_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ action: "getRecords" })
-        });
-        const resData = await response.json();
-        if (resData.result === "success" && Array.isArray(resData.records)) {
-          recordsStore = resData.records;
-        }
-      } catch (err) {
-        if (!isSilent) console.warn("Could not load initial records from backend:", err);
-      } flex: {
-        renderTable();
-      }
-    }
-
+    // Client: Submit Solo Parent Intake Form
     async function submitSoloParentForm(e) {
       e.preventDefault();
-
-      const alertBox = document.getElementById("formAlert");
-      const btn = document.getElementById("submitFormBtn");
-
-      if (!SCRIPT_URL || SCRIPT_URL.trim() === "") {
-        showNotification(alertBox, "SCRIPT_URL missing or unconfigured.", "error");
-        return;
-      }
+      const formAlert = document.getElementById("formAlert");
+      formAlert.className = "hidden";
 
       const formData = {
-        action: "createRecord",
+        action: "submitForm",
+        timestamp: new Date().toISOString(),
         barangay: document.getElementById("f_barangay").value,
         date: document.getElementById("f_date").value,
         controlNo: document.getElementById("f_controlNo").value,
@@ -866,252 +798,131 @@
         classification: document.getElementById("f_classification").value,
         dependentsCount: document.getElementById("f_dependentsCount").value,
         incomeSource: document.getElementById("f_incomeSource").value,
-        hasDisability: document.getElementById("f_hasDisability").value,
-        disabilityType: document.getElementById("f_disabilityType").value,
-        depHasDisability: document.getElementById("f_depHasDisability").value,
-        depDisabilityType: document.getElementById("f_depDisabilityType").value,
+        memberDisability: document.getElementById("f_memberDisability").value,
+        memberDisabilityType: document.getElementById("f_memberDisabilityType").value,
+        dependentDisability: document.getElementById("f_dependentDisability").value,
+        dependentDisabilityType: document.getElementById("f_dependentDisabilityType").value,
         idNumber: document.getElementById("f_idNumber").value,
         idExpiration: document.getElementById("f_idExpiration").value,
         idStatus: document.getElementById("f_idStatus").value,
         forRenewal: document.getElementById("f_forRenewal").value,
         subsidyRecipient: document.getElementById("f_subsidyRecipient").value,
         inbRecipient: document.getElementById("f_inbRecipient").value,
-        fourPsRecipient: document.getElementById("f_fourPsRecipient").value,
+        is4ps: document.getElementById("f_is4ps").value,
         existingSkills: document.getElementById("f_existingSkills").value,
-        skillsTraining: document.getElementById("f_skillsTraining").value,
+        skillsRequested: document.getElementById("f_skillsRequested").value,
         preferredLivelihood: document.getElementById("f_preferredLivelihood").value,
         remarks: document.getElementById("f_remarks").value
       };
 
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Submitting...`;
-
       try {
-        const response = await fetch(SCRIPT_URL, {
+        const res = await fetch(SCRIPT_URL, {
           method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify(formData)
         });
+        const data = await res.json();
 
-        const resData = await response.json();
-
-        if (resData.result === "success") {
-          showNotification(alertBox, "Record successfully saved to Google Sheet!", "success");
-          recordsStore.unshift(formData);
-
+        if (data.result === "success") {
+          formAlert.innerText = "Assessment form submitted successfully!";
+          formAlert.className = "mb-4 p-3 text-xs rounded-xl border bg-emerald-50 text-emerald-700 border-emerald-200 block";
           document.getElementById("soloParentForm").reset();
-          document.getElementById("f_date").valueAsDate = new Date();
-
-          setTimeout(() => {
-            alertBox.classList.add("hidden");
-            switchClientTab('home'); // Redirect back to Home page on success
-          }, 1200);
-
         } else {
-          showNotification(alertBox, "Error: " + (resData.error || "Submission failed."), "error");
+          formAlert.innerText = "Error submitting form. Please try again.";
+          formAlert.className = "mb-4 p-3 text-xs rounded-xl border bg-red-50 text-red-600 border-red-200 block";
         }
       } catch (err) {
-        showNotification(alertBox, "Failed to connect to Google Sheets server.", "error");
-        console.error(err);
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = `<span>Submit Form</span> <i class="fa-solid fa-paper-plane"></i>`;
+        formAlert.innerText = "Submission failed. Check network connectivity.";
+        formAlert.className = "mb-4 p-3 text-xs rounded-xl border bg-red-50 text-red-600 border-red-200 block";
       }
     }
 
+    // Admin: Fetch Records & Update Analytics
+    async function fetchAdminRecords() {
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify({ action: "getRecords" })
+        });
+        const data = await res.json();
+
+        if (data.result === "success" && data.records) {
+          allRecords = data.records;
+          renderTable();
+          updateAdminStats();
+        }
+      } catch (err) {
+        console.error("Failed to fetch admin records:", err);
+      }
+    }
+
+    // Admin: Render Table
     function renderTable() {
       const tbody = document.getElementById("recordsTableBody");
-      const notice = document.getElementById("emptyTableNotice");
-      const searchVal = document.getElementById("tableSearch") ? document.getElementById("tableSearch").value.toLowerCase() : "";
+      const emptyNotice = document.getElementById("emptyTableNotice");
+      const query = document.getElementById("tableSearch").value.toLowerCase();
 
-      const filtered = recordsStore.filter(r => 
-        (r.memberName && r.memberName.toLowerCase().includes(searchVal)) ||
-        (r.controlNo && r.controlNo.toLowerCase().includes(searchVal)) ||
-        (r.barangay && r.barangay.toLowerCase().includes(searchVal))
-      );
+      tbody.innerHTML = "";
+
+      const filtered = allRecords.filter(r => {
+        const text = Object.values(r).join(" ").toLowerCase();
+        return text.includes(query);
+      });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = "";
-        notice.classList.remove("hidden");
-      } else {
-        notice.classList.add("hidden");
-        tbody.innerHTML = filtered.map(r => `
-          <tr class="hover:bg-brand-purple/5 border-b border-gray-100 transition">
-            <td class="py-3.5 px-4 font-mono text-xs font-semibold text-brand-indigo">${escapeHtml(r.controlNo)}</td>
-            <td class="py-3.5 px-4 font-medium text-gray-800">${escapeHtml(r.memberName)}</td>
-            <td class="py-3.5 px-4 text-gray-600">${escapeHtml(r.barangay)}</td>
-            <td class="py-3.5 px-4 text-gray-600">${escapeHtml(r.contactNo)}</td>
-            <td class="py-3.5 px-4 text-gray-600 text-xs">${escapeHtml(r.classification)}</td>
-            <td class="py-3.5 px-4">
-              <span class="px-2.5 py-1 text-xs rounded-full font-semibold ${r.fourPsRecipient === 'Yes' ? 'bg-brand-purple/15 text-brand-indigo' : 'bg-gray-100 text-gray-600'}">
-                ${escapeHtml(r.fourPsRecipient || 'No')}
-              </span>
-            </td>
-            <td class="py-3.5 px-4">
-              <span class="px-2.5 py-1 text-xs rounded-full font-semibold ${r.idStatus === 'Active' ? 'bg-brand-blue/15 text-brand-blue' : 'bg-brand-magenta/15 text-brand-magenta'}">
-                ${escapeHtml(r.idStatus || 'Pending')}
-              </span>
-            </td>
-          </tr>
-        `).join("");
-      }
-
-      document.getElementById("statTotal").textContent = recordsStore.length;
-      document.getElementById("stat4ps").textContent = recordsStore.filter(r => r.fourPsRecipient === 'Yes').length;
-      document.getElementById("statRenewal").textContent = recordsStore.filter(r => r.forRenewal === 'Yes').length;
-      document.getElementById("statPwd").textContent = recordsStore.filter(r => r.hasDisability === 'Yes' || r.depHasDisability === 'Yes').length;
-    }
-
-    function exportToCSV() {
-      if (recordsStore.length === 0) {
-        alert("No records available to export.");
+        emptyNotice.classList.remove("hidden");
         return;
       }
 
-      const headers = Object.keys(recordsStore[0]).filter(k => k !== "action");
-      const csvRows = [];
-      csvRows.push(headers.join(","));
+      emptyNotice.classList.add("hidden");
 
-      for (const row of recordsStore) {
-        const values = headers.map(header => {
-          const escaped = ('' + (row[header] || '')).replace(/"/g, '""');
-          return `"${escaped}"`;
-        });
-        csvRows.push(values.join(","));
-      }
-
-      const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.setAttribute("href", url);
-      a.setAttribute("download", `SoloParent_Registry_${new Date().toISOString().slice(0,10)}.csv`);
-      a.click();
+      filtered.forEach(r => {
+        tbody.innerHTML += `
+          <tr class="border-b border-gray-100 hover:bg-gray-50/50 transition text-xs text-gray-700">
+            <td class="py-3 px-4 font-semibold text-brand-purple">${r.controlNo || '-'}</td>
+            <td class="py-3 px-4 font-medium">${r.memberName || '-'}</td>
+            <td class="py-3 px-4">${r.barangay || '-'}</td>
+            <td class="py-3 px-4">${r.contactNo || '-'}</td>
+            <td class="py-3 px-4">${r.classification || '-'}</td>
+            <td class="py-3 px-4">${r.is4ps || 'No'}</td>
+            <td class="py-3 px-4">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${r.idStatus === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
+                ${r.idStatus || 'Pending'}
+              </span>
+            </td>
+          </tr>`;
+      });
     }
 
-    function handleLogout() {
-      stopRealtimePolling();
-      localStorage.removeItem("cswd_active_user");
-      location.reload();
+    // Admin: Update Dashboard Stats
+    function updateAdminStats() {
+      document.getElementById("statTotal").innerText = allRecords.length;
+      
+      const count4ps = allRecords.filter(r => String(r.is4ps).toLowerCase() === 'yes').length;
+      document.getElementById("stat4ps").innerText = count4ps;
+
+      const countRenewal = allRecords.filter(r => String(r.forRenewal).toLowerCase() === 'yes').length;
+      document.getElementById("statRenewal").innerText = countRenewal;
+
+      const countPwd = allRecords.filter(r => String(r.memberDisability).toLowerCase() === 'yes' || String(r.dependentDisability).toLowerCase() === 'yes').length;
+      document.getElementById("statPwd").innerText = countPwd;
     }
 
-    function showNotification(container, message, type) {
-      container.classList.remove("hidden", "bg-red-50", "text-red-700", "border-red-200", "bg-brand-purple/10", "text-brand-indigo", "border-brand-purple/30");
-      if (type === "error") {
-        container.classList.add("bg-red-50", "text-red-700", "border-red-200");
-      } else {
-        container.classList.add("bg-brand-purple/10", "text-brand-indigo", "border-brand-purple/30");
-      }
-      container.textContent = message;
+    // Admin: CSV Export
+    function exportToCSV() {
+      if (allRecords.length === 0) return alert("No records available to export.");
+      
+      const headers = Object.keys(allRecords[0]).join(",");
+      const rows = allRecords.map(r => Object.values(r).map(v => `"${v}"`).join(","));
+      const csvContent = "data:text/csv;charset=utf-8," + [headers, ...rows].join("\n");
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "CSWD_Solo_Parents_Report.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
-    // 1. Post Banner Announcement (Admin Page)
-async function handlePostAnnouncement(e) {
-  e.preventDefault();
-  const payload = {
-    action: "postAnnouncement",
-    title: document.getElementById("adminAnnTitle").value,
-    content: document.getElementById("adminAnnContent").value
-  };
-
-  try {
-    const res = await fetch(SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-    if (data.result === "success") {
-      alert("Announcement posted successfully!");
-      e.target.reset();
-      fetchClientFeed();
-    }
-  } catch (err) {
-    alert("Error posting announcement.");
-  }
-}
-
-// 2. Post Media Update (Admin Page)
-async function handlePostMedia(e) {
-  e.preventDefault();
-  const payload = {
-    action: "postMedia",
-    title: document.getElementById("adminMediaTitle").value,
-    description: document.getElementById("adminMediaDesc").value,
-    category: document.getElementById("adminMediaCategory").value,
-    mediaType: document.getElementById("adminMediaType").value,
-    url: document.getElementById("adminMediaUrl").value
-  };
-
-  try {
-    const res = await fetch(SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-    if (data.result === "success") {
-      alert("Media update posted successfully!");
-      e.target.reset();
-      fetchClientFeed();
-    }
-  } catch (err) {
-    alert("Error posting media update.");
-  }
-}
-
-// 3. Fetch Feed for Client Home Page
-async function fetchClientFeed() {
-  try {
-    const res = await fetch(SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify({ action: "getFeed" })
-    });
-    const data = await res.json();
-
-    if (data.result === "success") {
-      // Update Banner
-      if (data.announcements && data.announcements.length > 0) {
-        const latest = data.announcements[data.announcements.length - 1];
-        document.getElementById("clientBannerTitle").innerText = latest.title;
-        document.getElementById("clientBannerContent").innerText = latest.content;
-      }
-
-      // Update Media Grid
-      const grid = document.getElementById("clientMediaGrid");
-      grid.innerHTML = "";
-
-      if (data.media && data.media.length > 0) {
-        data.media.reverse().forEach(item => {
-          const mediaHtml = item.mediaType === "video"
-            ? `<div class="relative pt-[56.25%] bg-black">
-                 <iframe class="absolute top-0 left-0 w-full h-full" src="${item.url}" title="${item.title}" frameborder="0" allowfullscreen></iframe>
-               </div>`
-            : `<img src="${item.url}" alt="${item.title}" class="w-full h-48 object-cover">`;
-
-          grid.innerHTML += `
-            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-              ${mediaHtml}
-              <div class="p-4">
-                <span class="px-2.5 py-1 text-[10px] font-semibold bg-brand-purple/10 text-brand-purple rounded-full">${item.category}</span>
-                <h4 class="font-bold text-sm text-gray-800 mt-2">${item.title}</h4>
-                <p class="text-xs text-gray-500 mt-1">${item.description}</p>
-              </div>
-            </div>`;
-        });
-      }
-    }
-  } catch (err) {
-    console.error("Failed to load feed:", err);
-  }
-}
   </script>
 </body>
 </html>
