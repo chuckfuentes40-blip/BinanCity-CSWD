@@ -46,7 +46,7 @@
           <label class="block text-xs font-semibold text-gray-600 mb-1">Username</label>
           <input type="text" id="loginUsername" required class="w-full p-3 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple outline-none">
         </div>
-        
+
         <div>
           <label class="block text-xs font-semibold text-gray-600 mb-1">Password</label>
           <div class="relative">
@@ -260,6 +260,14 @@
           </div>
         </div>
       </section>
+
+      <!-- ========================================== -->
+      <!-- CLIENT HOME PAGE VIEW (DEFAULT)            -->
+      <!-- ========================================== -->
+      <section id="clientHomeView" class="hidden space-y-6">
+        <div class="border-b border-gray-200 pb-4">
+          <h2 class="text-2xl font-bold text-gray-800">Clients Page</h2>
+          <p class="text-xs text-gray-500 mt-1">Welcome to the CSWD Solo Parent Community Portal. Watch informative guides, view updates, and stay informed.</p>
       <!-- ADMIN ANNOUNCEMENT & MEDIA CREATOR SECTION -->
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 my-6">
   
@@ -331,20 +339,75 @@
     <p class="text-xs text-gray-500 mt-1">Welcome to the CSWD Solo Parent Community Portal.</p>
   </div>
 
+        <!-- Banner Announcement -->
+        <div class="bg-gradient-to-r from-brand-indigo via-brand-purple to-brand-blue rounded-2xl p-6 text-white shadow-lg">
         <!-- Dynamic Banner Announcement Container -->
         <div id="clientBannerContainer" class="bg-gradient-to-r from-brand-indigo via-brand-purple to-brand-blue rounded-2xl p-6 text-white shadow-lg">
           <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-purple-200 mb-2">
             <i class="fa-solid fa-bullhorn"></i> Important Update
           </div>
+          <h3 class="text-xl font-bold mb-2">Solo Parent ID Renewal & Subsidy Distribution 2026</h3>
+          <p class="text-xs text-purple-100 max-w-2xl leading-relaxed">
+            All registered solo parents are encouraged to check their ID status. Make sure your profile details are up to date through the online intake form.
+          </p>
           <h3 id="clientBannerTitle" class="text-xl font-bold mb-2">Loading announcements...</h3>
           <p id="clientBannerContent" class="text-xs text-purple-100 max-w-2xl leading-relaxed">Please wait while updates are loaded from the server.</p>
         </div>
+
+        <!-- Content Feed (Videos & Pictures) -->
       
         <!-- Dynamic Content Feed (Videos & Pictures) -->
         <div class="space-y-4">
           <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
             <i class="fa-solid fa-photo-film text-brand-purple"></i> Media & Community Updates
           </h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Video Card 1 -->
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+              <div class="relative pt-[56.25%] bg-black">
+                <iframe class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="CSWD Orientation Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+              </div>
+              <div class="p-4">
+                <span class="px-2.5 py-1 text-[10px] font-semibold bg-brand-purple/10 text-brand-purple rounded-full">Instructional Video</span>
+                <h4 class="font-bold text-sm text-gray-800 mt-2">Guide: How to Claim Your Solo Parent Benefits</h4>
+                <p class="text-xs text-gray-500 mt-1">A step-by-step walk-through on how to submit your assessment form and apply for government subsidies.</p>
+              </div>
+            </div>
+
+            <!-- Video Card 2 -->
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+              <div class="relative pt-[56.25%] bg-black">
+                <iframe class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Livelihood Programs" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+              </div>
+              <div class="p-4">
+                <span class="px-2.5 py-1 text-[10px] font-semibold bg-brand-blue/10 text-brand-blue rounded-full">Livelihood Seminar</span>
+                <h4 class="font-bold text-sm text-gray-800 mt-2">CSWD Free Skills & Livelihood Workshops</h4>
+                <p class="text-xs text-gray-500 mt-1">Learn about our upcoming livelihood training sessions available for all registered solo parents.</p>
+              </div>
+            </div>
+
+            <!-- Photo Card 1 -->
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+              <img src="https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?auto=format&fit=crop&w=800&q=80" alt="Community Event" class="w-full h-48 object-cover">
+              <div class="p-4">
+                <span class="px-2.5 py-1 text-[10px] font-semibold bg-emerald-100 text-emerald-700 rounded-full">Community Event</span>
+                <h4 class="font-bold text-sm text-gray-800 mt-2">Annual Solo Parent Wellness & Assembly Day</h4>
+                <p class="text-xs text-gray-500 mt-1">Highlights from our recently concluded wellness assembly held at the City Gymnasium.</p>
+              </div>
+            </div>
+
+            <!-- Photo Card 2 -->
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+              <img src="https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=800&q=80" alt="Financial Aid" class="w-full h-48 object-cover">
+              <div class="p-4">
+                <span class="px-2.5 py-1 text-[10px] font-semibold bg-brand-magenta/10 text-brand-magenta rounded-full">Financial Assistance</span>
+                <h4 class="font-bold text-sm text-gray-800 mt-2">Distribution of Educational Assistance</h4>
+                <p class="text-xs text-gray-500 mt-1">CSWD grants school allowance to qualified dependents of active solo parents.</p>
+              </div>
+            </div>
+
       
           <div id="clientMediaGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Media items will render dynamically here -->
@@ -447,6 +510,117 @@
           </form>
         </div>
       </section>
+
+            <!-- SECTION D: DISABILITY & ID STATUS -->
+            <div>
+              <h3 class="text-sm font-bold uppercase tracking-wider text-brand-indigo pb-2 border-b border-brand-purple/20 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-address-card text-brand-purple"></i> Section D: Disability & ID Status
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">Member Disability?</label>
+                  <select id="f_hasDisability" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">Member Disability Type</label>
+                  <input type="text" id="f_disabilityType" placeholder="If yes, specify" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">Dependent Disability?</label>
+                  <select id="f_depHasDisability" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">Dependent Disability Type</label>
+                  <input type="text" id="f_depDisabilityType" placeholder="If yes, specify" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">Solo Parent ID Number</label>
+                  <input type="text" id="f_idNumber" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">ID Expiration Date</label>
+                  <input type="date" id="f_idExpiration" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">ID Status</label>
+                  <select id="f_idStatus" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                    <option value="Active">Active</option>
+                    <option value="Expired">Expired</option>
+                    <option value="New / Pending">New / Pending</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">For Renewal?</label>
+                  <select id="f_forRenewal" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION E: SOCIAL BENEFIT PROGRAMS -->
+            <div>
+              <h3 class="text-sm font-bold uppercase tracking-wider text-brand-indigo pb-2 border-b border-brand-purple/20 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-handshake-angle text-brand-purple"></i> Section E: Program Affiliations
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">Subsidy Recipient?</label>
+                  <select id="f_subsidyRecipient" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">INB Recipient?</label>
+                  <select id="f_inbRecipient" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">4Ps Beneficiary?</label>
+                  <select id="f_fourPsRecipient" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION F: SKILLS & REMARKS -->
+            <div>
+              <h3 class="text-sm font-bold uppercase tracking-wider text-brand-indigo pb-2 border-b border-brand-purple/20 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-graduation-cap text-brand-purple"></i> Section F: Capacity & Remarks
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">Existing Skills</label>
+                  <input type="text" id="f_existingSkills" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">Skills Training Requested</label>
+                  <input type="text" id="f_skillsTraining" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">Preferred Livelihood</label>
+                  <input type="text" id="f_preferredLivelihood" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple">
+                </div>
+                <div class="md:col-span-3">
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">Remarks / Other Concerns</label>
+                  <textarea id="f_remarks" rows="2" class="w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple"></textarea>
+                </div>
+              </div>
+            </div>
+
             <div class="pt-4 border-t border-gray-200 flex justify-end gap-3">
               <button type="button" onclick="switchClientTab('home')" class="px-5 py-2.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition">
                 Back to Home
@@ -511,7 +685,7 @@
     document.addEventListener("DOMContentLoaded", () => {
       const dateEl = document.getElementById("f_date");
       if (dateEl) dateEl.valueAsDate = new Date();
-      
+
       // Load Remembered Username if exists
       const savedUser = localStorage.getItem("cswd_remembered_username");
       if (savedUser) {
@@ -620,7 +794,7 @@
 
           adminSidebar.classList.remove("hidden");
           clientSidebar.classList.add("hidden");
-          
+
           document.getElementById("sideAdminName").textContent = user.fullname || user.username;
 
           loadRecords();
@@ -629,7 +803,7 @@
           // CLIENT ROLE: Show Client Side Navigation & Default Home View
           currentAppView = 'client';
           adminSec.classList.add("hidden");
-          
+
           adminSidebar.classList.add("hidden");
           clientSidebar.classList.remove("hidden");
 
@@ -658,7 +832,7 @@
 
     async function handleLogin(e) {
       e.preventDefault();
-      
+
       const username = document.getElementById("loginUsername").value.trim();
       const password = document.getElementById("loginPassword").value.trim();
       const rememberMe = document.getElementById("rememberMe").checked;
