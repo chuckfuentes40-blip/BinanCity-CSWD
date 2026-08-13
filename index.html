@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CSWD Web Portal - City of Biñan</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cswd: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
+            },
+            brand: {
+              headerFrom: '#1e1b4b',
+              headerVia: '#1e3a8a',
+              headerTo: '#312e81',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col justify-between">
+
+  <!-- OVERLAY BACKDROP FOR SIDEBAR -->
+  <div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/60 z-40 hidden transition-opacity duration-300"></div>
+
+  <!-- OFF-CANVAS SIDE NAVBAR -->
+  <aside id="sideNavbar" class="fixed top-0 left-0 h-full w-80 bg-white shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between">
+    <div>
+      <!-- Drawer Close Header -->
+      <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+        <span class="text-xs font-bold tracking-wider text-slate-500 uppercase">User Portal Menu</span>
+        <button onclick="toggleSidebar()" class="p-2 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-200 transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- ADMIN SIDEBAR CONTENT -->
+      <div id="adminSidebarContent" class="p-6">
+        <div class="flex flex-col items-center text-center pb-6 border-b border-slate-100">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256" 
+               alt="Admin Profile" 
+               class="w-24 h-24 rounded-full border-4 border-indigo-600 shadow-md object-cover mb-3" />
+          <h3 class="font-bold text-slate-800 text-lg">Atty. Elena Rostata</h3>
+          <p class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full mt-1">CSWD Focal Officer</p>
+          <p class="text-xs text-slate-500 mt-2"><i class="fa-solid fa-location-dot mr-1 text-red-500"></i>Barangay San Vicente</p>
+        </div>
+
+        <nav class="mt-6 space-y-2">
+          <button onclick="switchAdminTab('solo-parent')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition active-tab-btn">
+            <i class="fa-solid fa-person-breastfeeding text-indigo-600 w-5"></i>
+            <span>Solo Parent</span>
+          </button>
+          <button onclick="switchAdminTab('senior-citizen')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition">
+            <i class="fa-solid fa-person-cane text-indigo-600 w-5"></i>
+            <span>Senior Citizen</span>
+          </button>
+          <button onclick="switchAdminTab('pwd')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition">
+            <i class="fa-solid fa-wheelchair text-indigo-600 w-5"></i>
+            <span>PWD</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- CLIENT SIDEBAR CONTENT -->
+      <div id="clientSidebarContent" class="p-6 hidden">
+        <div class="flex flex-col items-center text-center pb-6 border-b border-slate-100">
+          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=256" 
+               alt="Client Profile" 
+               class="w-24 h-24 rounded-full border-4 border-emerald-600 shadow-md object-cover mb-3" />
+          <h3 class="font-bold text-slate-800 text-lg">Maria Dela Cruz</h3>
+          <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-location-dot mr-1 text-red-500"></i>Barangay Canlalay</p>
+        </div>
+
+        <nav class="mt-6 space-y-2">
+          <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-200">
+            <i class="fa-solid fa-file-signature text-emerald-600 w-5"></i>
+            <span>Solo Parent Form</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Sidebar Switcher Demo Toggle -->
+    <div class="p-4 bg-slate-50 border-t border-slate-100">
+      <p class="text-xs text-slate-400 mb-2 font-medium uppercase tracking-wider text-center">Demo View Switcher</p>
+      <div class="grid grid-cols-2 gap-2 bg-slate-200 p-1 rounded-lg">
+        <button id="btnSwitchAdmin" onclick="setRole('admin')" class="py-1.5 text-xs font-semibold rounded bg-white shadow-sm text-indigo-900">Admin</button>
+        <button id="btnSwitchClient" onclick="setRole('client')" class="py-1.5 text-xs font-semibold rounded text-slate-600 hover:text-slate-900">Client</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- TOP HEADER -->
+  <header class="bg-gradient-to-r from-brand-headerFrom via-brand-headerVia to-brand-headerTo text-white shadow-xl relative z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+      
+      <!-- Top Nav Ribbon -->
+      <div class="flex items-center justify-between gap-4 mb-4 pb-3 border-b border-indigo-800/60">
+        <div class="flex items-center gap-3">
+          <button onclick="toggleSidebar()" class="p-2.5 rounded-lg bg-indigo-900/60 hover:bg-indigo-800 text-white transition focus:ring-2 focus:ring-indigo-400" title="Open Navigation Drawer">
+            <i class="fa-solid fa-bars text-xl"></i>
+          </button>
+          
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-building-columns text-yellow-400 text-xl sm:text-2xl"></i>
+            <div>
+              <span class="text-xs uppercase tracking-widest text-indigo-200 block font-semibold leading-tight">Republic of the Philippines | City of Biñan</span>
+              <h1 class="text-sm sm:text-base font-extrabold text-white tracking-wide leading-tight">CITY SOCIAL WELFARE DEPARTMENT (CSWD)</h1>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            System Online (2026)
+          </span>
+          <button onclick="toggleRoleQuick()" id="roleBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-amber-400 text-slate-950 hover:bg-amber-300 transition">
+            Admin Mode
+          </button>
+        </div>
+      </div>
+
+      <!-- Banner Hero Section -->
+      <div class="text-center py-4 sm:py-6">
+        <h2 id="pageBannerTitle" class="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-2">
+          CSWD Admin Management Portal
+        </h2>
+        <p id="pageBannerSubtitle" class="text-xs sm:text-sm text-indigo-200 max-w-2xl mx-auto">
+          Centralized portal for Social Welfare Services, Barangay Registrations, and Automated Community Support Operations.
+        </p>
+
+        <!-- Search Bar -->
+        <div class="mt-6 max-w-xl mx-auto relative">
+          <div class="relative flex items-center">
+            <i class="fa-solid fa-magnifying-glass absolute left-4 text-slate-400"></i>
+            <input type="text" placeholder="Search records, control numbers, or resident name..." class="w-full pl-11 pr-4 py-3 bg-white text-slate-800 text-sm rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-400 transition" />
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+
+    <!-- ==================== ADMIN PAGE CONTENT ==================== -->
+    <section id="adminPage" class="space-y-6">
+      <!-- Admin Stats Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Solo Parents</p>
+            <h3 class="text-2xl font-black text-slate-800 mt-1">1,428</h3>
+            <span class="text-xs text-emerald-600 font-semibold"><i class="fa-solid fa-arrow-trend-up"></i> +12% this month</span>
+          </div>
+          <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl"><i class="fa-solid fa-person-breastfeeding text-xl"></i></div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Senior Citizens</p>
+            <h3 class="text-2xl font-black text-slate-800 mt-1">3,890</h3>
+            <span class="text-xs text-emerald-600 font-semibold"><i class="fa-solid fa-arrow-trend-up"></i> +5% this month</span>
+          </div>
+          <div class="p-3 bg-amber-50 text-amber-600 rounded-xl"><i class="fa-solid fa-person-cane text-xl"></i></div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">PWD Members</p>
+            <h3 class="text-2xl font-black text-slate-800 mt-1">954</h3>
+            <span class="text-xs text-indigo-600 font-semibold"><i class="fa-solid fa-minus"></i> Stable</span>
+          </div>
+          <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i class="fa-solid fa-wheelchair text-xl"></i></div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Pending Registrations</p>
+            <h3 class="text-2xl font-black text-amber-600 mt-1">42</h3>
+            <span class="text-xs text-amber-600 font-semibold"><i class="fa-solid fa-clock"></i> Requires Review</span>
+          </div>
+          <div class="p-3 bg-amber-50 text-amber-600 rounded-xl"><i class="fa-solid fa-file-invoice text-xl"></i></div>
+        </div>
+      </div>
+
+      <!-- Main Admin Table Section -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+          <div>
+            <h3 id="adminTabTitle" class="text-lg font-bold text-slate-800">Solo Parent Database</h3>
+            <p class="text-xs text-slate-500">Registered citizens under Solo Parent Federation - City of Biñan</p>
+          </div>
+          <div class="flex gap-2">
+            <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition flex items-center gap-2">
+              <i class="fa-solid fa-file-export"></i> Export Report
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Pills -->
+        <div class="px-6 py-3 bg-slate-50 border-b border-slate-100 flex gap-2 overflow-x-auto">
+          <button class="px-3 py-1 bg-white text-indigo-700 font-semibold text-xs rounded-full border border-indigo-200 shadow-sm">All Barangays</button>
+          <button class="px-3 py-1 text-slate-600 hover:bg-white text-xs rounded-full transition">San Vicente</button>
+          <button class="px-3 py-1 text-slate-600 hover:bg-white text-xs rounded-full transition">Canlalay</button>
+          <button class="px-3 py-1 text-slate-600 hover:bg-white text-xs rounded-full transition">Platero</button>
+          <button class="px-3 py-1 text-slate-600 hover:bg-white text-xs rounded-full transition">Poblacion</button>
+        </div>
+
+        <!-- Responsive Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-50 text-slate-700 uppercase font-bold text-[11px] border-b border-slate-200">
+              <tr>
+                <th class="py-3 px-4">Control No.</th>
+                <th class="py-3 px-4">Member Name</th>
+                <th class="py-3 px-4">Barangay</th>
+                <th class="py-3 px-4">Classification / Status</th>
+                <th class="py-3 px-4">ID Status</th>
+                <th class="py-3 px-4">4Ps / Subsidy</th>
+                <th class="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-mono font-semibold text-indigo-900">SP-2026-00891</td>
+                <td class="py-3.5 px-4 font-bold text-slate-800">Santos, Maria Clara</td>
+                <td class="py-3.5 px-4">Canlalay</td>
+                <td class="py-3.5 px-4">Spouse Deceased</td>
+                <td class="py-3.5 px-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">Valid</span></td>
+                <td class="py-3.5 px-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">4Ps Recipient</span></td>
+                <td class="py-3.5 px-4 text-right space-x-1">
+                  <button class="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded"><i class="fa-solid fa-eye"></i></button>
+                  <button class="p-1.5 text-slate-600 hover:bg-slate-100 rounded"><i class="fa-solid fa-pen"></i></button>
+                </td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-mono font-semibold text-indigo-900">SP-2026-00892</td>
+                <td class="py-3.5 px-4 font-bold text-slate-800">Reyes, Juanito Jr.</td>
+                <td class="py-3.5 px-4">San Vicente</td>
+                <td class="py-3.5 px-4">Unmarried Mother/Father</td>
+                <td class="py-3.5 px-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">For Renewal</span></td>
+                <td class="py-3.5 px-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">None</span></td>
+                <td class="py-3.5 px-4 text-right space-x-1">
+                  <button class="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded"><i class="fa-solid fa-eye"></i></button>
+                  <button class="p-1.5 text-slate-600 hover:bg-slate-100 rounded"><i class="fa-solid fa-pen"></i></button>
+                </td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-mono font-semibold text-indigo-900">SP-2026-00893</td>
+                <td class="py-3.5 px-4 font-bold text-slate-800">Dizon, Angela May</td>
+                <td class="py-3.5 px-4">Platero</td>
+                <td class="py-3.5 px-4">Legal Separation</td>
+                <td class="py-3.5 px-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-red-100 text-red-800">Expired</span></td>
+                <td class="py-3.5 px-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">Subsidy Recipient</span></td>
+                <td class="py-3.5 px-4 text-right space-x-1">
+                  <button class="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded"><i class="fa-solid fa-eye"></i></button>
+                  <button class="p-1.5 text-slate-600 hover:bg-slate-100 rounded"><i class="fa-solid fa-pen"></i></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== CLIENT PAGE CONTENT (SOLO PARENT FORM) ==================== -->
+    <section id="clientPage" class="hidden max-w-4xl mx-auto">
+      
+      <form onsubmit="event.preventDefault(); alert('Form submitted successfully!');" class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+        
+        <!-- Document Branding Header -->
+        <div class="p-6 text-center border-b border-slate-200 bg-slate-50">
+          <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-wide uppercase">SOLO PARENT FEDERATION - CITY OF BIÑAN</h2>
+          <p class="text-sm font-bold text-slate-700 tracking-wider uppercase mt-1">MEMBER PROFILE AND SURVEY FORM</p>
+        </div>
+
+        <div class="p-6 sm:p-8 space-y-8">
+
+          <!-- TOP METADATA BLOCK -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Barangay</label>
+              <input type="text" placeholder="Enter Barangay" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Date</label>
+              <input type="date" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Control No.</label>
+              <input type="text" placeholder="e.g. SP-2026-XXXX" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none font-mono" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Interviewer</label>
+              <input type="text" placeholder="Interviewer Name" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+            </div>
+          </div>
+
+          <!-- SECTION A: MEMBER INFORMATION -->
+          <div>
+            <div class="bg-sky-100 text-slate-900 px-4 py-2 font-bold text-sm rounded-lg mb-4 uppercase tracking-wide">
+              A. Member Information
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="sm:col-span-3">
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Name of Member</label>
+                <input type="text" placeholder="Full Name (First, Middle, Last)" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Sex</label>
+                <div class="flex flex-wrap gap-3 text-xs">
+                  <label class="inline-flex items-center gap-1.5"><input type="radio" name="sex" class="text-emerald-600 focus:ring-emerald-500" /> Male</label>
+                  <label class="inline-flex items-center gap-1.5"><input type="radio" name="sex" class="text-emerald-600 focus:ring-emerald-500" /> Female</label>
+                  <label class="inline-flex items-center gap-1.5"><input type="radio" name="sex" class="text-emerald-600 focus:ring-emerald-500" /> Prefer not to say</label>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Age</label>
+                <div class="flex items-center gap-2">
+                  <input type="number" placeholder="Age" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+                  <span class="text-xs text-slate-500 font-medium whitespace-nowrap">years old</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Contact Number</label>
+                <input type="text" placeholder="0912 345 6789" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+              </div>
+
+              <div class="sm:col-span-3">
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Complete Address</label>
+                <input type="text" placeholder="House No., Street, Subdivision, Barangay, City of Biñan, Laguna" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+              </div>
+
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Classification of Solo Parent</label>
+                <input type="text" placeholder="e.g. Death of spouse, Legal separation, Unmarried" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">No. of Dependents</label>
+                <input type="number" min="0" placeholder="0" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+              </div>
+
+              <div class="sm:col-span-3">
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Source of Income / Livelihood</label>
+                <input type="text" placeholder="e.g. Employed, Business, Freelance, None" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION B: DISABILITY INFORMATION -->
+          <div>
+            <div class="bg-sky-100 text-slate-900 px-4 py-2 font-bold text-sm rounded-lg mb-4 uppercase tracking-wide">
+              B. Disability Information
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Does the member have a disability?</label>
+                <div class="flex gap-4 text-xs mb-2">
+                  <label class="inline-flex items-center gap-1.5"><input type="radio" name="memberDisability" class="text-emerald-600" /> Yes</label>
+                  <label class="inline-flex items-center gap-1.5"><input type="radio" name="memberDisability" class="text-emerald-600" /> No</label>
+                </div>
+                <input type="text" placeholder="Type of Disability (if any)" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Does any dependent have a disability?</label>
+                <div class="flex gap-4 text-xs mb-2">
+                  <label class="inline-flex items-center gap-1.5"><input type="radio" name="depDisability" class="text-emerald-600" /> Yes</label>
+                  <label class="inline-flex items-center gap-1.5"><input type="radio" name="depDisability" class="text-emerald-600" /> No</label>
+                </div>
+                <input type="text" placeholder="Type of Disability (if any)" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION C: SOLO PARENT ID DETAILS -->
+          <div>
+            <div class="bg-sky-100 text-slate-900 px-4 py-2 font-bold text-sm rounded-lg mb-4 uppercase tracking-wide">
+              C. Solo Parent ID Details
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">ID Number</label>
+                <input type="text" placeholder="ID Number" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Expiration Date</label>
+                <input type="date" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-2">ID Status</label>
+                <div class="flex gap-4 text-xs">
+                  <label class="inline-flex items-center gap-1.5"><input type="radio" name="idStatus" class="text-emerald-600" /> Valid</label>
+                  <label class="inline-flex items-center gap-1.5"><input type="radio" name="idStatus" class="text-emerald-600" /> Expired</label>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-2">For Renewal</label>
+                <div class="flex gap-4 text-xs">
+                  <label class="inline-flex items-center gap-1.5"><input type="radio" name="forRenewal" class="text-emerald-600" /> Yes</label>
+                  <label class="inline-flex items-center gap-1.5"><input type="radio" name="forRenewal" class="text-emerald-600" /> No</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION D: ASSISTANCE / PROGRAM STATUS -->
+          <div>
+            <div class="bg-sky-100 text-slate-900 px-4 py-2 font-bold text-sm rounded-lg mb-4 uppercase tracking-wide">
+              D. Assistance / Program Status
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="flex justify-between items-center p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                <span class="text-xs font-bold text-slate-700 uppercase">Subsidy Recipient</span>
+                <div class="flex gap-3 text-xs">
+                  <label class="inline-flex items-center gap-1"><input type="radio" name="subsidy" class="text-emerald-600" /> Yes</label>
+                  <label class="inline-flex items-center gap-1"><input type="radio" name="subsidy" class="text-emerald-600" /> No</label>
+                </div>
+              </div>
+
+              <div class="flex justify-between items-center p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                <span class="text-xs font-bold text-slate-700 uppercase">INB</span>
+                <div class="flex gap-3 text-xs">
+                  <label class="inline-flex items-center gap-1"><input type="radio" name="inb" class="text-emerald-600" /> Yes</label>
+                  <label class="inline-flex items-center gap-1"><input type="radio" name="inb" class="text-emerald-600" /> No</label>
+                </div>
+              </div>
+
+              <div class="flex justify-between items-center p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                <span class="text-xs font-bold text-slate-700 uppercase">4Ps</span>
+                <div class="flex gap-3 text-xs">
+                  <label class="inline-flex items-center gap-1"><input type="radio" name="fourPs" class="text-emerald-600" /> Yes</label>
+                  <label class="inline-flex items-center gap-1"><input type="radio" name="fourPs" class="text-emerald-600" /> No</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION E: SKILLS AND LIVELIHOOD PROFILE -->
+          <div>
+            <div class="bg-sky-100 text-slate-900 px-4 py-2 font-bold text-sm rounded-lg mb-4 uppercase tracking-wide">
+              E. Skills and Livelihood Profile
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Skill Set / Existing Skills</label>
+                <input type="text" placeholder="e.g. Cooking, Dressmaking, Computer Literacy" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Skills Training Interested In</label>
+                <input type="text" placeholder="e.g. Food Processing, Basic Bookkeeping, Crafts" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Preferred Livelihood / Income Opportunity</label>
+                <input type="text" placeholder="e.g. Sari-sari store, Small Business Grant, Employment" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION F: REMARKS / OTHER CONCERNS -->
+          <div>
+            <div class="bg-sky-100 text-slate-900 px-4 py-2 font-bold text-sm rounded-lg mb-4 uppercase tracking-wide">
+              F. Remarks / Other Concerns
+            </div>
+
+            <textarea rows="3" placeholder="Additional remarks or specific assistance requested..." class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none"></textarea>
+          </div>
+
+          <!-- CERTIFICATION SECTION -->
+          <div class="p-4 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 space-y-4">
+            <p class="font-medium italic leading-relaxed">
+              <strong>Certification:</strong> I certify that the information provided above is true and correct to the best of my knowledge and may be used for updating the Solo Parent Federation database and program planning.
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-6 border-t border-amber-200/60 text-center">
+              <div>
+                <div class="border-b border-slate-700 mb-1 mx-4"></div>
+                <p class="font-bold text-slate-800">Signature over Printed Name of Member</p>
+              </div>
+              <div>
+                <div class="border-b border-slate-700 mb-1 mx-4"></div>
+                <p class="font-bold text-slate-800">Signature of Interviewer / Officer</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- FORM ACTION BUTTONS -->
+          <div class="flex flex-col sm:flex-row justify-end gap-3 pt-4">
+            <button type="button" class="px-6 py-2.5 rounded-xl border border-slate-300 text-slate-700 text-xs font-bold hover:bg-slate-100 transition">
+              Save Draft
+            </button>
+            <button type="submit" class="px-6 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 shadow-md transition">
+              Submit Survey Form
+            </button>
+          </div>
+
+        </div>
+      </form>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-slate-900 text-slate-400 text-xs py-8 border-t border-slate-800 mt-12">
+    <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
+      <p class="font-semibold text-slate-300">City Social Welfare Department (CSWD) © 2026. All Rights Reserved.</p>
+      <p class="text-slate-500">City Government of Biñan | Social Services and Community Welfare Division</p>
+    </div>
+  </footer>
+
+  <!-- INTERACTIVE JAVASCRIPT LOGIC -->
+  <script>
+    let currentRole = 'admin'; // 'admin' or 'client'
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sideNavbar');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      
+      const isHidden = sidebar.classList.contains('-translate-x-full');
+      if (isHidden) {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+      } else {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+      }
+    }
+
+    function setRole(role) {
+      currentRole = role;
+      const adminPage = document.getElementById('adminPage');
+      const clientPage = document.getElementById('clientPage');
+      const adminSide = document.getElementById('adminSidebarContent');
+      const clientSide = document.getElementById('clientSidebarContent');
+      const roleBadge = document.getElementById('roleBadge');
+      const bannerTitle = document.getElementById('pageBannerTitle');
+      const bannerSubtitle = document.getElementById('pageBannerSubtitle');
+
+      const btnAdmin = document.getElementById('btnSwitchAdmin');
+      const btnClient = document.getElementById('btnSwitchClient');
+
+      if (role === 'admin') {
+        adminPage.classList.remove('hidden');
+        clientPage.classList.add('hidden');
+        adminSide.classList.remove('hidden');
+        clientSide.classList.add('hidden');
+
+        roleBadge.innerText = 'Admin Mode';
+        roleBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-amber-400 text-slate-950 hover:bg-amber-300 transition';
+
+        bannerTitle.innerText = 'CSWD Admin Management Portal';
+        bannerSubtitle.innerText = 'Centralized portal for Social Welfare Services, Barangay Registrations, and Automated Community Support Operations.';
+
+        btnAdmin.className = 'py-1.5 text-xs font-semibold rounded bg-white shadow-sm text-indigo-900';
+        btnClient.className = 'py-1.5 text-xs font-semibold rounded text-slate-600 hover:text-slate-900';
+      } else {
+        adminPage.classList.add('hidden');
+        clientPage.classList.remove('hidden');
+        adminSide.classList.add('hidden');
+        clientSide.classList.remove('hidden');
+
+        roleBadge.innerText = 'Client Mode';
+        roleBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-emerald-400 text-slate-950 hover:bg-emerald-300 transition';
+
+        bannerTitle.innerText = 'Member Profile Registration Hub';
+        bannerSubtitle.innerText = 'Fill out and submit your official Solo Parent Federation & CSWD survey form below.';
+
+        btnClient.className = 'py-1.5 text-xs font-semibold rounded bg-white shadow-sm text-emerald-900';
+        btnAdmin.className = 'py-1.5 text-xs font-semibold rounded text-slate-600 hover:text-slate-900';
+      }
+    }
+
+    function toggleRoleQuick() {
+      setRole(currentRole === 'admin' ? 'client' : 'admin');
+    }
+
+    function switchAdminTab(category) {
+      const title = document.getElementById('adminTabTitle');
+      if (category === 'solo-parent') {
+        title.innerText = 'Solo Parent Database';
+      } else if (category === 'senior-citizen') {
+        title.innerText = 'Senior Citizen Registry';
+      } else if (category === 'pwd') {
+        title.innerText = 'PWD Assistance Portal';
+      }
+      toggleSidebar();
+    }
+  </script>
+</body>
+</html>
