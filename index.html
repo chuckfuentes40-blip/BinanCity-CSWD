@@ -6,21 +6,13 @@
   <title>CSWD Web Portal - City of Biñan</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome CDN -->
+  <!-- FontAwesome Icons CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            cswd: {
-              50: '#f0fdf4',
-              100: '#dcfce7',
-              600: '#16a34a',
-              700: '#15803d',
-              800: '#166534',
-              900: '#14532d',
-            },
             brand: {
               headerFrom: '#1e1b4b',
               headerVia: '#1e3a8a',
@@ -31,14 +23,6 @@
       }
     }
   </script>
-  <style>
-    /* Print optimizations for physical paper printing if needed */
-    @media print {
-      body { background: white !important; color: black !important; }
-      header, footer, #sidebarBackdrop, #sideNavbar, .no-print { display: none !important; }
-      .print-shadow-none { shadow: none !important; border: 1px solid #ccc !important; }
-    }
-  </style>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col justify-between antialiased">
 
@@ -102,7 +86,7 @@
       </div>
     </div>
 
-    <!-- Sidebar Switcher Demo Toggle -->
+    <!-- Page View Switcher -->
     <div class="p-4 bg-slate-50 border-t border-slate-100">
       <p class="text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-wider text-center">Page View Switcher</p>
       <div class="grid grid-cols-2 gap-2 bg-slate-200 p-1 rounded-xl">
@@ -166,7 +150,7 @@
     </div>
   </header>
 
-  <!-- MAIN CONTENT CONTAINER -->
+  <!-- MAIN CONTAINER -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
 
     <!-- ==================== ADMIN PAGE CONTENT ==================== -->
@@ -223,7 +207,7 @@
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
           <div>
             <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Submitted Submissions</p>
-            <h3 id="statSubmitted" class="text-2xl font-black text-emerald-600 mt-1">42</h3>
+            <h3 id="statSubmitted" class="text-2xl font-black text-emerald-600 mt-1">3</h3>
             <span class="text-[11px] text-emerald-600 font-bold"><i class="fa-solid fa-circle-check mr-1"></i>Synced with Sheet</span>
           </div>
           <div class="p-3 bg-emerald-50 text-emerald-600 rounded-2xl"><i class="fa-solid fa-file-circle-check text-xl"></i></div>
@@ -560,11 +544,9 @@
 
   <!-- INTERACTIVE JAVASCRIPT & GOOGLE SHEETS API BACKEND LOGIC -->
   <script>
-    // Global State & Storage
     let currentRole = 'admin';
-    let googleScriptUrl = localStorage.getItem('https://script.google.com/macros/s/AKfycbw1O3MPFomu4LoHN-oj0fhAc8lhp3aWDkOlCtjVYvOefeTKyT3M7WbR2AFlEokby_te/exec') || '';
+    let googleScriptUrl = localStorage.getItem('cswd_google_script_url') || '';
     
-    // In-memory Database for local display and mock demo
     let localDatabase = [
       {
         controlNo: "SP-2026-00891",
@@ -572,7 +554,7 @@
         barangay: "Canlalay",
         classification: "Spouse Deceased",
         idStatus: "Valid",
-        programStatus: "4Ps Recipient",
+        programStatus: "4Ps Beneficiary",
         date: "2026-08-10"
       },
       {
@@ -595,24 +577,19 @@
       }
     ];
 
-    // Initialize Page
     document.addEventListener('DOMContentLoaded', () => {
-      // Set today's date default
       const dateInput = document.getElementById('field_date');
       if (dateInput) {
         dateInput.value = new Date().toISOString().split('T')[0];
       }
 
-      // Load saved Script URL
       if (googleScriptUrl) {
         document.getElementById('apiUrlInput').value = googleScriptUrl;
       }
 
-      // Render Admin Table
       renderTable(localDatabase);
     });
 
-    // Toggle Side Drawer Navbar
     function toggleSidebar() {
       const sidebar = document.getElementById('sideNavbar');
       const backdrop = document.getElementById('sidebarBackdrop');
@@ -627,7 +604,6 @@
       }
     }
 
-    // Role Switcher (Admin vs Client Page)
     function setRole(role) {
       currentRole = role;
       const adminPage = document.getElementById('adminPage');
@@ -676,7 +652,6 @@
       setRole(currentRole === 'admin' ? 'client' : 'admin');
     }
 
-    // Save Web App URL
     function saveApiUrl() {
       const url = document.getElementById('apiUrlInput').value.trim();
       if (url) {
@@ -688,7 +663,6 @@
       }
     }
 
-    // Render Admin Records Table
     function renderTable(data) {
       const tbody = document.getElementById('recordsTableBody');
       tbody.innerHTML = '';
@@ -727,7 +701,6 @@
       document.getElementById('statSubmitted').innerText = localDatabase.length.toString();
     }
 
-    // Filter Table by Barangay
     function filterByBarangay(barangay) {
       if (barangay === 'ALL') {
         renderTable(localDatabase);
@@ -737,7 +710,6 @@
       }
     }
 
-    // Filter Table by Global Search Input
     function filterTable() {
       const query = document.getElementById('globalSearchInput').value.toLowerCase();
       const filtered = localDatabase.filter(x => 
@@ -748,7 +720,6 @@
       renderTable(filtered);
     }
 
-    // Sidebar Category Switcher
     function switchAdminCategory(cat) {
       const title = document.getElementById('adminTabTitle');
       const b1 = document.getElementById('navBtnSoloParent');
@@ -772,7 +743,6 @@
       toggleSidebar();
     }
 
-    // Alert UI Banner Helper
     function showAlert(msg, type) {
       const alertBox = document.getElementById('formAlert');
       const alertMsg = document.getElementById('alertMessage');
@@ -792,7 +762,6 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // CLIENT PAGE FORM SUBMISSION LOGIC TO GOOGLE SHEETS
     async function submitSoloParentForm(event) {
       event.preventDefault();
       
@@ -802,7 +771,6 @@
 
       const form = event.target;
       
-      // Build Payload matching Google Sheet Columns (A to AB)
       const payload = {
         barangay: form.querySelector('[name="barangay"]').value,
         date: form.querySelector('[name="date"]').value,
@@ -833,7 +801,6 @@
         remarks: form.querySelector('[name="remarks"]').value
       };
 
-      // Also add to local memory for instant Admin table update
       localDatabase.unshift({
         controlNo: payload.controlNo || `SP-2026-${Math.floor(1000 + Math.random() * 9000)}`,
         memberName: payload.memberName,
@@ -848,7 +815,7 @@
       const targetUrl = googleScriptUrl || document.getElementById('apiUrlInput').value.trim();
 
       if (!targetUrl) {
-        showAlert('Submitted locally! (Tip: Add your Google Apps Script Web App URL in the Admin settings to save directly into Google Sheets tab "SoloParent").', 'success');
+        showAlert('Submitted locally! (Tip: Paste your Google Apps Script Web App URL in Admin Settings to record directly into tab "SoloParent").', 'success');
         form.reset();
         document.getElementById('field_date').value = new Date().toISOString().split('T')[0];
         submitBtn.disabled = false;
@@ -859,7 +826,7 @@
       try {
         await fetch(targetUrl, {
           method: 'POST',
-          mode: 'no-cors', // Solves Google Apps Script cross-origin redirect
+          mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
@@ -876,13 +843,10 @@
       }
     }
 
-    // Export local data to CSV
     function exportToCSV() {
-      let csv = 'Control No.,Member Name,Barangay,Classification,ID Status,Program Status,Date
-';
+      let csv = 'Control No.,Member Name,Barangay,Classification,ID Status,Program Status,Date\n';
       localDatabase.forEach(r => {
-        csv += `"${r.controlNo}","${r.memberName}","${r.barangay}","${r.classification}","${r.idStatus}","${r.programStatus}","${r.date}"
-`;
+        csv += `"${r.controlNo}","${r.memberName}","${r.barangay}","${r.classification}","${r.idStatus}","${r.programStatus}","${r.date}"\n`;
       });
 
       const blob = new Blob([csv], { type: 'text/csv' });
