@@ -452,7 +452,7 @@
     // BACKEND ENDPOINT CONFIGURATION
     // Replace the URL string below with your deployed Google Apps Script Web App URL
     // ==========================================
-    const SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw1O3MPFomu4LoHN-oj0fhAc8lhp3aWDkOlCtjVYvOefeTKyT3M7WbR2AFlEokby_te/exec";
 
     // System State Variables
     let currentAppView = 'admin'; // 'admin' or 'client'
@@ -501,7 +501,7 @@
       const alertBox = document.getElementById("loginAlert");
       const btn = document.getElementById("loginBtn");
 
-      if (!SCRIPT_URL || SCRIPT_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) {
+      if (!SCRIPT_URL || SCRIPT_URL.includes("https://script.google.com/macros/s/AKfycbw1O3MPFomu4LoHN-oj0fhAc8lhp3aWDkOlCtjVYvOefeTKyT3M7WbR2AFlEokby_te/exec")) {
         showNotification(alertBox, "Please configure SCRIPT_URL in the JavaScript code.", "error");
         return;
       }
