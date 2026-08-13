@@ -550,7 +550,7 @@
       const alertBox = document.getElementById("formAlert");
       const btn = document.getElementById("submitFormBtn");
 
-      if (!SCRIPT_URL || SCRIPT_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) {
+      if (!SCRIPT_URL || SCRIPT_URL.includes("https://script.google.com/macros/s/AKfycbw1O3MPFomu4LoHN-oj0fhAc8lhp3aWDkOlCtjVYvOefeTKyT3M7WbR2AFlEokby_te/exec")) {
         showNotification(alertBox, "SCRIPT_URL missing or unconfigured in source code.", "error");
         return;
       }
