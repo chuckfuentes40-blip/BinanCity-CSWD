@@ -1031,33 +1031,82 @@ document.getElementById('signUpForm').addEventListener('submit', async (e) => {
       }
     }
 
-    async function loadAdminTableData(tabName, targetId) {
-      try {
-        const res = await fetch(`${API_URL}?action=getData&tabName=${tabName}`, { redirect: 'follow' });
-        const data = await res.json();
-        const container = document.getElementById(targetId);
+   async function loadAdminTableData(tabName, targetId) {
+  try {
+    const res = await fetch(`${API_URL}?action=getData&tabName=${tabName}`, { redirect: 'follow' });
+    const data = await res.json();
+    const container = document.getElementById(targetId);
 
-        if (!data.length) {
-          container.innerHTML = "<p class='text-slate-500'>No records found in Sheet5.</p>";
-          return;
+    if (!data || !data.length) {
+      container.innerHTML = "<p class='text-slate-500 p-4'>No records found in Sheet5.</p>";
+      return;
+    }
+
+    const headers = Object.keys(data[0]);
+
+    let row1Html = '';
+    let row2Html = '';
+    let hasSubheaders = false;
+
+    // Build 2-tier header structure
+    for (let i = 0; i < headers.length; i++) {
+      const h = headers[i];
+
+      if (h.trim().toUpperCase() === 'SOLO PARENT ID DETAILS') {
+        hasSubheaders = true;
+        // Super-header spanning 2 columns
+        row1Html += `
+          <th colspan="2" class="p-2 font-bold text-slate-800 text-center border border-slate-400 bg-slate-100 uppercase tracking-wider">
+            SOLO PARENT ID DETAILS
+          </th>`;
+        
+        // Sub-headers underneath
+        row2Html += `
+          <th class="p-2 font-bold text-slate-700 text-center border border-slate-400 bg-slate-50 text-xs uppercase tracking-wider whitespace-nowrap">
+            ID NUMBER
+          </th>
+          <th class="p-2 font-bold text-slate-700 text-center border border-slate-400 bg-slate-50 text-xs uppercase tracking-wider whitespace-nowrap">
+            EXPIRATION DATE
+          </th>`;
+
+        // Skip 'Col_15' from rendering in the top header row
+        if (i + 1 < headers.length && (headers[i + 1].startsWith('Col_') || headers[i + 1] === '')) {
+          i++;
         }
-
-        const headers = Object.keys(data[0]);
-        let html = `<table class="w-full text-left text-sm border-collapse"><thead><tr class="bg-slate-100/80">`;
-        headers.forEach(h => html += `<th class="p-3 font-bold text-slate-700 border-b whitespace-nowrap">${h}</th>`);
-        html += `</tr></thead><tbody class="divide-y divide-slate-100">`;
-        data.forEach(row => {
-          html += `<tr class="hover:bg-slate-50/80 transition">`;
-          headers.forEach(h => html += `<td class="p-3 text-slate-600 whitespace-nowrap">${row[h]}</td>`);
-          html += `</tr>`;
-        });
-        html += `</tbody></table>`;
-        container.innerHTML = html;
-      } catch(err) {
-        showNotification("Error loading sheet records.", 'error');
+      } else {
+        // Standard headers spanning 2 rows
+        row1Html += `
+          <th rowspan="2" class="p-3 font-bold text-slate-700 border border-slate-300 bg-slate-100 whitespace-nowrap align-middle text-left">
+            ${h}
+          </th>`;
       }
     }
 
+    let html = `<div class="overflow-x-auto"><table class="w-full text-left text-sm border-collapse border border-slate-300"><thead>`;
+    html += `<tr>${row1Html}</tr>`;
+    if (hasSubheaders) {
+      html += `<tr>${row2Html}</tr>`;
+    }
+    html += `</thead><tbody class="divide-y divide-slate-200">`;
+
+    // Render data rows
+    data.forEach(row => {
+      html += `<tr class="hover:bg-slate-50/80 transition">`;
+      headers.forEach(h => {
+        const val = row[h] !== undefined && row[h] !== null ? row[h] : '';
+        html += `<td class="p-3 text-slate-600 border border-slate-200 whitespace-nowrap">${val}</td>`;
+      });
+      html += `</tr>`;
+    });
+
+    html += `</tbody></table></div>`;
+    container.innerHTML = html;
+
+  } catch(err) {
+    console.error("Error loading table data:", err);
+    showNotification("Error loading sheet records.", 'error');
+  }
+}
     function toggleMobileMenu(id) {
       document.getElementById(id).classList.toggle('hidden');
     }
