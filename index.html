@@ -371,30 +371,27 @@
       }
     });
 
-    function routeUser(user) {
-      if (!user) {
-        showPage('page-login');
-        return;
-      }
+   function routeUser(user) {
+  if (!user) {
+    showPage('page-login');
+    return;
+  }
 
-      const role = (user.role || '').toString().trim().toLowerCase();
-      const displayName = user.fullname || user.username || 'Client User';
+  const role = String(user.role || '').trim().toLowerCase();
+  const displayName = user.fullname || user.username || 'User';
 
-      if (role === 'admin') {
-        showPage('page-admin');
-        document.getElementById('adminUserName').innerText = displayName;
-        switchAdminSubpage('home');
-      } else {
-        showPage('page-client');
-        
-        // DISPLAY USER NAME BELOW CLIENT PORTAL SIDEBAR HEADER
-        document.getElementById('clientUserName').innerText = displayName;
-        
-        switchClientSubpage('home');
-        loadAnnouncements();
-        renderClientForm(user);
-      }
-    }
+  if (role === 'admin') {
+    showPage('page-admin');
+    document.getElementById('adminUserName').innerText = displayName;
+    switchAdminSubpage('home');
+  } else {
+    showPage('page-client');
+    document.getElementById('clientUserName').innerText = displayName;
+    switchClientSubpage('home');
+    loadAnnouncements();
+    renderClientForm(user);
+  }
+}
 
     function switchAdminSubpage(tab) {
       ['home', 'announcement', 'soloparent'].forEach(t => {
