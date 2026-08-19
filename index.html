@@ -4,11 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- TAB ICON (Favicon) - Embedded SVG Gradient -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%23097dff'/><stop offset='50%' stop-color='%23575aff'/><stop offset='100%' stop-color='%23cb80ff'/></linearGradient></defs><rect width='100' height='100' rx='28' fill='url(%23g)'/><path d='M75 75V25a7 7 0 0 0-7-7H32a7 7 0 0 0-7 7v50m50 0h7m-7 0H45m-32 0h7m-7 0h18m14-50h3.5m-3.5 14h3.5m14-14h3.5m-3.5 14h3.5m-18 35v-18a3.5 3.5 0 0 1 3.5-3.5h7a3.5 3.5 0 0 1 3.5 3.5v18m-14 0h14' stroke='%23ffffff' stroke-width='6' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
-
-  <!-- APPLE / MOBILE HOME SCREEN ICON -->
-  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%23097dff'/><stop offset='50%' stop-color='%23575aff'/><stop offset='100%' stop-color='%23cb80ff'/></linearGradient></defs><rect width='100' height='100' rx='28' fill='url(%23g)'/><path d='M75 75V25a7 7 0 0 0-7-7H32a7 7 0 0 0-7 7v50m50 0h7m-7 0H45m-32 0h7m-7 0h18m14-50h3.5m-3.5 14h3.5m14-14h3.5m-3.5 14h3.5m-18 35v-18a3.5 3.5 0 0 1 3.5-3.5h7a3.5 3.5 0 0 1 3.5 3.5v18m-14 0h14' stroke='%23ffffff' stroke-width='6' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
 
   <title>CSWD Community Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -37,20 +33,20 @@
       box-shadow: 0 4px 15px rgba(9, 125, 255, 0.3);
     }
     .glass-card {
-      background: rgba(255, 255, 255, 0.88);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.6);
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.7);
     }
     .toast-enter { transform: translateX(120%); opacity: 0; }
     .toast-show { transform: translateX(0); opacity: 1; }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen overflow-x-hidden">
 
   <!-- TOAST NOTIFICATION CONTAINER -->
   <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col space-y-3 pointer-events-none max-w-sm w-full px-4"></div>
 
-  <!-- DECORATIVE BACKGROUND BLOBS -->
+  <!-- DECORATIVE BACKGROUND BLOBS (DASHBOARD) -->
   <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
     <div class="absolute -top-40 -left-40 w-96 h-96 bg-[#ffa8f7] rounded-full blur-3xl opacity-30"></div>
     <div class="absolute top-1/2 -right-40 w-96 h-96 bg-[#097dff] rounded-full blur-3xl opacity-20"></div>
@@ -59,9 +55,14 @@
 
   <div class="relative z-10">
 
-    <!-- LOGIN PAGE -->
-    <div id="page-login" class="min-h-screen flex items-center justify-center p-4">
-      <div class="glass-card p-8 sm:p-10 rounded-3xl shadow-2xl w-full max-w-md border border-white/60">
+    <!-- LOGIN PAGE WITH BINAN CITY HALL BACKGROUND -->
+    <div id="page-login" class="min-h-screen flex items-center justify-center p-4 relative bg-cover bg-center bg-no-repeat" style="background-image: url('https://static.where-e.com/Philippines/Laguna_State/Binan_City/Binan-City-Hall_ed0e2f6ff364068be7ef33aa24179e78.jpg');">
+      
+      <!-- DARK OVERLAY FOR READABILITY -->
+      <div class="absolute inset-0 bg-slate-950/45 backdrop-blur-[2px] z-0"></div>
+
+      <!-- GLASS LOGIN CARD -->
+      <div class="relative z-10 glass-card p-8 sm:p-10 rounded-3xl shadow-2xl w-full max-w-md border border-white/70">
         <div class="text-center mb-8">
           <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-palette-gradient flex items-center justify-center shadow-lg shadow-purple-500/20">
             <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,7 +77,7 @@
           <div>
             <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Username</label>
             <div class="relative">
-              <input type="text" id="loginUser" class="w-full pl-10 pr-4 py-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff] focus:bg-white transition" placeholder="Enter username" required>
+              <input type="text" id="loginUser" class="w-full pl-10 pr-4 py-3 bg-slate-100/90 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff] focus:bg-white transition" placeholder="Enter username" required>
               <svg class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
               </svg>
@@ -86,7 +87,7 @@
           <div>
             <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Password</label>
             <div class="relative">
-              <input type="password" id="loginPass" class="w-full pl-10 pr-12 py-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff] focus:bg-white transition" placeholder="••••••••" required>
+              <input type="password" id="loginPass" class="w-full pl-10 pr-12 py-3 bg-slate-100/90 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff] focus:bg-white transition" placeholder="••••••••" required>
               <svg class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
               </svg>
@@ -114,15 +115,16 @@
     </div>
 
     <!-- ADMIN DASHBOARD -->
-    <div id="page-admin" class="hidden min-h-screen flex flex-col md:flex-row">
-      <div class="md:hidden bg-slate-900 text-white p-4 flex justify-between items-center">
+    <div id="page-admin" class="hidden h-screen flex flex-col md:flex-row overflow-hidden">
+      <div class="md:hidden bg-slate-900 text-white p-4 flex justify-between items-center shrink-0">
         <h1 class="font-bold text-lg text-palette-gradient">CSWD Admin</h1>
         <button onclick="toggleMobileMenu('admin-sidebar')" class="p-2 rounded hover:bg-slate-800">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
       </div>
 
-      <aside id="admin-sidebar" class="hidden md:flex w-full md:w-72 bg-slate-900/95 backdrop-blur-xl text-slate-300 p-6 flex-col justify-between min-h-screen border-r border-slate-800">
+      <!-- FIXED SIDEBAR -->
+      <aside id="admin-sidebar" class="hidden md:flex w-full md:w-72 h-screen shrink-0 bg-slate-900/95 backdrop-blur-xl text-slate-300 p-6 flex-col justify-between border-r border-slate-800">
         <div>
           <div class="flex items-center space-x-3 mb-10 px-2">
             <div class="w-10 h-10 rounded-xl bg-palette-gradient flex items-center justify-center font-bold text-white shadow-md">A</div>
@@ -140,13 +142,7 @@
               <span>Announcement</span>
             </button>
             <button onclick="switchAdminSubpage('soloparent')" id="admin-nav-soloparent" class="w-full text-left px-4 py-3 rounded-xl font-medium flex items-center space-x-3 hover:bg-slate-800/60 hover:text-white transition">
-              <span>Solo Parents Data</span>
-            </button>
-            <button onclick="switchAdminSubpage('pwd')" id="admin-nav-pwd" class="w-full text-left px-4 py-3 rounded-xl font-medium flex items-center space-x-3 hover:bg-slate-800/60 hover:text-white transition">
-              <span>PWD Data</span>
-            </button>
-            <button onclick="switchAdminSubpage('senior')" id="admin-nav-senior" class="w-full text-left px-4 py-3 rounded-xl font-medium flex items-center space-x-3 hover:bg-slate-800/60 hover:text-white transition">
-              <span>Senior Citizens Data</span>
+              <span>Solo Parents Data (Sheet5)</span>
             </button>
           </nav>
         </div>
@@ -157,11 +153,12 @@
         </button>
       </aside>
 
-      <main class="flex-1 p-6 sm:p-10 overflow-y-auto">
+      <!-- SCROLLABLE MAIN CONTENT -->
+      <main class="flex-1 h-full overflow-y-auto p-6 sm:p-10">
         <div id="admin-sub-home" class="space-y-6">
           <div class="bg-palette-gradient p-8 rounded-3xl text-white shadow-xl">
             <h2 class="text-3xl font-extrabold">Welcome back, Admin!</h2>
-            <p class="text-white/80 mt-2 max-w-xl">Manage announcements, monitor sector applications, and review social welfare data across all barangays.</p>
+            <p class="text-white/80 mt-2 max-w-xl">Manage announcements and review Sheet5 records in real-time.</p>
           </div>
         </div>
 
@@ -181,32 +178,23 @@
         </div>
 
         <div id="admin-sub-soloparent" class="hidden">
-          <h2 class="text-2xl font-bold text-slate-900 mb-6">Solo Parents Database</h2>
+          <h2 class="text-2xl font-bold text-slate-900 mb-6">Sheet5 Database Records</h2>
           <div id="data-soloparent-table" class="glass-card p-6 rounded-2xl shadow-xl overflow-x-auto">Loading data...</div>
-        </div>
-
-        <div id="admin-sub-pwd" class="hidden">
-          <h2 class="text-2xl font-bold text-slate-900 mb-6">PWD Database</h2>
-          <div id="data-pwd-table" class="glass-card p-6 rounded-2xl shadow-xl overflow-x-auto">No records found.</div>
-        </div>
-
-        <div id="admin-sub-senior" class="hidden">
-          <h2 class="text-2xl font-bold text-slate-900 mb-6">Senior Citizens Database</h2>
-          <div id="data-senior-table" class="glass-card p-6 rounded-2xl shadow-xl overflow-x-auto">No records found.</div>
         </div>
       </main>
     </div>
 
     <!-- CLIENT DASHBOARD -->
-    <div id="page-client" class="hidden min-h-screen flex flex-col md:flex-row">
-      <div class="md:hidden bg-slate-900 text-white p-4 flex justify-between items-center">
+    <div id="page-client" class="hidden h-screen flex flex-col md:flex-row overflow-hidden">
+      <div class="md:hidden bg-slate-900 text-white p-4 flex justify-between items-center shrink-0">
         <h1 class="font-bold text-lg text-palette-gradient">Client Portal</h1>
         <button onclick="toggleMobileMenu('client-sidebar')" class="p-2 rounded hover:bg-slate-800">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
       </div>
 
-      <aside id="client-sidebar" class="hidden md:flex w-full md:w-72 bg-slate-900/95 backdrop-blur-xl text-slate-300 p-6 flex-col justify-between min-h-screen border-r border-slate-800">
+      <!-- FIXED SIDEBAR -->
+      <aside id="client-sidebar" class="hidden md:flex w-full md:w-72 h-screen shrink-0 bg-slate-900/95 backdrop-blur-xl text-slate-300 p-6 flex-col justify-between border-r border-slate-800">
         <div>
           <div class="flex items-center space-x-3 mb-10 px-2">
             <div class="w-10 h-10 rounded-xl bg-palette-gradient flex items-center justify-center font-bold text-white shadow-md">C</div>
@@ -232,14 +220,15 @@
         </button>
       </aside>
 
-      <main class="flex-1 p-6 sm:p-10 overflow-y-auto">
+      <!-- SCROLLABLE MAIN CONTENT -->
+      <main class="flex-1 h-full overflow-y-auto p-6 sm:p-10">
         <div id="client-sub-home" class="space-y-6 max-w-4xl">
           <h2 class="text-2xl font-bold text-slate-900">Latest Announcements</h2>
           <div id="client-announcements-list" class="space-y-4">Loading announcements...</div>
         </div>
 
         <div id="client-sub-form" class="hidden max-w-4xl">
-          <h2 id="client-form-title" class="text-2xl font-bold text-slate-900 mb-6">Solo Parent Federation - Member Profile and Survey Form</h2>
+          <h2 id="client-form-title" class="text-2xl font-bold text-slate-900 mb-6">Solo Parent Profile Form</h2>
           <div id="formContainer"></div>
         </div>
       </main>
@@ -380,7 +369,7 @@
     }
 
     function switchAdminSubpage(tab) {
-      const subpages = ['home', 'announcement', 'soloparent', 'pwd', 'senior'];
+      const subpages = ['home', 'announcement', 'soloparent'];
       subpages.forEach(t => {
         document.getElementById(`admin-sub-${t}`).classList.add('hidden');
         const btn = document.getElementById(`admin-nav-${t}`);
@@ -392,7 +381,7 @@
       if(activeBtn) activeBtn.className = "sidebar-active w-full text-left px-4 py-3 rounded-xl font-medium flex items-center space-x-3 text-white transition";
 
       if (tab === 'soloparent') {
-        loadAdminTableData('SoloParent', 'data-soloparent-table');
+        loadAdminTableData('Sheet5', 'data-soloparent-table');
       }
     }
 
@@ -407,158 +396,128 @@
       document.getElementById(`client-nav-${tab}`).className = "sidebar-active w-full text-left px-4 py-3 rounded-xl font-medium flex items-center space-x-3 text-white transition";
     }
 
-    // RENDER SOLO PARENT REGISTRATION FORM (COMPLETE SECTIONS A-F ALIGNED WITH GOOGLE SHEET TAB 'SoloParent')
+    // RENDER SHEET5 MAPPED FORM
     function renderClientForm(user) {
       const container = document.getElementById('formContainer');
 
       if (user.clientType === "Solo Parent") {
-        const today = new Date().toISOString().split('T')[0];
-
         container.innerHTML = `
           <form id="soloParentForm" class="space-y-6">
             
-            <!-- HEADER ADMINISTRATIVE INFO -->
-            <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Barangay</label>
-                <input type="text" name="barangay" value="${user.barangay || ''}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-              </div>
-              <div>
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Date</label>
-                <input type="date" name="date" value="${today}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-              </div>
-              <div>
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Control No.</label>
-                <input type="text" name="controlNo" placeholder="Control Number" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-              </div>
-              <div>
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Interviewer</label>
-                <input type="text" name="interviewer" placeholder="Interviewer Name" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-              </div>
-            </div>
-
-            <!-- SECTION A: MEMBER INFORMATION -->
+            <!-- SECTION 1: MEMBER DETAILS (Cols B to I) -->
             <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
-              <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">A. Member Information</h3>
+              <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">A. Member Details</h3>
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="md:col-span-2">
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Name of Member</label>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Name of Member (Col B)</label>
                   <input type="text" name="memberName" value="${user.fullname || ''}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]" required>
                 </div>
                 <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Sex</label>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Sex (Col C)</label>
                   <select name="sex" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
                     <option value="Female">Female</option>
                     <option value="Male">Male</option>
-                    <option value="Prefer not to say">Prefer not to say</option>
                   </select>
                 </div>
                 <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Age</label>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Age (Col D)</label>
                   <input type="number" name="age" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
                 </div>
+                <div class="md:col-span-2">
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Address (Col E)</label>
+                  <input type="text" name="address" placeholder="House No, Street, Barangay, City" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                </div>
                 <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Contact Number</label>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Contact Number (Col F)</label>
                   <input type="text" name="contactNumber" value="${user.contact || ''}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
                 </div>
-                <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">No. of Dependents</label>
-                  <input type="number" name="noOfDependents" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                </div>
-                <div class="md:col-span-3">
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Complete Address</label>
-                  <input type="text" name="completeAddress" placeholder="House No, Street, Barangay, City/Municipality" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                </div>
                 <div class="md:col-span-2">
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Classification of Solo Parent</label>
-                  <input type="text" name="classification" placeholder="e.g. Death of spouse, Abandonment, Unmarried" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Classification of Solo Parent (Col G)</label>
+                  <input type="text" name="classification" placeholder="e.g. Death of spouse, Abandonment" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
                 </div>
                 <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Source of Income / Livelihood</label>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Source of Income (Col H)</label>
                   <input type="text" name="sourceOfIncome" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">No. of Dependents (Col I)</label>
+                  <input type="number" name="noOfDependents" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
                 </div>
               </div>
             </div>
 
-            <!-- SECTION B: DISABILITY INFORMATION -->
+            <!-- SECTION 2: DISABILITY INFORMATION (Cols J to M) -->
             <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
               <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">B. Disability Information</h3>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Does the member have a disability?</label>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">If Member Has Disability (Col J)</label>
                   <select name="memberDisability" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
                     <option value="No">No</option>
                     <option value="Yes">Yes</option>
                   </select>
                 </div>
                 <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Type of Member Disability (if any)</label>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Type of Disability (Col K)</label>
                   <input type="text" name="memberDisabilityType" placeholder="Specify disability type" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
                 </div>
                 <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Does any dependent have a disability?</label>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">If Dependent Has Disability (Col L)</label>
                   <select name="dependentDisability" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
                     <option value="No">No</option>
                     <option value="Yes">Yes</option>
                   </select>
                 </div>
                 <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Type of Dependent Disability (if any)</label>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Type of Disability (Col M)</label>
                   <input type="text" name="dependentDisabilityType" placeholder="Specify disability type" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
                 </div>
               </div>
             </div>
 
-            <!-- SECTION C: SOLO PARENT ID DETAILS -->
+            <!-- SECTION 3: SOLO PARENT ID DETAILS (Cols N & O) -->
             <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
               <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">C. Solo Parent ID Details</h3>
-              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">ID Number</label>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">ID Number (Col N)</label>
                   <input type="text" name="idNumber" placeholder="Solo Parent ID No." class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
                 </div>
                 <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Expiration Date</label>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Expiration Date (Col O)</label>
                   <input type="date" name="idExpirationDate" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                </div>
-                <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">ID Status</label>
-                  <select name="idStatus" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                    <option value="Valid">Valid</option>
-                    <option value="Expired">Expired</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">For Renewal?</label>
-                  <select name="forRenewal" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                    <option value="No">No</option>
-                    <option value="Yes">Yes</option>
-                  </select>
                 </div>
               </div>
             </div>
 
-            <!-- SECTION D: ASSISTANCE / PROGRAM STATUS -->
+            <!-- SECTION 4: SUBSIDIES & BENEFITS (Cols P, Q, R, S) -->
             <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
-              <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">D. Assistance / Program Status</h3>
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">D. Subsidies & Benefits Status</h3>
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Subsidy Recipient</label>
-                  <select name="subsidyRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Cash Subsidy Recipient (Col P)</label>
+                  <select name="cashSubsidyRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
                     <option value="No">No</option>
                     <option value="Yes">Yes</option>
                   </select>
                 </div>
                 <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">INB Recipient</label>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">INB (Col Q)</label>
                   <select name="inbRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
                     <option value="No">No</option>
                     <option value="Yes">Yes</option>
                   </select>
                 </div>
                 <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">4Ps Recipient</label>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">4Ps (Col R)</label>
                   <select name="fourPsRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Rice Subsidy Recipient (Col S)</label>
+                  <select name="riceSubsidyRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
                     <option value="No">No</option>
                     <option value="Yes">Yes</option>
                   </select>
@@ -566,36 +525,24 @@
               </div>
             </div>
 
-            <!-- SECTION E: SKILLS AND LIVELIHOOD PROFILE -->
+            <!-- SECTION 5: SKILL SET & REMARKS (Cols T & U) -->
             <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
-              <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">E. Skills and Livelihood Profile</h3>
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">E. Additional Information</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Skill Set / Existing Skills</label>
-                  <input type="text" name="existingSkills" placeholder="e.g. Cooking, Dressmaking, Cooking" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Skill Set (Col T)</label>
+                  <input type="text" name="skillSet" placeholder="e.g. Cooking, Dressmaking, Driving" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
                 </div>
                 <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Skills Training Interested In</label>
-                  <input type="text" name="skillsTrainingInterested" placeholder="e.g. Baking, Computer Literacy" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Remarks (Col U)</label>
+                  <textarea name="remarks" placeholder="Enter remarks..." class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff] h-24"></textarea>
                 </div>
-                <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Preferred Livelihood / Income Opportunity</label>
-                  <input type="text" name="preferredLivelihood" placeholder="e.g. Sari-sari store, Food stall" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                </div>
-              </div>
-            </div>
-
-            <!-- SECTION F: REMARKS / OTHER CONCERNS -->
-            <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
-              <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">F. Remarks / Other Concerns</h3>
-              <div>
-                <textarea name="remarks" placeholder="Enter remarks, notes, or special concerns..." class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff] h-28"></textarea>
               </div>
             </div>
 
             <!-- SUBMIT BUTTON -->
             <button type="submit" id="submitSoloBtn" class="btn-palette text-white py-4 rounded-xl font-bold tracking-wide shadow-lg shadow-blue-500/25 w-full text-center">
-              Submit Solo Parent Member Survey
+              Submit Record to Sheet5
             </button>
           </form>
         `;
@@ -603,38 +550,31 @@
         document.getElementById('soloParentForm').onsubmit = async (e) => {
           e.preventDefault();
           const btn = document.getElementById('submitSoloBtn');
-          btn.innerText = "Submitting Record...";
+          btn.innerText = "Saving to Sheet5...";
           btn.disabled = true;
 
           const f = e.target;
           const formData = {
-            barangay: f.barangay.value,
-            date: f.date.value,
-            controlNo: f.controlNo.value,
-            interviewer: f.interviewer.value,
-            memberName: f.memberName.value,
-            sex: f.sex.value,
-            age: f.age.value,
-            contactNumber: f.contactNumber.value,
-            completeAddress: f.completeAddress.value,
-            classification: f.classification.value,
-            noOfDependents: f.noOfDependents.value,
-            sourceOfIncome: f.sourceOfIncome.value,
-            memberDisability: f.memberDisability.value,
-            memberDisabilityType: f.memberDisabilityType.value,
-            dependentDisability: f.dependentDisability.value,
-            dependentDisabilityType: f.dependentDisabilityType.value,
-            idNumber: f.idNumber.value,
-            idExpirationDate: f.idExpirationDate.value,
-            idStatus: f.idStatus.value,
-            forRenewal: f.forRenewal.value,
-            subsidyRecipient: f.subsidyRecipient.value,
-            inbRecipient: f.inbRecipient.value,
-            fourPsRecipient: f.fourPsRecipient.value,
-            existingSkills: f.existingSkills.value,
-            skillsTrainingInterested: f.skillsTrainingInterested.value,
-            preferredLivelihood: f.preferredLivelihood.value,
-            remarks: f.remarks.value
+            memberName: f.memberName.value,           // Col B
+            sex: f.sex.value,                         // Col C
+            age: f.age.value,                         // Col D
+            address: f.address.value,                 // Col E
+            contactNumber: f.contactNumber.value,     // Col F
+            classification: f.classification.value,   // Col G
+            sourceOfIncome: f.sourceOfIncome.value,   // Col H
+            noOfDependents: f.noOfDependents.value,   // Col I
+            memberDisability: f.memberDisability.value,         // Col J
+            memberDisabilityType: f.memberDisabilityType.value, // Col K
+            dependentDisability: f.dependentDisability.value,   // Col L
+            dependentDisabilityType: f.dependentDisabilityType.value, // Col M
+            idNumber: f.idNumber.value,               // Col N
+            idExpirationDate: f.idExpirationDate.value,// Col O
+            cashSubsidyRecipient: f.cashSubsidyRecipient.value, // Col P
+            inbRecipient: f.inbRecipient.value,       // Col Q
+            fourPsRecipient: f.fourPsRecipient.value, // Col R
+            riceSubsidyRecipient: f.riceSubsidyRecipient.value, // Col S
+            skillSet: f.skillSet.value,               // Col T
+            remarks: f.remarks.value                  // Col U
           };
 
           try {
@@ -646,15 +586,15 @@
             });
             const result = await res.json();
             if (result.success) {
-              showNotification(result.message || "Member survey saved to database!", 'success');
+              showNotification(result.message || "Record successfully added to Sheet5!", 'success');
               f.reset();
             } else {
-              showNotification(result.message || "Failed to submit survey.", 'error');
+              showNotification(result.message || "Failed to save record.", 'error');
             }
           } catch(err) {
-            showNotification("Network error submitting survey.", 'error');
+            showNotification("Network error submitting record.", 'error');
           } finally {
-            btn.innerText = "Submit Solo Parent Member Survey";
+            btn.innerText = "Submit Record to Sheet5";
             btn.disabled = false;
           }
         };
@@ -719,7 +659,7 @@
         const container = document.getElementById(targetId);
 
         if (!data.length) {
-          container.innerHTML = "<p class='text-slate-500'>No records found in this sheet tab.</p>";
+          container.innerHTML = "<p class='text-slate-500'>No records found in Sheet5.</p>";
           return;
         }
 
