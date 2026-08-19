@@ -10,13 +10,7 @@
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
     }
-    /* Color Palette Hex Mapping:
-       1: #097dff (Bright Blue)
-       2: #575aff (Indigo Blue)
-       3: #cb80ff (Purple Violet)
-       4: #f88bff (Magenta)
-       5: #ffa8f7 (Light Pink)
-    */
+    /* Color Palette Gradient Styles */
     .bg-palette-gradient {
       background: linear-gradient(135deg, #097dff 0%, #575aff 35%, #cb80ff 70%, #f88bff 100%);
     }
@@ -43,9 +37,22 @@
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.5);
     }
+    
+    /* Smooth Animation for Notifications */
+    .toast-enter {
+      transform: translateX(120%);
+      opacity: 0;
+    }
+    .toast-show {
+      transform: translateX(0);
+      opacity: 1;
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
+
+  <!-- MODERN NOTIFICATION CONTAINER (Fixed Top-Right) -->
+  <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col space-y-3 pointer-events-none max-w-sm w-full px-4"></div>
 
   <!-- BACKGROUND DECORATIVE BLOBS -->
   <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
@@ -261,7 +268,53 @@
 
     let currentUser = null;
 
-    // Load Remembered Login Credentials on Startup
+    // MODERN TOAST NOTIFICATION FUNCTION
+    function showNotification(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const isSuccess = type === 'success';
+
+      const icon = isSuccess 
+        ? `<div class="w-9 h-9 rounded-xl bg-gradient-to-r from-[#097dff] to-[#575aff] text-white flex items-center justify-center shrink-0 shadow-md">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+           </div>`
+        : `<div class="w-9 h-9 rounded-xl bg-rose-500 text-white flex items-center justify-center shrink-0 shadow-md">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+           </div>`;
+
+      toast.className = `pointer-events-auto flex items-start space-x-3 p-4 rounded-2xl glass-card shadow-2xl border ${isSuccess ? 'border-purple-200/60' : 'border-rose-200/60'} toast-enter transition-all duration-300 ease-out w-full`;
+
+      toast.innerHTML = `
+        ${icon}
+        <div class="flex-1 pr-2">
+          <h4 class="text-xs font-extrabold uppercase tracking-wider ${isSuccess ? 'text-[#575aff]' : 'text-rose-600'}">${isSuccess ? 'Success' : 'Notice'}</h4>
+          <p class="text-xs sm:text-sm font-medium text-slate-700 mt-0.5">${message}</p>
+        </div>
+        <button onclick="dismissToast(this.parentElement)" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      `;
+
+      container.appendChild(toast);
+
+      // Slide In
+      requestAnimationFrame(() => {
+        toast.classList.remove('toast-enter');
+        toast.classList.add('toast-show');
+      });
+
+      // Auto Dismiss after 4 seconds
+      setTimeout(() => dismissToast(toast), 4000);
+    }
+
+    function dismissToast(toast) {
+      if (!toast || !toast.parentElement) return;
+      toast.classList.remove('toast-show');
+      toast.classList.add('toast-enter');
+      setTimeout(() => toast.remove(), 300);
+    }
+
+    // Load Remembered Credentials
     window.addEventListener('DOMContentLoaded', () => {
       const savedUser = localStorage.getItem('cswd_remembered_user');
       const savedPass = localStorage.getItem('cswd_remembered_pass');
@@ -274,7 +327,7 @@
       }
     });
 
-    // Eye Icon Toggle for Password Visibility
+    // Toggle Password Visibility
     function togglePasswordVisibility() {
       const passInput = document.getElementById('loginPass');
       const eyeIcon = document.getElementById('eyeIcon');
@@ -287,7 +340,7 @@
       }
     }
 
-    // Toggle logic for Radio Button (allows unchecking)
+    // Toggle Radio Button Uncheck
     function handleRadioToggle(radio) {
       if (radio.dataset.wasChecked === "true") {
         radio.checked = false;
@@ -316,7 +369,6 @@
         const data = await res.json();
 
         if (data.success) {
-          // Save or clear remembered credentials
           if (rememberChecked) {
             localStorage.setItem('cswd_remembered_user', username);
             localStorage.setItem('cswd_remembered_pass', password);
@@ -326,12 +378,13 @@
           }
 
           currentUser = data.user;
+          showNotification(`Welcome back, ${data.user.fullname || username}!`, 'success');
           routeUser(data.user);
         } else {
-          alert(data.message);
+          showNotification(data.message || 'Invalid credentials.', 'error');
         }
       } catch (err) {
-        alert("Connection Error: Please check your API URL deployment.");
+        showNotification("Connection error: Unable to reach Google Sheets server.", 'error');
       } finally {
         loginBtn.innerText = "Sign In";
       }
@@ -379,7 +432,7 @@
       document.getElementById(`client-nav-${tab}`).className = "sidebar-active w-full text-left px-4 py-3 rounded-xl font-medium flex items-center space-x-3 text-white transition";
     }
 
-    // Render Client Dynamic Registration Form
+    // Render Client Form
     function renderClientForm(user) {
       const container = document.getElementById('formContainer');
       document.getElementById('client-form-title').innerText = `${user.clientType} Registration Form`;
@@ -447,13 +500,21 @@
             sourceOfIncome: f.sourceOfIncome.value
           };
 
-          const res = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: 'submitSoloParent', formData })
-          });
-          const result = await res.json();
-          alert(result.message);
+          try {
+            const res = await fetch(API_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: 'submitSoloParent', formData })
+            });
+            const result = await res.json();
+            if (result.success) {
+              showNotification(result.message || "Application submitted successfully!", 'success');
+            } else {
+              showNotification(result.message || "Failed to submit application.", 'error');
+            }
+          } catch(err) {
+            showNotification("Network error submitting application.", 'error');
+          }
         };
       } else {
         container.innerHTML = `<div class="glass-card p-6 rounded-2xl"><p class="text-slate-600">Application form for ${user.clientType} is coming soon.</p></div>`;
@@ -466,60 +527,76 @@
       const title = document.getElementById('annTitle').value;
       const content = document.getElementById('annContent').value;
 
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'postAnnouncement', title, content })
-      });
-      const data = await res.json();
-      alert(data.message);
-      document.getElementById('announcementForm').reset();
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'postAnnouncement', title, content })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showNotification(data.message || "Announcement published successfully!", 'success');
+          document.getElementById('announcementForm').reset();
+        } else {
+          showNotification(data.message || "Failed to publish announcement.", 'error');
+        }
+      } catch(err) {
+        showNotification("Network error posting announcement.", 'error');
+      }
     });
 
     // Fetch Announcements
     async function loadAnnouncements() {
-      const res = await fetch(`${API_URL}?action=getAnnouncements`);
-      const data = await res.json();
-      const container = document.getElementById('client-announcements-list');
+      try {
+        const res = await fetch(`${API_URL}?action=getAnnouncements`);
+        const data = await res.json();
+        const container = document.getElementById('client-announcements-list');
 
-      if (!data.length) {
-        container.innerHTML = "<p class='text-slate-500'>No announcements posted yet.</p>";
-        return;
-      }
+        if (!data.length) {
+          container.innerHTML = "<p class='text-slate-500'>No announcements posted yet.</p>";
+          return;
+        }
 
-      container.innerHTML = data.map(item => `
-        <div class="glass-card p-6 rounded-2xl shadow-md space-y-2">
-          <div class="flex justify-between items-start">
-            <h3 class="font-bold text-lg text-slate-900">${item.Title || ''}</h3>
-            <span class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-semibold">${item.Timestamp || ''}</span>
+        container.innerHTML = data.map(item => `
+          <div class="glass-card p-6 rounded-2xl shadow-md space-y-2">
+            <div class="flex justify-between items-start">
+              <h3 class="font-bold text-lg text-slate-900">${item.Title || ''}</h3>
+              <span class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-semibold">${item.Timestamp || ''}</span>
+            </div>
+            <p class="text-slate-600 leading-relaxed">${item.Content || ''}</p>
           </div>
-          <p class="text-slate-600 leading-relaxed">${item.Content || ''}</p>
-        </div>
-      `).join('');
+        `).join('');
+      } catch(err) {
+        showNotification("Could not load announcements.", 'error');
+      }
     }
 
     // Fetch Admin Data
     async function loadAdminTableData(tabName, targetId) {
-      const res = await fetch(`${API_URL}?action=getData&tabName=${tabName}`);
-      const data = await res.json();
-      const container = document.getElementById(targetId);
+      try {
+        const res = await fetch(`${API_URL}?action=getData&tabName=${tabName}`);
+        const data = await res.json();
+        const container = document.getElementById(targetId);
 
-      if (!data.length) {
-        container.innerHTML = "<p class='text-slate-500'>No records found in this sheet tab.</p>";
-        return;
+        if (!data.length) {
+          container.innerHTML = "<p class='text-slate-500'>No records found in this sheet tab.</p>";
+          return;
+        }
+
+        const headers = Object.keys(data[0]);
+        let html = `<table class="w-full text-left text-sm border-collapse"><thead><tr class="bg-slate-100/80">`;
+        headers.forEach(h => html += `<th class="p-3 font-bold text-slate-700 border-b">${h}</th>`);
+        html += `</tr></thead><tbody class="divide-y divide-slate-100">`;
+        data.forEach(row => {
+          html += `<tr class="hover:bg-slate-50/80 transition">`;
+          headers.forEach(h => html += `<td class="p-3 text-slate-600">${row[h]}</td>`);
+          html += `</tr>`;
+        });
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+      } catch(err) {
+        showNotification("Error loading sheet records.", 'error');
       }
-
-      const headers = Object.keys(data[0]);
-      let html = `<table class="w-full text-left text-sm border-collapse"><thead><tr class="bg-slate-100/80">`;
-      headers.forEach(h => html += `<th class="p-3 font-bold text-slate-700 border-b">${h}</th>`);
-      html += `</tr></thead><tbody class="divide-y divide-slate-100">`;
-      data.forEach(row => {
-        html += `<tr class="hover:bg-slate-50/80 transition">`;
-        headers.forEach(h => html += `<td class="p-3 text-slate-600">${row[h]}</td>`);
-        html += `</tr>`;
-      });
-      html += `</tbody></table>`;
-      container.innerHTML = html;
     }
 
     function toggleMobileMenu(id) {
@@ -531,6 +608,7 @@
       document.getElementById('page-admin').classList.add('hidden');
       document.getElementById('page-client').classList.add('hidden');
       document.getElementById('page-login').classList.remove('hidden');
+      showNotification("You have been logged out.", 'success');
     }
   </script>
 </body>
