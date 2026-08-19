@@ -698,77 +698,121 @@ document.getElementById('signUpForm').addEventListener('submit', async (e) => {
       }
     });
 
-    // PRINT SHEET5 DATA FUNCTION
-    async function printDataSheet() {
-      showNotification("Preparing Sheet5 data for printing...", "success");
+   // PRINT SHEET5 DATA FUNCTION (UPDATED)
+async function printDataSheet() {
+  showNotification("Preparing Sheet5 data for printing...", "success");
 
-      try {
-        const res = await fetch(`${API_URL}?action=getData&tabName=Sheet5`, { redirect: 'follow' });
-        const data = await res.json();
+  try {
+    const res = await fetch(`${API_URL}?action=getData&tabName=Sheet5`, { redirect: 'follow' });
+    const data = await res.json();
 
-        if (!data || !data.length) {
-          showNotification("No records found in Sheet5 to print.", "error");
-          return;
+    if (!data || !data.length) {
+      showNotification("No records found in Sheet5 to print.", "error");
+      return;
+    }
+
+    const headers = Object.keys(data[0]);
+
+    // 1. FILTER OUT THE DUPLICATE SUB-HEADER ROW FROM DATA BODY
+    const cleanData = data.filter(row => {
+      const isSubheaderRow = Object.values(row).some(val => {
+        const str = String(val).trim().toUpperCase();
+        return str === 'ID NUMBER' || str === 'EXPIRATION DATE';
+      });
+      return !isSubheaderRow;
+    });
+
+    let row1Html = '';
+    let row2Html = '';
+    let hasSubheaders = false;
+
+    // 2. BUILD 2-TIER MERGED HEADER STRUCTURE
+    for (let i = 0; i < headers.length; i++) {
+      const h = headers[i];
+
+      if (h.trim().toUpperCase() === 'SOLO PARENT ID DETAILS') {
+        hasSubheaders = true;
+        row1Html += `
+          <th colspan="2" style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: center; background-color: #f1f5f9; font-size: 8pt; text-transform: uppercase;">
+            SOLO PARENT ID DETAILS
+          </th>`;
+        
+        row2Html += `
+          <th style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: center; background-color: #f8fafc; font-size: 7.5pt; text-transform: uppercase;">
+            ID NUMBER
+          </th>
+          <th style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: center; background-color: #f8fafc; font-size: 7.5pt; text-transform: uppercase;">
+            EXPIRATION DATE
+          </th>`;
+
+        // Skip placeholder secondary header (e.g., 'Col_15') from top row
+        if (i + 1 < headers.length && (headers[i + 1].startsWith('Col_') || headers[i + 1] === '')) {
+          i++;
         }
-
-        const headers = Object.keys(data[0]);
-
-        const printHtml = `
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-            <meta charset="UTF-8">
-            <title>CSWD Community Portal - Sheet5 Data Sheet</title>
-            <style>
-              body { font-family: 'Arial', sans-serif; margin: 15px; color: #1e293b; }
-              .header { text-align: center; margin-bottom: 20px; }
-              .header h1 { margin: 0; font-size: 18pt; color: #0f172a; }
-              .header p { margin: 4px 0 0; font-size: 10pt; color: #64748b; }
-              table { width: 100%; border-collapse: collapse; font-size: 8pt; margin-top: 10px; }
-              th, td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; word-break: break-word; }
-              th { background-color: #f1f5f9; font-weight: bold; text-transform: uppercase; color: #334155; }
-              tr:nth-child(even) { background-color: #f8fafc; }
-              @page { size: landscape; margin: 10mm; }
-            </style>
-          </head>
-          <body>
-            <div class="header">
-              <h1>CSWD Solo Parents Master List (Sheet5)</h1>
-              <p>City Social Welfare and Development Office - Generated on ${new Date().toLocaleString()}</p>
-            </div>
-            <table>
-              <thead>
-                <tr>
-                  ${headers.map(h => `<th>${h}</th>`).join('')}
-                </tr>
-              </thead>
-              <tbody>
-                ${data.map(row => `
-                  <tr>
-                    ${headers.map(h => `<td>${row[h] !== undefined && row[h] !== null ? row[h] : ''}</td>`).join('')}
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </body>
-          </html>
-        `;
-
-        const printWindow = window.open('', '_blank');
-        if (printWindow) {
-          printWindow.document.write(printHtml);
-          printWindow.document.close();
-          printWindow.focus();
-          setTimeout(() => {
-            printWindow.print();
-          }, 500);
-        } else {
-          showNotification("Pop-up blocked! Please allow pop-ups for this site to print.", "error");
-        }
-      } catch (err) {
-        showNotification("Failed to fetch Sheet5 data for printing.", "error");
+      } else {
+        row1Html += `
+          <th rowspan="2" style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: left; background-color: #f1f5f9; vertical-align: middle; font-size: 8pt; text-transform: uppercase;">
+            ${h}
+          </th>`;
       }
     }
+
+    // 3. GENERATE CLEAN HTML DOCUMENT FOR PRINT
+    const printHtml = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <title>CSWD Community Portal - Sheet5 Data Sheet</title>
+        <style>
+          body { font-family: 'Arial', sans-serif; margin: 15px; color: #1e293b; }
+          .header { text-align: center; margin-bottom: 20px; }
+          .header h1 { margin: 0; font-size: 18pt; color: #0f172a; }
+          .header p { margin: 4px 0 0; font-size: 10pt; color: #64748b; }
+          table { width: 100%; border-collapse: collapse; font-size: 8pt; margin-top: 10px; }
+          th, td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; word-break: break-word; }
+          tr:nth-child(even) { background-color: #f8fafc; }
+          @page { size: landscape; margin: 10mm; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>CSWD Solo Parents Master List (Sheet5)</h1>
+          <p>City Social Welfare and Development Office - Generated on ${new Date().toLocaleString()}</p>
+        </div>
+        <table>
+          <thead>
+            <tr>${row1Html}</tr>
+            ${hasSubheaders ? `<tr>${row2Html}</tr>` : ''}
+          </thead>
+          <tbody>
+            ${cleanData.map(row => `
+              <tr>
+                ${headers.map(h => `<td>${row[h] !== undefined && row[h] !== null ? row[h] : ''}</td>`).join('')}
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(printHtml);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => {
+        printWindow.print();
+      }, 500);
+    } else {
+      showNotification("Pop-up blocked! Please allow pop-ups for this site to print.", "error");
+    }
+  } catch (err) {
+    console.error("Print Error:", err);
+    showNotification("Failed to fetch Sheet5 data for printing.", "error");
+  }
+}
 
     function renderClientForm(user) {
       const container = document.getElementById('formContainer');
@@ -1031,7 +1075,7 @@ document.getElementById('signUpForm').addEventListener('submit', async (e) => {
       }
     }
 
-   async function loadAdminTableData(tabName, targetId) {
+  async function loadAdminTableData(tabName, targetId) {
   try {
     const res = await fetch(`${API_URL}?action=getData&tabName=${tabName}`, { redirect: 'follow' });
     const data = await res.json();
@@ -1044,6 +1088,15 @@ document.getElementById('signUpForm').addEventListener('submit', async (e) => {
 
     const headers = Object.keys(data[0]);
 
+    // FILTER OUT SUB-HEADER ROW FROM DATA BODY
+    const cleanData = data.filter(row => {
+      const isSubheaderRow = Object.values(row).some(val => {
+        const str = String(val).trim().toUpperCase();
+        return str === 'ID NUMBER' || str === 'EXPIRATION DATE';
+      });
+      return !isSubheaderRow;
+    });
+
     let row1Html = '';
     let row2Html = '';
     let hasSubheaders = false;
@@ -1054,29 +1107,26 @@ document.getElementById('signUpForm').addEventListener('submit', async (e) => {
 
       if (h.trim().toUpperCase() === 'SOLO PARENT ID DETAILS') {
         hasSubheaders = true;
-        // Super-header spanning 2 columns
         row1Html += `
-          <th colspan="2" class="p-2 font-bold text-slate-800 text-center border border-slate-400 bg-slate-100 uppercase tracking-wider">
+          <th colspan="2" class="p-2 font-bold text-slate-800 text-center border border-slate-300 bg-slate-100 uppercase tracking-wider text-xs">
             SOLO PARENT ID DETAILS
           </th>`;
         
-        // Sub-headers underneath
         row2Html += `
-          <th class="p-2 font-bold text-slate-700 text-center border border-slate-400 bg-slate-50 text-xs uppercase tracking-wider whitespace-nowrap">
+          <th class="p-2 font-bold text-slate-700 text-center border border-slate-300 bg-slate-50 text-xs uppercase tracking-wider whitespace-nowrap">
             ID NUMBER
           </th>
-          <th class="p-2 font-bold text-slate-700 text-center border border-slate-400 bg-slate-50 text-xs uppercase tracking-wider whitespace-nowrap">
+          <th class="p-2 font-bold text-slate-700 text-center border border-slate-300 bg-slate-50 text-xs uppercase tracking-wider whitespace-nowrap">
             EXPIRATION DATE
           </th>`;
 
-        // Skip 'Col_15' from rendering in the top header row
+        // Skip the secondary column header (e.g., 'Col_15') from row 1
         if (i + 1 < headers.length && (headers[i + 1].startsWith('Col_') || headers[i + 1] === '')) {
           i++;
         }
       } else {
-        // Standard headers spanning 2 rows
         row1Html += `
-          <th rowspan="2" class="p-3 font-bold text-slate-700 border border-slate-300 bg-slate-100 whitespace-nowrap align-middle text-left">
+          <th rowspan="2" class="p-3 font-bold text-slate-700 border border-slate-300 bg-slate-100 whitespace-nowrap align-middle text-left text-xs uppercase tracking-wider">
             ${h}
           </th>`;
       }
@@ -1089,8 +1139,8 @@ document.getElementById('signUpForm').addEventListener('submit', async (e) => {
     }
     html += `</thead><tbody class="divide-y divide-slate-200">`;
 
-    // Render data rows
-    data.forEach(row => {
+    // Render clean records only
+    cleanData.forEach(row => {
       html += `<tr class="hover:bg-slate-50/80 transition">`;
       headers.forEach(h => {
         const val = row[h] !== undefined && row[h] !== null ? row[h] : '';
