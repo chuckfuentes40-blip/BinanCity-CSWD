@@ -1075,13 +1075,29 @@ document.getElementById('signUpForm').addEventListener('submit', async (e) => {
       }
     }
 
-  async function loadAdminTableData(tabName, targetId) {
+ async function loadAdminTableData(tabName, targetId) {
   try {
     const res = await fetch(`${API_URL}?action=getData&tabName=${tabName}`, { redirect: 'follow' });
-    const data = await res.json();
+
+    // 1. Check if the HTTP request was successful (Not 404/500)
+    if (!res.ok) {
+      throw new Error(`Server returned HTTP ${res.status} error. Check API_URL.`);
+    }
+
+    // 2. Safe text-first fetching to prevent SyntaxError on HTML responses
+    const responseText = await res.text();
+    let data;
+
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseErr) {
+      console.error("Non-JSON Response Received:", responseText);
+      throw new Error("Server returned HTML or invalid response instead of JSON. Verify Apps Script deployment.");
+    }
+
     const container = document.getElementById(targetId);
 
-    if (!data || !data.length) {
+    if (!data || !Array.isArray(data) || !data.length) {
       container.innerHTML = "<p class='text-slate-500 p-4'>No records found in Sheet5.</p>";
       return;
     }
@@ -1154,7 +1170,7 @@ document.getElementById('signUpForm').addEventListener('submit', async (e) => {
 
   } catch(err) {
     console.error("Error loading table data:", err);
-    showNotification("Error loading sheet records.", 'error');
+    showNotification("Error loading sheet records. Check console for details.", 'error');
   }
 }
     function toggleMobileMenu(id) {
