@@ -1075,16 +1075,17 @@ document.getElementById('signUpForm').addEventListener('submit', async (e) => {
       }
     }
 
- async function loadAdminTableData(tabName, targetId) {
+// Global variable to hold table records for individual printing
+window.sheet5Data = [];
+
+async function loadAdminTableData(tabName, targetId) {
   try {
     const res = await fetch(`${API_URL}?action=getData&tabName=${tabName}`, { redirect: 'follow' });
 
-    // 1. Check if the HTTP request was successful (Not 404/500)
     if (!res.ok) {
-      throw new Error(`Server returned HTTP ${res.status} error. Check API_URL.`);
+      throw new Error(`Server returned HTTP ${res.status} error.`);
     }
 
-    // 2. Safe text-first fetching to prevent SyntaxError on HTML responses
     const responseText = await res.text();
     let data;
 
@@ -1092,7 +1093,7 @@ document.getElementById('signUpForm').addEventListener('submit', async (e) => {
       data = JSON.parse(responseText);
     } catch (parseErr) {
       console.error("Non-JSON Response Received:", responseText);
-      throw new Error("Server returned HTML or invalid response instead of JSON. Verify Apps Script deployment.");
+      throw new Error("Server returned HTML or invalid response instead of JSON.");
     }
 
     const container = document.getElementById(targetId);
@@ -1104,7 +1105,7 @@ document.getElementById('signUpForm').addEventListener('submit', async (e) => {
 
     const headers = Object.keys(data[0]);
 
-    // FILTER OUT SUB-HEADER ROW FROM DATA BODY
+    // Filter out sub-header row from data body
     const cleanData = data.filter(row => {
       const isSubheaderRow = Object.values(row).some(val => {
         const str = String(val).trim().toUpperCase();
@@ -1112,6 +1113,9 @@ document.getElementById('signUpForm').addEventListener('submit', async (e) => {
       });
       return !isSubheaderRow;
     });
+
+    // Store in global window variable for print reference
+    window.sheet5Data = cleanData;
 
     let row1Html = '';
     let row2Html = '';
@@ -1136,7 +1140,6 @@ document.getElementById('signUpForm').addEventListener('submit', async (e) => {
             EXPIRATION DATE
           </th>`;
 
-        // Skip the secondary column header (e.g., 'Col_15') from row 1
         if (i + 1 < headers.length && (headers[i + 1].startsWith('Col_') || headers[i + 1] === '')) {
           i++;
         }
@@ -1148,6 +1151,12 @@ document.getElementById('signUpForm').addEventListener('submit', async (e) => {
       }
     }
 
+    // Add ACTION Column Header
+    row1Html += `
+      <th rowspan="2" class="p-3 font-bold text-slate-700 border border-slate-300 bg-slate-100 whitespace-nowrap align-middle text-center text-xs uppercase tracking-wider sticky right-0 bg-slate-100 shadow-l">
+        ACTION
+      </th>`;
+
     let html = `<div class="overflow-x-auto"><table class="w-full text-left text-sm border-collapse border border-slate-300"><thead>`;
     html += `<tr>${row1Html}</tr>`;
     if (hasSubheaders) {
@@ -1155,13 +1164,21 @@ document.getElementById('signUpForm').addEventListener('submit', async (e) => {
     }
     html += `</thead><tbody class="divide-y divide-slate-200">`;
 
-    // Render clean records only
-    cleanData.forEach(row => {
+    // Render records with Print Form button
+    cleanData.forEach((row, index) => {
       html += `<tr class="hover:bg-slate-50/80 transition">`;
       headers.forEach(h => {
         const val = row[h] !== undefined && row[h] !== null ? row[h] : '';
         html += `<td class="p-3 text-slate-600 border border-slate-200 whitespace-nowrap">${val}</td>`;
       });
+      
+      // Action button column
+      html += `
+        <td class="p-2 border border-slate-200 text-center sticky right-0 bg-white">
+          <button onclick="printIndividualForm(${index})" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1.5 rounded transition font-medium shadow-sm flex items-center justify-center gap-1 mx-auto whitespace-nowrap">
+            🖨️ Print Form
+          </button>
+        </td>`;
       html += `</tr>`;
     });
 
@@ -1170,8 +1187,378 @@ document.getElementById('signUpForm').addEventListener('submit', async (e) => {
 
   } catch(err) {
     console.error("Error loading table data:", err);
-    showNotification("Error loading sheet records. Check console for details.", 'error');
+    showNotification("Error loading sheet records.", 'error');
   }
+}
+    // PRINT INDIVIDUAL MEMBER SURVEY FORM (2 PAGES)
+function printIndividualForm(rowIndex) {
+  const row = window.sheet5Data[rowIndex];
+  if (!row) {
+    showNotification("Error: Member data not found.", "error");
+    return;
+  }
+
+  // Helper function to safely read sheet fields case-insensitively
+  const getField = (...possibleKeys) => {
+    for (let key of Object.keys(row)) {
+      for (let pKey of possibleKeys) {
+        if (key.toLowerCase().trim() === pKey.toLowerCase().trim()) {
+          return row[key] !== undefined && row[key] !== null ? String(row[key]) : '';
+        }
+      }
+    }
+    return '';
+  };
+
+  // Helper function to check/uncheck PDF checkboxes
+  const isChecked = (fieldValue, expectedVal) => {
+    if (!fieldValue) return '☐';
+    const cleanStr = String(fieldValue).trim().toLowerCase();
+    const cleanExp = String(expectedVal).trim().toLowerCase();
+    return cleanStr === cleanExp || cleanStr.startsWith(cleanExp) ? '☑' : '☐';
+  };
+
+  // Data mapping
+  const name = getField('NAME OF MEMBER', 'NAME', 'MEMBER NAME');
+  const sex = getField('SEX', 'GENDER');
+  const age = getField('AGE');
+  const address = getField('ADDRESS', 'COMPLETE ADDRESS');
+  const contact = getField('CONTACT NUMBER', 'CONTACT NO.', 'PHONE');
+  const classification = getField('CLASSIFICATION OF SOLO PARENT', 'CLASSIFICATION');
+  const incomeSource = getField('SOURCE OF INCOME', 'SOURCE OF INCOME / LIVELIHOOD', 'LIVELIHOOD');
+  const dependents = getField('NO. OF DEPENDENTS', 'DEPENDENTS');
+
+  const memberDisability = getField('IF MEMBER HAS DISABILITY', 'DOES THE MEMBER HAVE A DISABILITY?', 'MEMBER DISABILITY');
+  const typeDisabilityMember = getField('TYPE OF DISABILITY', 'MEMBER DISABILITY TYPE');
+  const depDisability = getField('IF DEPENDENT HAS DISABILITY', 'DOES ANY DEPENDENT HAVE A DISABILITY?', 'DEPENDENT DISABILITY');
+  const typeDisabilityDep = getField('TYPE OF DISABILITY (DEPENDENT)', 'DEPENDENT DISABILITY TYPE');
+
+  const idNum = getField('ID NUMBER', 'ID NO');
+  const expDate = getField('EXPIRATION DATE', 'EXPIRATION');
+  
+  const subsidy = getField('CASH SUBSIDY RECIPIENT', 'SUBSIDY RECIPIENT');
+  const inb = getField('INB');
+  const fourPs = getField('4PS', '4PS RECIPIENT');
+
+  const skills = getField('SKILL SET / EXISTING SKILLS', 'SKILL SET', 'EXISTING SKILLS');
+  const trainingInterested = getField('SKILLS TRAINING INTERESTED IN', 'TRAINING INTERESTED');
+  const livelihoodPref = getField('PREFERRED LIVELIHOOD / INCOME OPPORTUNITY', 'PREFERRED LIVELIHOOD');
+  const remarks = getField('REMARKS / OTHER CONCERNS', 'REMARKS');
+
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) {
+    showNotification("Pop-up blocked! Allow pop-ups to print the form.", "error");
+    return;
+  }
+
+  const printContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Member Profile & Survey Form - ${name}</title>
+      <style>
+        @page {
+          size: A4 portrait;
+          margin: 10mm;
+        }
+        body {
+          font-family: Arial, sans-serif;
+          font-size: 11px;
+          color: #000;
+          margin: 0;
+          padding: 0;
+        }
+        .page {
+          width: 100%;
+          box-sizing: border-box;
+          min-height: 275mm;
+          position: relative;
+          page-break-after: always;
+        }
+        .header-meta {
+          width: 100%;
+          margin-bottom: 10px;
+        }
+        .header-meta td {
+          font-size: 11px;
+          padding: 3px 0;
+        }
+        .form-title {
+          text-align: center;
+          border: 2px solid #000;
+          padding: 8px;
+          font-weight: bold;
+          font-size: 13px;
+          margin-bottom: 12px;
+          background-color: #f8fafc;
+        }
+        .section-header {
+          background-color: #e2e8f0;
+          border: 1px solid #000;
+          font-weight: bold;
+          padding: 5px 8px;
+          font-size: 11px;
+          margin-top: 10px;
+        }
+        .form-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 5px;
+        }
+        .form-table td, .form-table th {
+          border: 1px solid #000;
+          padding: 6px 8px;
+          vertical-align: middle;
+        }
+        .label {
+          font-weight: bold;
+          background-color: #f1f5f9;
+          width: 30%;
+        }
+        .value {
+          width: 70%;
+        }
+        .checkbox-group span {
+          margin-right: 15px;
+        }
+        .footer {
+          position: absolute;
+          bottom: 0;
+          width: 100%;
+          text-align: center;
+          font-size: 9px;
+          border-top: 1px solid #000;
+          padding-top: 4px;
+        }
+        .signature-box {
+          margin-top: 40px;
+          width: 100%;
+        }
+        .signature-line {
+          border-top: 1px solid #000;
+          text-align: center;
+          padding-top: 4px;
+          font-weight: bold;
+          width: 80%;
+          margin: 0 auto;
+        }
+      </style>
+    </head>
+    <body>
+
+      <!-- PAGE 1 -->
+      <div class="page">
+        <table class="header-meta">
+          <tr>
+            <td><strong>Barangay:</strong> ___________________</td>
+            <td style="text-align: right;"><strong>Control No.:</strong> ___________________</td>
+          </tr>
+        </table>
+
+        <div class="form-title">
+          SOLO PARENT FEDERATION - CITY OF BIÑAN<br>
+          <span style="font-size: 12px; font-weight: normal;">MEMBER PROFILE AND SURVEY FORM</span>
+        </div>
+
+        <table class="header-meta">
+          <tr>
+            <td><strong>Date:</strong> ${new Date().toLocaleDateString()}</td>
+            <td style="text-align: right;"><strong>Interviewer:</strong> ___________________</td>
+          </tr>
+        </table>
+
+        <!-- A. MEMBER INFORMATION -->
+        <div class="section-header">A. MEMBER INFORMATION</div>
+        <table class="form-table">
+          <tr>
+            <td class="label">Name of Member:</td>
+            <td class="value"><strong>${name}</strong></td>
+          </tr>
+          <tr>
+            <td class="label">Sex:</td>
+            <td class="value checkbox-group">
+              <span>${isChecked(sex, 'Male')} Male</span>
+              <span>${isChecked(sex, 'Female')} Female</span>
+              <span>${isChecked(sex, 'Prefer not to say')} Prefer not to say</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="label">Age:</td>
+            <td class="value">${age} years old</td>
+          </tr>
+          <tr>
+            <td class="label">Complete Address:</td>
+            <td class="value">${address}</td>
+          </tr>
+          <tr>
+            <td class="label">Contact Number:</td>
+            <td class="value">${contact}</td>
+          </tr>
+          <tr>
+            <td class="label">Classification of Solo Parent:</td>
+            <td class="value">${classification}</td>
+          </tr>
+          <tr>
+            <td class="label">Source of Income / Livelihood:</td>
+            <td class="value">${incomeSource}</td>
+          </tr>
+          <tr>
+            <td class="label">No. of Dependents:</td>
+            <td class="value">${dependents}</td>
+          </tr>
+        </table>
+
+        <!-- B. DISABILITY INFORMATION -->
+        <div class="section-header">B. DISABILITY INFORMATION</div>
+        <table class="form-table">
+          <tr>
+            <td class="label">Does the member have a disability?</td>
+            <td class="value checkbox-group">
+              <span>${isChecked(memberDisability, 'Yes')} Yes</span>
+              <span>${isChecked(memberDisability, 'No')} No</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="label">Type of Disability (if any):</td>
+            <td class="value">${typeDisabilityMember}</td>
+          </tr>
+          <tr>
+            <td class="label">Does any dependent have a disability?</td>
+            <td class="value checkbox-group">
+              <span>${isChecked(depDisability, 'Yes')} Yes</span>
+              <span>${isChecked(depDisability, 'No')} No</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="label">Type of Disability (if any):</td>
+            <td class="value">${typeDisabilityDep}</td>
+          </tr>
+        </table>
+
+        <!-- C. SOLO PARENT ID DETAILS -->
+        <div class="section-header">C. SOLO PARENT ID DETAILS</div>
+        <table class="form-table">
+          <tr>
+            <td class="label">ID Number:</td>
+            <td class="value"><strong>${idNum}</strong></td>
+          </tr>
+          <tr>
+            <td class="label">Expiration Date:</td>
+            <td class="value">${expDate}</td>
+          </tr>
+          <tr>
+            <td class="label">ID Status:</td>
+            <td class="value checkbox-group">
+              <span>${isChecked(getField('ID Status'), 'Valid')} Valid</span>
+              <span>${isChecked(getField('ID Status'), 'Expired')} Expired</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="label">For Renewal:</td>
+            <td class="value checkbox-group">
+              <span>${isChecked(getField('For Renewal'), 'Yes')} Yes</span>
+              <span>${isChecked(getField('For Renewal'), 'No')} No</span>
+            </td>
+          </tr>
+        </table>
+
+        <div class="footer">
+          Solo Parent Federation - City of Biñan | Member Survey Form
+        </div>
+      </div>
+
+      <!-- PAGE 2 -->
+      <div class="page">
+        <div class="form-title">
+          SOLO PARENT FEDERATION - CITY OF BIÑAN<br>
+          <span style="font-size: 12px; font-weight: normal;">MEMBER PROFILE AND SURVEY FORM - PAGE 2</span>
+        </div>
+
+        <!-- D. ASSISTANCE/PROGRAM STATUS -->
+        <div class="section-header">D. ASSISTANCE/PROGRAM STATUS</div>
+        <table class="form-table">
+          <tr>
+            <td class="label">Subsidy Recipient:</td>
+            <td class="value checkbox-group">
+              <span>${isChecked(subsidy, 'Yes')} Yes</span>
+              <span>${isChecked(subsidy, 'No')} No</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="label">INB:</td>
+            <td class="value checkbox-group">
+              <span>${isChecked(inb, 'Yes')} Yes</span>
+              <span>${isChecked(inb, 'No')} No</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="label">4Ps:</td>
+            <td class="value checkbox-group">
+              <span>${isChecked(fourPs, 'Yes')} Yes</span>
+              <span>${isChecked(fourPs, 'No')} No</span>
+            </td>
+          </tr>
+        </table>
+
+        <!-- E. SKILLS AND LIVELIHOOD PROFILE -->
+        <div class="section-header">E. SKILLS AND LIVELIHOOD PROFILE</div>
+        <table class="form-table">
+          <tr>
+            <td class="label">Skill Set / Existing Skills:</td>
+            <td class="value">${skills}</td>
+          </tr>
+          <tr>
+            <td class="label">Skills Training Interested In:</td>
+            <td class="value">${trainingInterested}</td>
+          </tr>
+          <tr>
+            <td class="label">Preferred Livelihood / Income Opportunity:</td>
+            <td class="value">${livelihoodPref}</td>
+          </tr>
+        </table>
+
+        <!-- F. REMARKS / OTHER CONCERNS -->
+        <div class="section-header">F. REMARKS / OTHER CONCERNS</div>
+        <table class="form-table">
+          <tr>
+            <td style="height: 60px; vertical-align: top;">${remarks}</td>
+          </tr>
+        </table>
+
+        <div style="margin-top: 15px; font-size: 10px; line-height: 1.4; text-align: justify;">
+          <strong>Certification:</strong> I certify that the information provided above is true and correct to the best of my knowledge and may be used for updating the Solo Parent Federation database and program planning.
+        </div>
+
+        <table class="signature-box">
+          <tr>
+            <td style="width: 50%; border: none;">
+              <br><br>
+              <div class="signature-line">Signature over Printed Name of Member</div>
+            </td>
+            <td style="width: 50%; border: none;">
+              <br><br>
+              <div class="signature-line">Signature of Interviewer / Officer</div>
+            </td>
+          </tr>
+        </table>
+
+        <div class="footer">
+          Solo Parent Federation - City of Biñan | Member Survey Form
+        </div>
+      </div>
+
+      <script>
+        window.onload = function() {
+          window.print();
+          window.onafterprint = function() { window.close(); };
+        };
+      <\/script>
+    </body>
+    </html>
+  `;
+
+  printWindow.document.write(printContent);
+  printWindow.document.close();
 }
     function toggleMobileMenu(id) {
       document.getElementById(id).classList.toggle('hidden');
