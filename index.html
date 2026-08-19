@@ -698,35 +698,45 @@ document.getElementById('signUpForm').addEventListener('submit', async (e) => {
       }
     });
 
-   // PRINT SHEET5 DATA FUNCTION (UPDATED)
+  // PRINT SHEET5 DATA FUNCTION (OPTIMIZED & INSTANT)
 async function printDataSheet() {
   showNotification("Preparing Sheet5 data for printing...", "success");
 
   try {
-    const res = await fetch(`${API_URL}?action=getData&tabName=Sheet5`, { redirect: 'follow' });
-    const data = await res.json();
+    let cleanData = window.sheet5Data;
 
-    if (!data || !data.length) {
+    // Fallback: If cache is empty, fetch directly from API
+    if (!cleanData || !cleanData.length) {
+      const res = await fetch(`${API_URL}?action=getData&tabName=Sheet5`, { redirect: 'follow' });
+      const data = await res.json();
+
+      if (!data || !data.length) {
+        showNotification("No records found in Sheet5 to print.", "error");
+        return;
+      }
+
+      // Filter out duplicate sub-header row
+      cleanData = data.filter(row => {
+        const isSubheaderRow = Object.values(row).some(val => {
+          const str = String(val).trim().toUpperCase();
+          return str === 'ID NUMBER' || str === 'EXPIRATION DATE';
+        });
+        return !isSubheaderRow;
+      });
+    }
+
+    if (!cleanData || !cleanData.length) {
       showNotification("No records found in Sheet5 to print.", "error");
       return;
     }
 
-    const headers = Object.keys(data[0]);
-
-    // 1. FILTER OUT THE DUPLICATE SUB-HEADER ROW FROM DATA BODY
-    const cleanData = data.filter(row => {
-      const isSubheaderRow = Object.values(row).some(val => {
-        const str = String(val).trim().toUpperCase();
-        return str === 'ID NUMBER' || str === 'EXPIRATION DATE';
-      });
-      return !isSubheaderRow;
-    });
+    const headers = Object.keys(cleanData[0]);
 
     let row1Html = '';
     let row2Html = '';
     let hasSubheaders = false;
 
-    // 2. BUILD 2-TIER MERGED HEADER STRUCTURE
+    // Build 2-tier merged header structure
     for (let i = 0; i < headers.length; i++) {
       const h = headers[i];
 
@@ -757,7 +767,7 @@ async function printDataSheet() {
       }
     }
 
-    // 3. GENERATE CLEAN HTML DOCUMENT FOR PRINT
+    // Generate clean HTML document for print
     const printHtml = `
       <!DOCTYPE html>
       <html lang="en">
@@ -804,13 +814,13 @@ async function printDataSheet() {
       printWindow.focus();
       setTimeout(() => {
         printWindow.print();
-      }, 500);
+      }, 300);
     } else {
       showNotification("Pop-up blocked! Please allow pop-ups for this site to print.", "error");
     }
   } catch (err) {
     console.error("Print Error:", err);
-    showNotification("Failed to fetch Sheet5 data for printing.", "error");
+    showNotification("Failed to prepare Sheet5 data for printing.", "error");
   }
 }
 
