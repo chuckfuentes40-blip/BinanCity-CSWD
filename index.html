@@ -56,7 +56,7 @@
   <div class="relative z-10">
 
     <!-- LOGIN PAGE WITH BINAN CITY HALL BACKGROUND -->
-    <div id="page-login" class="min-h-screen flex items-center justify-center p-4 relative bg-cover bg-center bg-no-repeat" style="background-image: url('https://static.where-e.com/Philippines/Laguna_State/Binan_City/Binan-City-Hall_ed0e2f6ff364068be7ef33aa24179e78.jpg');">
+    <div id="page-login" class="min-h-screen flex items-center justify-center p-4 relative bg-slate-900 bg-cover bg-center bg-no-repeat" style="background-image: url('https://static.where-e.com/Philippines/Laguna_State/Binan_City/Binan-City-Hall_ed0e2f6ff364068be7ef33aa24179e78.jpg');">
       
       <!-- DARK OVERLAY FOR READABILITY -->
       <div class="absolute inset-0 bg-slate-950/45 backdrop-blur-[2px] z-0"></div>
@@ -341,25 +341,38 @@
             localStorage.removeItem('cswd_remembered_pass');
           }
 
-          currentUser = data.user;
-          showNotification(`Welcome back, ${data.user.fullname || username}!`, 'success');
-          routeUser(data.user);
+          currentUser = data.user || { role: 'Client', fullname: username };
+          showNotification(`Welcome back, ${currentUser.fullname || username}!`, 'success');
+          routeUser(currentUser);
         } else {
           showNotification(data.message || 'Invalid credentials.', 'error');
         }
       } catch (err) {
-        showNotification("Connection error: Unable to reach Google Sheets server.", 'error');
+        showNotification("Connection error: Unable to reach server.", 'error');
       } finally {
         loginBtn.innerText = "Sign In";
       }
     });
 
+    // SAFE & ROBUST ROUTING
     function routeUser(user) {
+      if (!user) {
+        showNotification("Login error: User data missing.", "error");
+        return;
+      }
+
+      const role = (user.role || '').toString().trim().toLowerCase();
+
+      // Ensure all main views are hidden first
       document.getElementById('page-login').classList.add('hidden');
-      if (user.role === 'Admin') {
+      document.getElementById('page-admin').classList.add('hidden');
+      document.getElementById('page-client').classList.add('hidden');
+
+      if (role === 'admin') {
         document.getElementById('page-admin').classList.remove('hidden');
         switchAdminSubpage('home');
-      } else if (user.role === 'Client') {
+      } else {
+        // Fallback to Client portal for any client/beneficiary role
         document.getElementById('page-client').classList.remove('hidden');
         document.getElementById('clientTypeBadge').innerText = user.clientType || 'Beneficiary';
         switchClientSubpage('home');
@@ -396,15 +409,15 @@
       document.getElementById(`client-nav-${tab}`).className = "sidebar-active w-full text-left px-4 py-3 rounded-xl font-medium flex items-center space-x-3 text-white transition";
     }
 
-    // RENDER SHEET5 MAPPED FORM
+    // RENDER SHEET5 FORM
     function renderClientForm(user) {
       const container = document.getElementById('formContainer');
 
-      if (user.clientType === "Solo Parent") {
+      if ((user.clientType || 'Solo Parent') === "Solo Parent") {
         container.innerHTML = `
           <form id="soloParentForm" class="space-y-6">
             
-            <!-- SECTION 1: MEMBER DETAILS (Cols B to I) -->
+            <!-- SECTION 1: MEMBER DETAILS -->
             <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
               <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">A. Member Details</h3>
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -446,7 +459,7 @@
               </div>
             </div>
 
-            <!-- SECTION 2: DISABILITY INFORMATION (Cols J to M) -->
+            <!-- SECTION 2: DISABILITY INFORMATION -->
             <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
               <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">B. Disability Information</h3>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -475,7 +488,7 @@
               </div>
             </div>
 
-            <!-- SECTION 3: SOLO PARENT ID DETAILS (Cols N & O) -->
+            <!-- SECTION 3: SOLO PARENT ID DETAILS -->
             <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
               <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">C. Solo Parent ID Details</h3>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -490,7 +503,7 @@
               </div>
             </div>
 
-            <!-- SECTION 4: SUBSIDIES & BENEFITS (Cols P, Q, R, S) -->
+            <!-- SECTION 4: SUBSIDIES & BENEFITS -->
             <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
               <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">D. Subsidies & Benefits Status</h3>
               <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -525,7 +538,7 @@
               </div>
             </div>
 
-            <!-- SECTION 5: SKILL SET & REMARKS (Cols T & U) -->
+            <!-- SECTION 5: SKILL SET & REMARKS -->
             <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
               <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">E. Additional Information</h3>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -555,26 +568,26 @@
 
           const f = e.target;
           const formData = {
-            memberName: f.memberName.value,           // Col B
-            sex: f.sex.value,                         // Col C
-            age: f.age.value,                         // Col D
-            address: f.address.value,                 // Col E
-            contactNumber: f.contactNumber.value,     // Col F
-            classification: f.classification.value,   // Col G
-            sourceOfIncome: f.sourceOfIncome.value,   // Col H
-            noOfDependents: f.noOfDependents.value,   // Col I
-            memberDisability: f.memberDisability.value,         // Col J
-            memberDisabilityType: f.memberDisabilityType.value, // Col K
-            dependentDisability: f.dependentDisability.value,   // Col L
-            dependentDisabilityType: f.dependentDisabilityType.value, // Col M
-            idNumber: f.idNumber.value,               // Col N
-            idExpirationDate: f.idExpirationDate.value,// Col O
-            cashSubsidyRecipient: f.cashSubsidyRecipient.value, // Col P
-            inbRecipient: f.inbRecipient.value,       // Col Q
-            fourPsRecipient: f.fourPsRecipient.value, // Col R
-            riceSubsidyRecipient: f.riceSubsidyRecipient.value, // Col S
-            skillSet: f.skillSet.value,               // Col T
-            remarks: f.remarks.value                  // Col U
+            memberName: f.memberName.value,
+            sex: f.sex.value,
+            age: f.age.value,
+            address: f.address.value,
+            contactNumber: f.contactNumber.value,
+            classification: f.classification.value,
+            sourceOfIncome: f.sourceOfIncome.value,
+            noOfDependents: f.noOfDependents.value,
+            memberDisability: f.memberDisability.value,
+            memberDisabilityType: f.memberDisabilityType.value,
+            dependentDisability: f.dependentDisability.value,
+            dependentDisabilityType: f.dependentDisabilityType.value,
+            idNumber: f.idNumber.value,
+            idExpirationDate: f.idExpirationDate.value,
+            cashSubsidyRecipient: f.cashSubsidyRecipient.value,
+            inbRecipient: f.inbRecipient.value,
+            fourPsRecipient: f.fourPsRecipient.value,
+            riceSubsidyRecipient: f.riceSubsidyRecipient.value,
+            skillSet: f.skillSet.value,
+            remarks: f.remarks.value
           };
 
           try {
