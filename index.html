@@ -1075,10 +1075,23 @@ document.getElementById('signUpForm').addEventListener('submit', async (e) => {
       }
     }
 
-// Global variable to hold table records for individual printing
+// Global states for high-performance table rendering
 window.sheet5Data = [];
+let currentPage = 1;
+const rowsPerPage = 25;
+let searchQuery = '';
 
 async function loadAdminTableData(tabName, targetId) {
+  const container = document.getElementById(targetId);
+
+  // 1. SHOW INSTANT SKELETON LOADER
+  container.innerHTML = `
+    <div class="p-8 text-center">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-600 border-t-transparent mb-2"></div>
+      <p class="text-slate-500 font-medium text-sm">Loading ${tabName} records...</p>
+    </div>
+  `;
+
   try {
     const res = await fetch(`${API_URL}?action=getData&tabName=${tabName}`, { redirect: 'follow' });
 
@@ -1096,16 +1109,12 @@ async function loadAdminTableData(tabName, targetId) {
       throw new Error("Server returned HTML or invalid response instead of JSON.");
     }
 
-    const container = document.getElementById(targetId);
-
     if (!data || !Array.isArray(data) || !data.length) {
-      container.innerHTML = "<p class='text-slate-500 p-4'>No records found in Sheet5.</p>";
+      container.innerHTML = "<p class='text-slate-500 p-4 text-center'>No records found in Sheet5.</p>";
       return;
     }
 
-    const headers = Object.keys(data[0]);
-
-    // Filter out sub-header row from data body
+    // 2. FAST FILTERING OF SUB-HEADERS
     const cleanData = data.filter(row => {
       const isSubheaderRow = Object.values(row).some(val => {
         const str = String(val).trim().toUpperCase();
@@ -1114,81 +1123,172 @@ async function loadAdminTableData(tabName, targetId) {
       return !isSubheaderRow;
     });
 
-    // Store in global window variable for print reference
+    // Store cleaned data in global array
     window.sheet5Data = cleanData;
+    currentPage = 1;
+    searchQuery = '';
 
-    let row1Html = '';
-    let row2Html = '';
-    let hasSubheaders = false;
-
-    // Build 2-tier header structure
-    for (let i = 0; i < headers.length; i++) {
-      const h = headers[i];
-
-      if (h.trim().toUpperCase() === 'SOLO PARENT ID DETAILS') {
-        hasSubheaders = true;
-        row1Html += `
-          <th colspan="2" class="p-2 font-bold text-slate-800 text-center border border-slate-300 bg-slate-100 uppercase tracking-wider text-xs">
-            SOLO PARENT ID DETAILS
-          </th>`;
-        
-        row2Html += `
-          <th class="p-2 font-bold text-slate-700 text-center border border-slate-300 bg-slate-50 text-xs uppercase tracking-wider whitespace-nowrap">
-            ID NUMBER
-          </th>
-          <th class="p-2 font-bold text-slate-700 text-center border border-slate-300 bg-slate-50 text-xs uppercase tracking-wider whitespace-nowrap">
-            EXPIRATION DATE
-          </th>`;
-
-        if (i + 1 < headers.length && (headers[i + 1].startsWith('Col_') || headers[i + 1] === '')) {
-          i++;
-        }
-      } else {
-        row1Html += `
-          <th rowspan="2" class="p-3 font-bold text-slate-700 border border-slate-300 bg-slate-100 whitespace-nowrap align-middle text-left text-xs uppercase tracking-wider">
-            ${h}
-          </th>`;
-      }
-    }
-
-    // Add ACTION Column Header
-    row1Html += `
-      <th rowspan="2" class="p-3 font-bold text-slate-700 border border-slate-300 bg-slate-100 whitespace-nowrap align-middle text-center text-xs uppercase tracking-wider sticky right-0 bg-slate-100 shadow-l">
-        ACTION
-      </th>`;
-
-    let html = `<div class="overflow-x-auto"><table class="w-full text-left text-sm border-collapse border border-slate-300"><thead>`;
-    html += `<tr>${row1Html}</tr>`;
-    if (hasSubheaders) {
-      html += `<tr>${row2Html}</tr>`;
-    }
-    html += `</thead><tbody class="divide-y divide-slate-200">`;
-
-    // Render records with Print Form button
-    cleanData.forEach((row, index) => {
-      html += `<tr class="hover:bg-slate-50/80 transition">`;
-      headers.forEach(h => {
-        const val = row[h] !== undefined && row[h] !== null ? row[h] : '';
-        html += `<td class="p-3 text-slate-600 border border-slate-200 whitespace-nowrap">${val}</td>`;
-      });
-      
-      // Action button column
-      html += `
-        <td class="p-2 border border-slate-200 text-center sticky right-0 bg-white">
-          <button onclick="printIndividualForm(${index})" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1.5 rounded transition font-medium shadow-sm flex items-center justify-center gap-1 mx-auto whitespace-nowrap">
-            🖨️ Print Form
-          </button>
-        </td>`;
-      html += `</tr>`;
-    });
-
-    html += `</tbody></table></div>`;
-    container.innerHTML = html;
+    // 3. RENDER TABLE WITH PAGINATION
+    renderAdminTable(targetId);
 
   } catch(err) {
     console.error("Error loading table data:", err);
     showNotification("Error loading sheet records.", 'error');
+    container.innerHTML = "<p class='text-rose-500 p-4 text-center font-medium'>Failed to load table data. Please try again.</p>";
   }
+}
+
+// HIGH-PERFORMANCE TABLE RENDERER WITH PAGINATION
+function renderAdminTable(targetId) {
+  const container = document.getElementById(targetId);
+  if (!window.sheet5Data || !window.sheet5Data.length) return;
+
+  const headers = Object.keys(window.sheet5Data[0]);
+
+  // Filter dataset by search query
+  const filteredData = window.sheet5Data.filter(row => {
+    if (!searchQuery) return true;
+    return Object.values(row).some(val => 
+      String(val).toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
+
+  // Calculate Pagination slice
+  const totalRecords = filteredData.length;
+  const totalPages = Math.ceil(totalRecords / rowsPerPage) || 1;
+  if (currentPage > totalPages) currentPage = totalPages;
+
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const pageData = filteredData.slice(startIndex, startIndex + rowsPerPage);
+
+  // Build 2-Tier Headers
+  let row1Html = '';
+  let row2Html = '';
+  let hasSubheaders = false;
+
+  for (let i = 0; i < headers.length; i++) {
+    const h = headers[i];
+
+    if (h.trim().toUpperCase() === 'SOLO PARENT ID DETAILS') {
+      hasSubheaders = true;
+      row1Html += `
+        <th colspan="2" class="p-2 font-bold text-slate-800 text-center border border-slate-300 bg-slate-100 uppercase tracking-wider text-xs">
+          SOLO PARENT ID DETAILS
+        </th>`;
+      
+      row2Html += `
+        <th class="p-2 font-bold text-slate-700 text-center border border-slate-300 bg-slate-50 text-xs uppercase tracking-wider whitespace-nowrap">
+          ID NUMBER
+        </th>
+        <th class="p-2 font-bold text-slate-700 text-center border border-slate-300 bg-slate-50 text-xs uppercase tracking-wider whitespace-nowrap">
+          EXPIRATION DATE
+        </th>`;
+
+      if (i + 1 < headers.length && (headers[i + 1].startsWith('Col_') || headers[i + 1] === '')) {
+        i++;
+      }
+    } else {
+      row1Html += `
+        <th rowspan="2" class="p-3 font-bold text-slate-700 border border-slate-300 bg-slate-100 whitespace-nowrap align-middle text-left text-xs uppercase tracking-wider">
+          ${h}
+        </th>`;
+    }
+  }
+
+  // Sticky Action Header
+  row1Html += `
+    <th rowspan="2" class="p-3 font-bold text-slate-700 border border-slate-300 bg-slate-100 whitespace-nowrap align-middle text-center text-xs uppercase tracking-wider sticky right-0 bg-slate-100 shadow-sm">
+      ACTION
+    </th>`;
+
+  // Control Header (Search Bar & Stats)
+  let controlsHtml = `
+    <div class="p-3 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-3">
+      <div class="relative w-full sm:w-64">
+        <input 
+          type="text" 
+          placeholder="🔍 Search records..." 
+          value="${searchQuery}"
+          oninput="handleTableSearch(this.value, '${targetId}')"
+          class="w-full pl-3 pr-3 py-1.5 text-xs border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+        />
+      </div>
+      <div class="text-xs text-slate-500 font-medium">
+        Showing ${totalRecords > 0 ? startIndex + 1 : 0} to ${Math.min(startIndex + rowsPerPage, totalRecords)} of ${totalRecords} records
+      </div>
+    </div>
+  `;
+
+  // Build Table Body
+  let tableHtml = `<div class="overflow-x-auto"><table class="w-full text-left text-sm border-collapse border border-slate-300"><thead>`;
+  tableHtml += `<tr>${row1Html}</tr>`;
+  if (hasSubheaders) {
+    tableHtml += `<tr>${row2Html}</tr>`;
+  }
+  tableHtml += `</thead><tbody class="divide-y divide-slate-200">`;
+
+  if (pageData.length === 0) {
+    tableHtml += `<tr><td colspan="${headers.length + 1}" class="p-6 text-center text-slate-500">No matching records found.</td></tr>`;
+  } else {
+    pageData.forEach((row) => {
+      // Find original index in global dataset to keep print Form linked correctly
+      const originalIndex = window.sheet5Data.indexOf(row);
+
+      tableHtml += `<tr class="hover:bg-slate-50/80 transition">`;
+      headers.forEach(h => {
+        const val = row[h] !== undefined && row[h] !== null ? row[h] : '';
+        tableHtml += `<td class="p-3 text-slate-600 border border-slate-200 whitespace-nowrap">${val}</td>`;
+      });
+      
+      tableHtml += `
+        <td class="p-2 border border-slate-200 text-center sticky right-0 bg-white">
+          <button onclick="printIndividualForm(${originalIndex})" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1.5 rounded transition font-medium shadow-sm flex items-center justify-center gap-1 mx-auto whitespace-nowrap">
+            🖨️ Print Form
+          </button>
+        </td>`;
+      tableHtml += `</tr>`;
+    });
+  }
+
+  tableHtml += `</tbody></table></div>`;
+
+  // Build Pagination Footer Controls
+  let paginationHtml = `
+    <div class="p-3 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-xs">
+      <button 
+        onclick="changeTablePage(-1, '${targetId}')" 
+        ${currentPage === 1 ? 'disabled' : ''} 
+        class="px-3 py-1.5 bg-white border border-slate-300 rounded font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">
+        ◀ Previous
+      </button>
+
+      <span class="font-semibold text-slate-600">
+        Page ${currentPage} of ${totalPages}
+      </span>
+
+      <button 
+        onclick="changeTablePage(1, '${targetId}')" 
+        ${currentPage >= totalPages ? 'disabled' : ''} 
+        class="px-3 py-1.5 bg-white border border-slate-300 rounded font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">
+        Next ▶
+      </button>
+    </div>
+  `;
+
+  container.innerHTML = controlsHtml + tableHtml + paginationHtml;
+}
+
+// PAGINATION HELPER
+function changeTablePage(direction, targetId) {
+  currentPage += direction;
+  renderAdminTable(targetId);
+}
+
+// INSTANT SEARCH HELPER
+function handleTableSearch(query, targetId) {
+  searchQuery = query;
+  currentPage = 1;
+  renderAdminTable(targetId);
 }
   // PRINT INDIVIDUAL MEMBER SURVEY FORM WITH LOGOS (2 PAGES)
 function printIndividualForm(rowIndex) {
