@@ -375,11 +375,12 @@
       </form>
     </div>
   </div>
-
-  <div 
-  id="toast-container" 
-  class="fixed top-5 right-5 z-[9999] flex flex-col space-y-3 max-w-sm w-full pointer-events-none"
-></div>
+<!-- TOAST CONTAINER (Place right above </body>) -->
+    <div 
+      id="toast-container" 
+      class="fixed top-5 right-5 flex flex-col space-y-3 max-w-sm w-full pointer-events-none"
+      style="z-index: 999999 !important;"
+    ></div>
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbw1O3MPFomu4LoHN-oj0fhAc8lhp3aWDkOlCtjVYvOefeTKyT3M7WbR2AFlEokby_te/exec"; 
@@ -400,38 +401,38 @@
       }
     }
 
-    function showNotification(message, type = 'success') {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      const isSuccess = type === 'success';
+  function showNotification(message, type = 'success') {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
 
-      const icon = isSuccess 
-        ? `<div class="w-9 h-9 rounded-xl bg-gradient-to-r from-[#097dff] to-[#575aff] text-white flex items-center justify-center shrink-0 shadow-md">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-           </div>`
-        : `<div class="w-9 h-9 rounded-xl bg-rose-500 text-white flex items-center justify-center shrink-0 shadow-md">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-           </div>`;
+  const toast = document.createElement('div');
+  const isSuccess = type === 'success';
 
-      toast.className = `pointer-events-auto flex items-start space-x-3 p-4 rounded-2xl glass-card shadow-2xl border ${isSuccess ? 'border-purple-200/60' : 'border-rose-200/60'} toast-enter transition-all duration-300 ease-out w-full`;
-      toast.innerHTML = `
-        ${icon}
-        <div class="flex-1 pr-2">
-          <h4 class="text-xs font-extrabold uppercase tracking-wider ${isSuccess ? 'text-[#575aff]' : 'text-rose-600'}">${isSuccess ? 'Success' : 'Notice'}</h4>
-          <p class="text-xs sm:text-sm font-medium text-slate-700 mt-0.5">${message}</p>
-        </div>
-        <button onclick="dismissToast(this.parentElement)" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg transition">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      `;
+  const icon = isSuccess 
+    ? `<div class="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-md">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+       </div>`
+    : `<div class="w-8 h-8 rounded-xl bg-rose-500 text-white flex items-center justify-center shrink-0 shadow-md">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+       </div>`;
 
-      container.appendChild(toast);
-      requestAnimationFrame(() => {
-        toast.classList.remove('toast-enter');
-        toast.classList.add('toast-show');
-      });
-      setTimeout(() => dismissToast(toast), 4000);
-    }
+  toast.className = `pointer-events-auto flex items-center space-x-3 p-4 bg-white text-slate-800 rounded-2xl shadow-2xl border ${isSuccess ? 'border-emerald-200' : 'border-rose-200'} transition-all duration-300 ease-out w-full`;
+  toast.style.zIndex = "999999";
+
+  toast.innerHTML = `
+    ${icon}
+    <div class="flex-1 pr-2">
+      <h4 class="text-xs font-extrabold uppercase tracking-wider ${isSuccess ? 'text-emerald-600' : 'text-rose-600'}">${isSuccess ? 'Success' : 'Notice'}</h4>
+      <p class="text-xs font-semibold text-slate-700 mt-0.5">${message}</p>
+    </div>
+    <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg transition">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+  `;
+
+  container.appendChild(toast);
+  setTimeout(() => { if (toast.parentNode) toast.remove(); }, 4000);
+}
 
     function dismissToast(toast) {
       if (!toast || !toast.parentElement) return;
@@ -605,45 +606,56 @@
     }
 
     // SIGN UP SUBMIT HANDLER
-    document.getElementById('signUpForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('suSubmitBtn');
-      btn.innerText = "Registering...";
-      btn.disabled = true;
+document.getElementById('signUpForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('suSubmitBtn');
+  btn.innerText = "Registering...";
+  btn.disabled = true;
 
-      const userData = {
-        username: document.getElementById('suUsername').value,
-        password: document.getElementById('suPassword').value,
-        fullname: document.getElementById('suFullname').value,
-        houseNoStreetSubdivision: document.getElementById('suHouseNo').value,
-        barangay: document.getElementById('suBarangay').value,
-        contactNo: document.getElementById('suContactNo').value,
-        role: "Client",
-        typeOfClient: "Solo Parent"
-      };
+  const payload = {
+    action: 'registerUser',
+    userData: {
+      username: document.getElementById('suUsername').value.trim(),
+      password: document.getElementById('suPassword').value,
+      fullname: document.getElementById('suFullname').value.trim(),
+      houseNo: document.getElementById('suHouseNo').value.trim(),
+      barangay: document.getElementById('suBarangay').value.trim(),
+      contactNo: document.getElementById('suContactNo').value.trim(),
+      role: "Client",
+      typeOfClient: "Solo Parent"
+    }
+  };
 
-      try {
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          redirect: 'follow',
-          body: JSON.stringify({ action: 'registerUser', userData })
-        });
-        const data = await res.json();
-
-        if (data.success) {
-          showNotification("Solo Parent account registered successfully!", 'success');
-          closeSignUpModal();
-        } else {
-          showNotification(data.message || "Failed to register account.", 'error');
-        }
-      } catch (err) {
-        showNotification("Error connecting to server.", 'error');
-      } finally {
-        btn.innerText = "Register Account";
-        btn.disabled = false;
-      }
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      redirect: 'follow',
+      body: JSON.stringify(payload)
     });
+
+    const textResult = await res.text();
+    let data;
+    try {
+      data = JSON.parse(textResult);
+    } catch(err) {
+      throw new Error("Invalid response format from Google Apps Script.");
+    }
+
+    if (data.success) {
+      showNotification("Account registered successfully! You can now log in.", 'success');
+      closeSignUpModal();
+    } else {
+      showNotification(data.message || "Failed to register account.", 'error');
+    }
+  } catch (err) {
+    console.error("Registration Error:", err);
+    showNotification("Could not save to Users sheet. Check connection.", 'error');
+  } finally {
+    btn.innerText = "Register Account";
+    btn.disabled = false;
+  }
+});
 
     // ADD ADMIN SUBMIT HANDLER
     document.getElementById('addAdminForm').addEventListener('submit', async (e) => {
