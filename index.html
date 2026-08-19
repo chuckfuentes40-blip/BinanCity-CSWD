@@ -3,14 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- TAB ICON (Favicon) - Embedded SVG Gradient -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%23097dff'/><stop offset='50%' stop-color='%23575aff'/><stop offset='100%' stop-color='%23cb80ff'/></linearGradient></defs><rect width='100' height='100' rx='28' fill='url(%23g)'/><path d='M75 75V25a7 7 0 0 0-7-7H32a7 7 0 0 0-7 7v50m50 0h7m-7 0H45m-32 0h7m-7 0h18m14-50h3.5m-3.5 14h3.5m14-14h3.5m-3.5 14h3.5m-18 35v-18a3.5 3.5 0 0 1 3.5-3.5h7a3.5 3.5 0 0 1 3.5 3.5v18m-14 0h14' stroke='%23ffffff' stroke-width='6' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+
+  <!-- APPLE / MOBILE HOME SCREEN ICON -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%23097dff'/><stop offset='50%' stop-color='%23575aff'/><stop offset='100%' stop-color='%23cb80ff'/></linearGradient></defs><rect width='100' height='100' rx='28' fill='url(%23g)'/><path d='M75 75V25a7 7 0 0 0-7-7H32a7 7 0 0 0-7 7v50m50 0h7m-7 0H45m-32 0h7m-7 0h18m14-50h3.5m-3.5 14h3.5m14-14h3.5m-3.5 14h3.5m-18 35v-18a3.5 3.5 0 0 1 3.5-3.5h7a3.5 3.5 0 0 1 3.5 3.5v18m-14 0h14' stroke='%23ffffff' stroke-width='6' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+
   <title>CSWD Community Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
-    /* Color Palette Gradient Styles */
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
     .bg-palette-gradient {
       background: linear-gradient(135deg, #097dff 0%, #575aff 35%, #cb80ff 70%, #f88bff 100%);
     }
@@ -33,28 +37,20 @@
       box-shadow: 0 4px 15px rgba(9, 125, 255, 0.3);
     }
     .glass-card {
-      background: rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.88);
       backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.6);
     }
-    
-    /* Smooth Animation for Notifications */
-    .toast-enter {
-      transform: translateX(120%);
-      opacity: 0;
-    }
-    .toast-show {
-      transform: translateX(0);
-      opacity: 1;
-    }
+    .toast-enter { transform: translateX(120%); opacity: 0; }
+    .toast-show { transform: translateX(0); opacity: 1; }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
 
-  <!-- MODERN NOTIFICATION CONTAINER (Fixed Top-Right) -->
+  <!-- TOAST NOTIFICATION CONTAINER -->
   <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col space-y-3 pointer-events-none max-w-sm w-full px-4"></div>
 
-  <!-- BACKGROUND DECORATIVE BLOBS -->
+  <!-- DECORATIVE BACKGROUND BLOBS -->
   <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
     <div class="absolute -top-40 -left-40 w-96 h-96 bg-[#ffa8f7] rounded-full blur-3xl opacity-30"></div>
     <div class="absolute top-1/2 -right-40 w-96 h-96 bg-[#097dff] rounded-full blur-3xl opacity-20"></div>
@@ -66,7 +62,6 @@
     <!-- LOGIN PAGE -->
     <div id="page-login" class="min-h-screen flex items-center justify-center p-4">
       <div class="glass-card p-8 sm:p-10 rounded-3xl shadow-2xl w-full max-w-md border border-white/60">
-        <!-- Logo / Header -->
         <div class="text-center mb-8">
           <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-palette-gradient flex items-center justify-center shadow-lg shadow-purple-500/20">
             <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,7 +73,6 @@
         </div>
 
         <form id="loginForm" class="space-y-5">
-          <!-- Username -->
           <div>
             <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Username</label>
             <div class="relative">
@@ -89,7 +83,6 @@
             </div>
           </div>
 
-          <!-- Password with Eye Icon -->
           <div>
             <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Password</label>
             <div class="relative">
@@ -97,7 +90,6 @@
               <svg class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
               </svg>
-              <!-- Toggle Password Button -->
               <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none p-1">
                 <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -107,7 +99,6 @@
             </div>
           </div>
 
-          <!-- Radio Button: Remember Login -->
           <div class="flex items-center justify-between pt-1">
             <label class="flex items-center space-x-2 text-sm text-slate-600 cursor-pointer select-none">
               <input type="radio" id="rememberRadio" name="rememberOption" onclick="handleRadioToggle(this)" class="w-4 h-4 text-[#575aff] border-slate-300 focus:ring-[#575aff]">
@@ -124,7 +115,6 @@
 
     <!-- ADMIN DASHBOARD -->
     <div id="page-admin" class="hidden min-h-screen flex flex-col md:flex-row">
-      <!-- Mobile Top Bar -->
       <div class="md:hidden bg-slate-900 text-white p-4 flex justify-between items-center">
         <h1 class="font-bold text-lg text-palette-gradient">CSWD Admin</h1>
         <button onclick="toggleMobileMenu('admin-sidebar')" class="p-2 rounded hover:bg-slate-800">
@@ -132,7 +122,6 @@
         </button>
       </div>
 
-      <!-- Sidebar -->
       <aside id="admin-sidebar" class="hidden md:flex w-full md:w-72 bg-slate-900/95 backdrop-blur-xl text-slate-300 p-6 flex-col justify-between min-h-screen border-r border-slate-800">
         <div>
           <div class="flex items-center space-x-3 mb-10 px-2">
@@ -168,7 +157,6 @@
         </button>
       </aside>
 
-      <!-- Main Content -->
       <main class="flex-1 p-6 sm:p-10 overflow-y-auto">
         <div id="admin-sub-home" class="space-y-6">
           <div class="bg-palette-gradient p-8 rounded-3xl text-white shadow-xl">
@@ -211,7 +199,6 @@
 
     <!-- CLIENT DASHBOARD -->
     <div id="page-client" class="hidden min-h-screen flex flex-col md:flex-row">
-      <!-- Mobile Top Bar -->
       <div class="md:hidden bg-slate-900 text-white p-4 flex justify-between items-center">
         <h1 class="font-bold text-lg text-palette-gradient">Client Portal</h1>
         <button onclick="toggleMobileMenu('client-sidebar')" class="p-2 rounded hover:bg-slate-800">
@@ -219,7 +206,6 @@
         </button>
       </div>
 
-      <!-- Sidebar -->
       <aside id="client-sidebar" class="hidden md:flex w-full md:w-72 bg-slate-900/95 backdrop-blur-xl text-slate-300 p-6 flex-col justify-between min-h-screen border-r border-slate-800">
         <div>
           <div class="flex items-center space-x-3 mb-10 px-2">
@@ -246,15 +232,14 @@
         </button>
       </aside>
 
-      <!-- Main Content -->
       <main class="flex-1 p-6 sm:p-10 overflow-y-auto">
         <div id="client-sub-home" class="space-y-6 max-w-4xl">
           <h2 class="text-2xl font-bold text-slate-900">Latest Announcements</h2>
           <div id="client-announcements-list" class="space-y-4">Loading announcements...</div>
         </div>
 
-        <div id="client-sub-form" class="hidden max-w-3xl">
-          <h2 id="client-form-title" class="text-2xl font-bold text-slate-900 mb-6">Registration Form</h2>
+        <div id="client-sub-form" class="hidden max-w-4xl">
+          <h2 id="client-form-title" class="text-2xl font-bold text-slate-900 mb-6">Solo Parent Federation - Member Profile and Survey Form</h2>
           <div id="formContainer"></div>
         </div>
       </main>
@@ -263,12 +248,10 @@
   </div>
 
   <script>
-    // REPLACE WITH YOUR ACTUAL GOOGLE APPS SCRIPT EXEC API URL:
     const API_URL = "https://script.google.com/macros/s/AKfycbw1O3MPFomu4LoHN-oj0fhAc8lhp3aWDkOlCtjVYvOefeTKyT3M7WbR2AFlEokby_te/exec"; 
 
     let currentUser = null;
 
-    // MODERN TOAST NOTIFICATION FUNCTION
     function showNotification(message, type = 'success') {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
@@ -283,7 +266,6 @@
            </div>`;
 
       toast.className = `pointer-events-auto flex items-start space-x-3 p-4 rounded-2xl glass-card shadow-2xl border ${isSuccess ? 'border-purple-200/60' : 'border-rose-200/60'} toast-enter transition-all duration-300 ease-out w-full`;
-
       toast.innerHTML = `
         ${icon}
         <div class="flex-1 pr-2">
@@ -296,14 +278,10 @@
       `;
 
       container.appendChild(toast);
-
-      // Slide In
       requestAnimationFrame(() => {
         toast.classList.remove('toast-enter');
         toast.classList.add('toast-show');
       });
-
-      // Auto Dismiss after 4 seconds
       setTimeout(() => dismissToast(toast), 4000);
     }
 
@@ -314,7 +292,6 @@
       setTimeout(() => toast.remove(), 300);
     }
 
-    // Load Remembered Credentials
     window.addEventListener('DOMContentLoaded', () => {
       const savedUser = localStorage.getItem('cswd_remembered_user');
       const savedPass = localStorage.getItem('cswd_remembered_pass');
@@ -327,7 +304,6 @@
       }
     });
 
-    // Toggle Password Visibility
     function togglePasswordVisibility() {
       const passInput = document.getElementById('loginPass');
       const eyeIcon = document.getElementById('eyeIcon');
@@ -340,7 +316,6 @@
       }
     }
 
-    // Toggle Radio Button Uncheck
     function handleRadioToggle(radio) {
       if (radio.dataset.wasChecked === "true") {
         radio.checked = false;
@@ -350,7 +325,6 @@
       }
     }
 
-    // Login Form Submit
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const loginBtn = document.getElementById('loginBtn');
@@ -364,6 +338,7 @@
         const res = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          redirect: 'follow',
           body: JSON.stringify({ action: 'login', username, password })
         });
         const data = await res.json();
@@ -432,88 +407,255 @@
       document.getElementById(`client-nav-${tab}`).className = "sidebar-active w-full text-left px-4 py-3 rounded-xl font-medium flex items-center space-x-3 text-white transition";
     }
 
-    // Render Client Form
+    // RENDER SOLO PARENT REGISTRATION FORM (COMPLETE SECTIONS A-F ALIGNED WITH GOOGLE SHEET TAB 'SoloParent')
     function renderClientForm(user) {
       const container = document.getElementById('formContainer');
-      document.getElementById('client-form-title').innerText = `${user.clientType} Registration Form`;
 
       if (user.clientType === "Solo Parent") {
+        const today = new Date().toISOString().split('T')[0];
+
         container.innerHTML = `
-          <form id="soloParentForm" class="glass-card p-8 rounded-3xl shadow-xl grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Barangay</label>
-              <input type="text" name="barangay" value="${user.barangay || ''}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+          <form id="soloParentForm" class="space-y-6">
+            
+            <!-- HEADER ADMINISTRATIVE INFO -->
+            <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Barangay</label>
+                <input type="text" name="barangay" value="${user.barangay || ''}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Date</label>
+                <input type="date" name="date" value="${today}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Control No.</label>
+                <input type="text" name="controlNo" placeholder="Control Number" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Interviewer</label>
+                <input type="text" name="interviewer" placeholder="Interviewer Name" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+              </div>
             </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Date</label>
-              <input type="date" name="date" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+
+            <!-- SECTION A: MEMBER INFORMATION -->
+            <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
+              <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">A. Member Information</h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="md:col-span-2">
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Name of Member</label>
+                  <input type="text" name="memberName" value="${user.fullname || ''}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]" required>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Sex</label>
+                  <select name="sex" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                    <option value="Female">Female</option>
+                    <option value="Male">Male</option>
+                    <option value="Prefer not to say">Prefer not to say</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Age</label>
+                  <input type="number" name="age" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Contact Number</label>
+                  <input type="text" name="contactNumber" value="${user.contact || ''}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">No. of Dependents</label>
+                  <input type="number" name="noOfDependents" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                </div>
+                <div class="md:col-span-3">
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Complete Address</label>
+                  <input type="text" name="completeAddress" placeholder="House No, Street, Barangay, City/Municipality" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Classification of Solo Parent</label>
+                  <input type="text" name="classification" placeholder="e.g. Death of spouse, Abandonment, Unmarried" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Source of Income / Livelihood</label>
+                  <input type="text" name="sourceOfIncome" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                </div>
+              </div>
             </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Member Name</label>
-              <input type="text" name="memberName" value="${user.fullname || ''}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]" required>
+
+            <!-- SECTION B: DISABILITY INFORMATION -->
+            <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
+              <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">B. Disability Information</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Does the member have a disability?</label>
+                  <select name="memberDisability" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Type of Member Disability (if any)</label>
+                  <input type="text" name="memberDisabilityType" placeholder="Specify disability type" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Does any dependent have a disability?</label>
+                  <select name="dependentDisability" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Type of Dependent Disability (if any)</label>
+                  <input type="text" name="dependentDisabilityType" placeholder="Specify disability type" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                </div>
+              </div>
             </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Sex</label>
-              <select name="sex" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                <option value="Female">Female</option>
-                <option value="Male">Male</option>
-              </select>
+
+            <!-- SECTION C: SOLO PARENT ID DETAILS -->
+            <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
+              <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">C. Solo Parent ID Details</h3>
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">ID Number</label>
+                  <input type="text" name="idNumber" placeholder="Solo Parent ID No." class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Expiration Date</label>
+                  <input type="date" name="idExpirationDate" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">ID Status</label>
+                  <select name="idStatus" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                    <option value="Valid">Valid</option>
+                    <option value="Expired">Expired</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">For Renewal?</label>
+                  <select name="forRenewal" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+              </div>
             </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Age</label>
-              <input type="number" name="age" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+
+            <!-- SECTION D: ASSISTANCE / PROGRAM STATUS -->
+            <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
+              <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">D. Assistance / Program Status</h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Subsidy Recipient</label>
+                  <select name="subsidyRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">INB Recipient</label>
+                  <select name="inbRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">4Ps Recipient</label>
+                  <select name="fourPsRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+              </div>
             </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Contact Number</label>
-              <input type="text" name="contactNumber" value="${user.contact || ''}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+
+            <!-- SECTION E: SKILLS AND LIVELIHOOD PROFILE -->
+            <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
+              <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">E. Skills and Livelihood Profile</h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Skill Set / Existing Skills</label>
+                  <input type="text" name="existingSkills" placeholder="e.g. Cooking, Dressmaking, Cooking" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Skills Training Interested In</label>
+                  <input type="text" name="skillsTrainingInterested" placeholder="e.g. Baking, Computer Literacy" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Preferred Livelihood / Income Opportunity</label>
+                  <input type="text" name="preferredLivelihood" placeholder="e.g. Sari-sari store, Food stall" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                </div>
+              </div>
             </div>
-            <div class="md:col-span-2">
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Classification of Solo Parent</label>
-              <input type="text" name="classification" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+
+            <!-- SECTION F: REMARKS / OTHER CONCERNS -->
+            <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
+              <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">F. Remarks / Other Concerns</h3>
+              <div>
+                <textarea name="remarks" placeholder="Enter remarks, notes, or special concerns..." class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff] h-28"></textarea>
+              </div>
             </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">No. of Dependents</label>
-              <input type="number" name="noOfDependents" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Source of Income / Livelihood</label>
-              <input type="text" name="sourceOfIncome" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-            </div>
-            <div class="md:col-span-2 pt-2">
-              <button type="submit" class="btn-palette text-white px-6 py-3.5 rounded-xl font-bold w-full shadow-lg shadow-blue-500/20">Submit Application</button>
-            </div>
+
+            <!-- SUBMIT BUTTON -->
+            <button type="submit" id="submitSoloBtn" class="btn-palette text-white py-4 rounded-xl font-bold tracking-wide shadow-lg shadow-blue-500/25 w-full text-center">
+              Submit Solo Parent Member Survey
+            </button>
           </form>
         `;
 
         document.getElementById('soloParentForm').onsubmit = async (e) => {
           e.preventDefault();
+          const btn = document.getElementById('submitSoloBtn');
+          btn.innerText = "Submitting Record...";
+          btn.disabled = true;
+
           const f = e.target;
           const formData = {
             barangay: f.barangay.value,
             date: f.date.value,
+            controlNo: f.controlNo.value,
+            interviewer: f.interviewer.value,
             memberName: f.memberName.value,
             sex: f.sex.value,
             age: f.age.value,
             contactNumber: f.contactNumber.value,
+            completeAddress: f.completeAddress.value,
             classification: f.classification.value,
             noOfDependents: f.noOfDependents.value,
-            sourceOfIncome: f.sourceOfIncome.value
+            sourceOfIncome: f.sourceOfIncome.value,
+            memberDisability: f.memberDisability.value,
+            memberDisabilityType: f.memberDisabilityType.value,
+            dependentDisability: f.dependentDisability.value,
+            dependentDisabilityType: f.dependentDisabilityType.value,
+            idNumber: f.idNumber.value,
+            idExpirationDate: f.idExpirationDate.value,
+            idStatus: f.idStatus.value,
+            forRenewal: f.forRenewal.value,
+            subsidyRecipient: f.subsidyRecipient.value,
+            inbRecipient: f.inbRecipient.value,
+            fourPsRecipient: f.fourPsRecipient.value,
+            existingSkills: f.existingSkills.value,
+            skillsTrainingInterested: f.skillsTrainingInterested.value,
+            preferredLivelihood: f.preferredLivelihood.value,
+            remarks: f.remarks.value
           };
 
           try {
             const res = await fetch(API_URL, {
               method: 'POST',
               headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              redirect: 'follow',
               body: JSON.stringify({ action: 'submitSoloParent', formData })
             });
             const result = await res.json();
             if (result.success) {
-              showNotification(result.message || "Application submitted successfully!", 'success');
+              showNotification(result.message || "Member survey saved to database!", 'success');
+              f.reset();
             } else {
-              showNotification(result.message || "Failed to submit application.", 'error');
+              showNotification(result.message || "Failed to submit survey.", 'error');
             }
           } catch(err) {
-            showNotification("Network error submitting application.", 'error');
+            showNotification("Network error submitting survey.", 'error');
+          } finally {
+            btn.innerText = "Submit Solo Parent Member Survey";
+            btn.disabled = false;
           }
         };
       } else {
@@ -521,7 +663,6 @@
       }
     }
 
-    // Admin Publish Announcement
     document.getElementById('announcementForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const title = document.getElementById('annTitle').value;
@@ -531,6 +672,7 @@
         const res = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          redirect: 'follow',
           body: JSON.stringify({ action: 'postAnnouncement', title, content })
         });
         const data = await res.json();
@@ -545,10 +687,9 @@
       }
     });
 
-    // Fetch Announcements
     async function loadAnnouncements() {
       try {
-        const res = await fetch(`${API_URL}?action=getAnnouncements`);
+        const res = await fetch(`${API_URL}?action=getAnnouncements`, { redirect: 'follow' });
         const data = await res.json();
         const container = document.getElementById('client-announcements-list');
 
@@ -571,10 +712,9 @@
       }
     }
 
-    // Fetch Admin Data
     async function loadAdminTableData(tabName, targetId) {
       try {
-        const res = await fetch(`${API_URL}?action=getData&tabName=${tabName}`);
+        const res = await fetch(`${API_URL}?action=getData&tabName=${tabName}`, { redirect: 'follow' });
         const data = await res.json();
         const container = document.getElementById(targetId);
 
@@ -585,11 +725,11 @@
 
         const headers = Object.keys(data[0]);
         let html = `<table class="w-full text-left text-sm border-collapse"><thead><tr class="bg-slate-100/80">`;
-        headers.forEach(h => html += `<th class="p-3 font-bold text-slate-700 border-b">${h}</th>`);
+        headers.forEach(h => html += `<th class="p-3 font-bold text-slate-700 border-b whitespace-nowrap">${h}</th>`);
         html += `</tr></thead><tbody class="divide-y divide-slate-100">`;
         data.forEach(row => {
           html += `<tr class="hover:bg-slate-50/80 transition">`;
-          headers.forEach(h => html += `<td class="p-3 text-slate-600">${row[h]}</td>`);
+          headers.forEach(h => html += `<td class="p-3 text-slate-600 whitespace-nowrap">${row[h]}</td>`);
           html += `</tr>`;
         });
         html += `</tbody></table>`;
