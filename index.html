@@ -376,6 +376,11 @@
     </div>
   </div>
 
+  <div 
+  id="toast-container" 
+  class="fixed top-5 right-5 z-[9999] flex flex-col space-y-3 max-w-sm w-full pointer-events-none"
+></div>
+
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbw1O3MPFomu4LoHN-oj0fhAc8lhp3aWDkOlCtjVYvOefeTKyT3M7WbR2AFlEokby_te/exec"; 
 
@@ -940,29 +945,54 @@
       };
     }
 
-    document.getElementById('announcementForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const title = document.getElementById('annTitle').value;
-      const content = document.getElementById('annContent').value;
+    // SIGN UP SUBMIT HANDLER (Updated & Robust)
+document.getElementById('signUpForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('suSubmitBtn');
+  btn.innerText = "Registering...";
+  btn.disabled = true;
 
-      try {
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          redirect: 'follow',
-          body: JSON.stringify({ action: 'postAnnouncement', title, content })
-        });
-        const data = await res.json();
-        if (data.success) {
-          showNotification(data.message || "Announcement published successfully!", 'success');
-          document.getElementById('announcementForm').reset();
-        } else {
-          showNotification(data.message || "Failed to publish announcement.", 'error');
-        }
-      } catch(err) {
-        showNotification("Network error posting announcement.", 'error');
-      }
+  const userData = {
+    username: document.getElementById('suUsername').value.trim(),
+    password: document.getElementById('suPassword').value,
+    fullname: document.getElementById('suFullname').value.trim(),
+    houseNoStreetSubdivision: document.getElementById('suHouseNo').value.trim(),
+    barangay: document.getElementById('suBarangay').value.trim(),
+    contactNo: document.getElementById('suContactNo').value.trim(),
+    role: "Client",
+    typeOfClient: "Solo Parent"
+  };
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      redirect: 'follow',
+      body: JSON.stringify({ action: 'registerUser', userData })
     });
+
+    const textResult = await res.text();
+    let data;
+    try {
+      data = JSON.parse(textResult);
+    } catch (parseErr) {
+      throw new Error("Server returned non-JSON response. Check Apps Script logs.");
+    }
+
+    if (data.success) {
+      showNotification("Solo Parent account registered successfully!", 'success');
+      closeSignUpModal();
+    } else {
+      showNotification(data.message || "Failed to register account.", 'error');
+    }
+  } catch (err) {
+    console.error("Sign-up request error:", err);
+    showNotification("Error connecting to server. Please try again.", 'error');
+  } finally {
+    btn.innerText = "Register Account";
+    btn.disabled = false;
+  }
+});
 
     async function loadAnnouncements() {
       try {
