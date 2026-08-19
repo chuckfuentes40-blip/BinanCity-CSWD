@@ -107,6 +107,12 @@
             Sign In
           </button>
         </form>
+
+        <!-- SIGN UP PROMPT TEXT -->
+        <p class="text-xs text-center text-slate-600 mt-5 pt-3 border-t border-slate-200/80">
+          Don't have a Solo Parents account yet? 
+          <button type="button" onclick="openSignUpModal()" class="text-[#097dff] hover:text-[#575aff] font-bold underline focus:outline-none transition">SignUp</button>
+        </p>
       </div>
     </div>
 
@@ -137,11 +143,27 @@
             <button onclick="switchAdminSubpage('home')" id="admin-nav-home" class="sidebar-active w-full text-left px-4 py-3 rounded-xl font-medium flex items-center space-x-3 text-white transition">
               <span>Home</span>
             </button>
-            <button onclick="switchAdminSubpage('announcement')" id="admin-nav-announcement" class="w-full text-left px-4 py-3 rounded-xl font-medium flex items-center space-x-3 hover:bg-slate-800/60 hover:text-white transition">
+            <button onclick="switchAdminSubpage('announcement')" id="admin-nav-announcement" class="w-full text-left px-4 py-3 rounded-xl font-medium flex items-center space-x-3 hover:bg-slate-800/60 hover:text-white transition text-slate-300">
               <span>Announcement</span>
             </button>
-            <button onclick="switchAdminSubpage('soloparent')" id="admin-nav-soloparent" class="w-full text-left px-4 py-3 rounded-xl font-medium flex items-center space-x-3 hover:bg-slate-800/60 hover:text-white transition">
+            <button onclick="switchAdminSubpage('soloparent')" id="admin-nav-soloparent" class="w-full text-left px-4 py-3 rounded-xl font-medium flex items-center space-x-3 hover:bg-slate-800/60 hover:text-white transition text-slate-300">
               <span>Solo Parents Data (Sheet5)</span>
+            </button>
+            
+            <!-- PRINT DATA SHEET BUTTON -->
+            <button onclick="printDataSheet()" id="admin-nav-print" class="w-full text-left px-4 py-3 rounded-xl font-medium flex items-center space-x-3 hover:bg-slate-800/60 text-emerald-400 hover:text-emerald-300 transition">
+              <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+              </svg>
+              <span>Print Data Sheet</span>
+            </button>
+
+            <!-- ADD ADMIN BUTTON -->
+            <button onclick="openAddAdminModal()" id="admin-nav-addadmin" class="w-full text-left px-4 py-3 rounded-xl font-medium flex items-center space-x-3 hover:bg-slate-800/60 text-purple-400 hover:text-purple-300 transition">
+              <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
+              <span>Add Admin</span>
             </button>
           </nav>
         </div>
@@ -176,7 +198,13 @@
         </div>
 
         <div id="admin-sub-soloparent" class="hidden">
-          <h2 class="text-2xl font-bold text-slate-900 mb-6">Sheet5 Database Records</h2>
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-slate-900">Sheet5 Database Records</h2>
+            <button onclick="printDataSheet()" class="btn-palette text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-md flex items-center space-x-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+              <span>Print Sheet5</span>
+            </button>
+          </div>
           <div id="data-soloparent-table" class="glass-card p-6 rounded-2xl shadow-xl overflow-x-auto">Loading data...</div>
         </div>
       </main>
@@ -234,6 +262,118 @@
       </main>
     </div>
 
+  </div>
+
+  <!-- SOLO PARENTS SIGN UP MODAL -->
+  <div id="signUpModal" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass-card rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto border border-white/80">
+      <div class="flex justify-between items-center mb-6 pb-2 border-b border-slate-200">
+        <div>
+          <h3 class="text-xl font-extrabold text-slate-900">Solo Parent Sign Up</h3>
+          <p class="text-xs text-slate-500">Create a new Solo Parent client account</p>
+        </div>
+        <button onclick="closeSignUpModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form id="signUpForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Username</label>
+          <input type="text" id="suUsername" class="w-full p-3 bg-slate-100/90 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]" required>
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Password</label>
+          <input type="password" id="suPassword" class="w-full p-3 bg-slate-100/90 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]" required>
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Full Name</label>
+          <input type="text" id="suFullname" class="w-full p-3 bg-slate-100/90 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]" required>
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">House No. / Street / Subdivision</label>
+          <input type="text" id="suHouseNo" class="w-full p-3 bg-slate-100/90 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]" required>
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Barangay</label>
+          <input type="text" id="suBarangay" class="w-full p-3 bg-slate-100/90 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]" required>
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Contact No.</label>
+          <input type="text" id="suContactNo" class="w-full p-3 bg-slate-100/90 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]" required>
+        </div>
+        <div class="grid grid-cols-2 gap-3 pt-1">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Role</label>
+            <input type="text" id="suRole" value="Client" readonly class="w-full p-3 bg-slate-200/80 text-slate-600 border border-slate-300 rounded-xl cursor-not-allowed font-semibold">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Type of Client</label>
+            <input type="text" id="suTypeOfClient" value="Solo Parent" readonly class="w-full p-3 bg-slate-200/80 text-slate-600 border border-slate-300 rounded-xl cursor-not-allowed font-semibold">
+          </div>
+        </div>
+
+        <button type="submit" id="suSubmitBtn" class="w-full btn-palette text-white py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-blue-500/25 mt-4">
+          Register Account
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ADD ADMIN MODAL -->
+  <div id="addAdminModal" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass-card rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto border border-white/80">
+      <div class="flex justify-between items-center mb-6 pb-2 border-b border-slate-200">
+        <div>
+          <h3 class="text-xl font-extrabold text-slate-900">Add New Administrator</h3>
+          <p class="text-xs text-slate-500">Register a new Admin account into system</p>
+        </div>
+        <button onclick="closeAddAdminModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form id="addAdminForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Username</label>
+          <input type="text" id="admUsername" class="w-full p-3 bg-slate-100/90 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]" required>
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Password</label>
+          <input type="password" id="admPassword" class="w-full p-3 bg-slate-100/90 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]" required>
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Full Name</label>
+          <input type="text" id="admFullname" class="w-full p-3 bg-slate-100/90 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]" required>
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">House No. / Street / Subdivision</label>
+          <input type="text" id="admHouseNo" class="w-full p-3 bg-slate-100/90 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]" required>
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Barangay</label>
+          <input type="text" id="admBarangay" class="w-full p-3 bg-slate-100/90 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]" required>
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Contact No.</label>
+          <input type="text" id="admContactNo" class="w-full p-3 bg-slate-100/90 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]" required>
+        </div>
+        <div class="grid grid-cols-2 gap-3 pt-1">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Role</label>
+            <input type="text" id="admRole" value="Admin" readonly class="w-full p-3 bg-slate-200/80 text-slate-600 border border-slate-300 rounded-xl cursor-not-allowed font-semibold">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Type of Client</label>
+            <input type="text" id="admTypeOfClient" value="" readonly placeholder="(Blank)" class="w-full p-3 bg-slate-200/80 text-slate-600 border border-slate-300 rounded-xl cursor-not-allowed font-semibold">
+          </div>
+        </div>
+
+        <button type="submit" id="admSubmitBtn" class="w-full btn-palette text-white py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-blue-500/25 mt-4">
+          Create Admin Account
+        </button>
+      </form>
+    </div>
   </div>
 
   <script>
@@ -295,14 +435,13 @@
       setTimeout(() => toast.remove(), 300);
     }
 
-    // AUTO RESTORE SESSION ON REFRESH / RELOAD
     window.addEventListener('DOMContentLoaded', () => {
       const activeSession = localStorage.getItem('cswd_active_session');
       if (activeSession) {
         try {
           currentUser = JSON.parse(activeSession);
           routeUser(currentUser);
-          return; // Skip displaying login page
+          return;
         } catch (err) {
           localStorage.removeItem('cswd_active_session');
         }
@@ -372,8 +511,6 @@
           }
 
           currentUser = data.user || { role: 'Client', fullname: username };
-          
-          // Save active session object so user stays logged in across page refreshes
           localStorage.setItem('cswd_active_session', JSON.stringify(currentUser));
 
           const displayName = currentUser.fullname || currentUser.username || 'User';
@@ -440,6 +577,179 @@
 
       if (tab === 'form') {
         renderClientForm(currentUser);
+      }
+    }
+
+    // MODAL CONTROL FUNCTIONS
+    function openSignUpModal() {
+      document.getElementById('signUpModal').classList.remove('hidden');
+    }
+
+    function closeSignUpModal() {
+      document.getElementById('signUpModal').classList.add('hidden');
+      document.getElementById('signUpForm').reset();
+    }
+
+    function openAddAdminModal() {
+      document.getElementById('addAdminModal').classList.remove('hidden');
+    }
+
+    function closeAddAdminModal() {
+      document.getElementById('addAdminModal').classList.add('hidden');
+      document.getElementById('addAdminForm').reset();
+    }
+
+    // SIGN UP SUBMIT HANDLER
+    document.getElementById('signUpForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('suSubmitBtn');
+      btn.innerText = "Registering...";
+      btn.disabled = true;
+
+      const userData = {
+        username: document.getElementById('suUsername').value,
+        password: document.getElementById('suPassword').value,
+        fullname: document.getElementById('suFullname').value,
+        houseNoStreetSubdivision: document.getElementById('suHouseNo').value,
+        barangay: document.getElementById('suBarangay').value,
+        contactNo: document.getElementById('suContactNo').value,
+        role: "Client",
+        typeOfClient: "Solo Parent"
+      };
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          redirect: 'follow',
+          body: JSON.stringify({ action: 'registerUser', userData })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showNotification("Solo Parent account registered successfully!", 'success');
+          closeSignUpModal();
+        } else {
+          showNotification(data.message || "Failed to register account.", 'error');
+        }
+      } catch (err) {
+        showNotification("Error connecting to server.", 'error');
+      } finally {
+        btn.innerText = "Register Account";
+        btn.disabled = false;
+      }
+    });
+
+    // ADD ADMIN SUBMIT HANDLER
+    document.getElementById('addAdminForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('admSubmitBtn');
+      btn.innerText = "Creating Admin...";
+      btn.disabled = true;
+
+      const userData = {
+        username: document.getElementById('admUsername').value,
+        password: document.getElementById('admPassword').value,
+        fullname: document.getElementById('admFullname').value,
+        houseNoStreetSubdivision: document.getElementById('admHouseNo').value,
+        barangay: document.getElementById('admBarangay').value,
+        contactNo: document.getElementById('admContactNo').value,
+        role: "Admin",
+        typeOfClient: ""
+      };
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          redirect: 'follow',
+          body: JSON.stringify({ action: 'registerUser', userData })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showNotification("Admin account created successfully!", 'success');
+          closeAddAdminModal();
+        } else {
+          showNotification(data.message || "Failed to create Admin account.", 'error');
+        }
+      } catch (err) {
+        showNotification("Error connecting to server.", 'error');
+      } finally {
+        btn.innerText = "Create Admin Account";
+        btn.disabled = false;
+      }
+    });
+
+    // PRINT SHEET5 DATA FUNCTION
+    async function printDataSheet() {
+      showNotification("Preparing Sheet5 data for printing...", "success");
+
+      try {
+        const res = await fetch(`${API_URL}?action=getData&tabName=Sheet5`, { redirect: 'follow' });
+        const data = await res.json();
+
+        if (!data || !data.length) {
+          showNotification("No records found in Sheet5 to print.", "error");
+          return;
+        }
+
+        const headers = Object.keys(data[0]);
+
+        const printHtml = `
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <title>CSWD Community Portal - Sheet5 Data Sheet</title>
+            <style>
+              body { font-family: 'Arial', sans-serif; margin: 15px; color: #1e293b; }
+              .header { text-align: center; margin-bottom: 20px; }
+              .header h1 { margin: 0; font-size: 18pt; color: #0f172a; }
+              .header p { margin: 4px 0 0; font-size: 10pt; color: #64748b; }
+              table { width: 100%; border-collapse: collapse; font-size: 8pt; margin-top: 10px; }
+              th, td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; word-break: break-word; }
+              th { background-color: #f1f5f9; font-weight: bold; text-transform: uppercase; color: #334155; }
+              tr:nth-child(even) { background-color: #f8fafc; }
+              @page { size: landscape; margin: 10mm; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>CSWD Solo Parents Master List (Sheet5)</h1>
+              <p>City Social Welfare and Development Office - Generated on ${new Date().toLocaleString()}</p>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  ${headers.map(h => `<th>${h}</th>`).join('')}
+                </tr>
+              </thead>
+              <tbody>
+                ${data.map(row => `
+                  <tr>
+                    ${headers.map(h => `<td>${row[h] !== undefined && row[h] !== null ? row[h] : ''}</td>`).join('')}
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </body>
+          </html>
+        `;
+
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.write(printHtml);
+          printWindow.document.close();
+          printWindow.focus();
+          setTimeout(() => {
+            printWindow.print();
+          }, 500);
+        } else {
+          showNotification("Pop-up blocked! Please allow pop-ups for this site to print.", "error");
+        }
+      } catch (err) {
+        showNotification("Failed to fetch Sheet5 data for printing.", "error");
       }
     }
 
