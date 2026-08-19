@@ -55,11 +55,14 @@
 
   <div class="relative z-10">
 
-    <!-- LOGIN PAGE (GUARANTEED VISIBLE BY DEFAULT) -->
-    <div id="page-login" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900">
+    <!-- LOGIN PAGE WITH BINAN CITY HALL BACKGROUND -->
+    <div id="page-login" class="min-h-screen flex items-center justify-center p-4 relative bg-cover bg-center bg-no-repeat" style="background-image: url('https://static.where-e.com/Philippines/Laguna_State/Binan_City/Binan-City-Hall_ed0e2f6ff364068be7ef33aa24179e78.jpg');">
       
+      <!-- DARK OVERLAY FOR READABILITY -->
+      <div class="absolute inset-0 bg-slate-950/65 backdrop-blur-xs"></div>
+
       <!-- GLASS LOGIN CARD -->
-      <div class="glass-card p-8 sm:p-10 rounded-3xl shadow-2xl w-full max-w-md border border-white/70">
+      <div class="relative z-10 glass-card p-8 sm:p-10 rounded-3xl shadow-2xl w-full max-w-md border border-white/70">
         <div class="text-center mb-8">
           <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-palette-gradient flex items-center justify-center shadow-lg shadow-purple-500/20">
             <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,7 +129,7 @@
             <div class="w-10 h-10 rounded-xl bg-palette-gradient flex items-center justify-center font-bold text-white shadow-md">A</div>
             <div>
               <h1 class="text-lg font-bold text-white tracking-wide">CSWD Admin</h1>
-              <span class="text-xs text-purple-400 font-medium">System Manager</span>
+              <span id="adminUserName" class="text-xs text-purple-400 font-medium">System Admin</span>
             </div>
           </div>
 
@@ -194,7 +197,8 @@
             <div class="w-10 h-10 rounded-xl bg-palette-gradient flex items-center justify-center font-bold text-white shadow-md">C</div>
             <div>
               <h1 class="text-lg font-bold text-white tracking-wide">Client Portal</h1>
-              <span id="clientTypeBadge" class="text-xs font-semibold text-purple-400">Beneficiary</span>
+              <!-- USER NAME DISPLAY BELOW CLIENT PORTAL HEADER -->
+              <span id="clientUserName" class="text-xs font-semibold text-purple-300 block truncate max-w-[180px]">User Name</span>
             </div>
           </div>
 
@@ -230,12 +234,10 @@
   </div>
 
   <script>
-    // URL auto-detected if hosted on Apps Script
     const API_URL = "https://script.google.com/macros/s/AKfycbw1O3MPFomu4LoHN-oj0fhAc8lhp3aWDkOlCtjVYvOefeTKyT3M7WbR2AFlEokby_te/exec"; 
 
     let currentUser = null;
 
-    // SAFE PAGE SWITCHER
     function showPage(pageId) {
       ['page-login', 'page-admin', 'page-client'].forEach(id => {
         const el = document.getElementById(id);
@@ -353,7 +355,11 @@
           }
 
           currentUser = data.user || { role: 'Client', fullname: username };
-          showNotification(`Welcome back, ${currentUser.fullname || username}!`, 'success');
+          
+          // NOTIFICATION NOW SHOWS THE USER'S FULL NAME
+          const displayName = currentUser.fullname || currentUser.username || 'User';
+          showNotification(`Welcome back, ${displayName}!`, 'success');
+
           routeUser(currentUser);
         } else {
           showNotification(data.message || 'Invalid credentials.', 'error');
@@ -372,13 +378,18 @@
       }
 
       const role = (user.role || '').toString().trim().toLowerCase();
+      const displayName = user.fullname || user.username || 'Client User';
 
       if (role === 'admin') {
         showPage('page-admin');
+        document.getElementById('adminUserName').innerText = displayName;
         switchAdminSubpage('home');
       } else {
         showPage('page-client');
-        document.getElementById('clientTypeBadge').innerText = user.clientType || 'Beneficiary';
+        
+        // DISPLAY USER NAME BELOW CLIENT PORTAL SIDEBAR HEADER
+        document.getElementById('clientUserName').innerText = displayName;
+        
         switchClientSubpage('home');
         loadAnnouncements();
         renderClientForm(user);
@@ -410,191 +421,198 @@
 
       document.getElementById(`client-sub-${tab}`).classList.remove('hidden');
       document.getElementById(`client-nav-${tab}`).className = "sidebar-active w-full text-left px-4 py-3 rounded-xl font-medium flex items-center space-x-3 text-white transition";
+
+      // ALWAYS GUARANTEE FORM RENDERS IF USER SWITCHES TO FORM TAB
+      if (tab === 'form') {
+        renderClientForm(currentUser);
+      }
     }
 
     function renderClientForm(user) {
       const container = document.getElementById('formContainer');
+      if (!container) return;
 
-      if ((user.clientType || 'Solo Parent') === "Solo Parent") {
-        container.innerHTML = `
-          <form id="soloParentForm" class="space-y-6">
-            <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
-              <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">A. Member Details</h3>
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="md:col-span-2">
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Name of Member (Col B)</label>
-                  <input type="text" name="memberName" value="${user.fullname || ''}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]" required>
-                </div>
-                <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Sex (Col C)</label>
-                  <select name="sex" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                    <option value="Female">Female</option>
-                    <option value="Male">Male</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Age (Col D)</label>
-                  <input type="number" name="age" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                </div>
-                <div class="md:col-span-2">
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Address (Col E)</label>
-                  <input type="text" name="address" placeholder="House No, Street, Barangay, City" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                </div>
-                <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Contact Number (Col F)</label>
-                  <input type="text" name="contactNumber" value="${user.contact || ''}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                </div>
-                <div class="md:col-span-2">
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Classification of Solo Parent (Col G)</label>
-                  <input type="text" name="classification" placeholder="e.g. Death of spouse, Abandonment" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                </div>
-                <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Source of Income (Col H)</label>
-                  <input type="text" name="sourceOfIncome" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                </div>
-                <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">No. of Dependents (Col I)</label>
-                  <input type="number" name="noOfDependents" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                </div>
+      const userNameVal = user ? (user.fullname || user.username || '') : '';
+      const userContactVal = user ? (user.contact || '') : '';
+
+      container.innerHTML = `
+        <form id="soloParentForm" class="space-y-6">
+          <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
+            <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">A. Member Details</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="md:col-span-2">
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Name of Member (Col B)</label>
+                <input type="text" name="memberName" value="${userNameVal}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]" required>
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Sex (Col C)</label>
+                <select name="sex" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                  <option value="Female">Female</option>
+                  <option value="Male">Male</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Age (Col D)</label>
+                <input type="number" name="age" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Address (Col E)</label>
+                <input type="text" name="address" placeholder="House No, Street, Barangay, City" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Contact Number (Col F)</label>
+                <input type="text" name="contactNumber" value="${userContactVal}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Classification of Solo Parent (Col G)</label>
+                <input type="text" name="classification" placeholder="e.g. Death of spouse, Abandonment" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Source of Income (Col H)</label>
+                <input type="text" name="sourceOfIncome" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">No. of Dependents (Col I)</label>
+                <input type="number" name="noOfDependents" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
               </div>
             </div>
+          </div>
 
-            <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
-              <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">B. Disability Information</h3>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">If Member Has Disability (Col J)</label>
-                  <select name="memberDisability" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                    <option value="No">No</option>
-                    <option value="Yes">Yes</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Type of Disability (Col K)</label>
-                  <input type="text" name="memberDisabilityType" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                </div>
-                <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">If Dependent Has Disability (Col L)</label>
-                  <select name="dependentDisability" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                    <option value="No">No</option>
-                    <option value="Yes">Yes</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Type of Disability (Col M)</label>
-                  <input type="text" name="dependentDisabilityType" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                </div>
+          <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
+            <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">B. Disability Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">If Member Has Disability (Col J)</label>
+                <select name="memberDisability" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                  <option value="No">No</option>
+                  <option value="Yes">Yes</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Type of Disability (Col K)</label>
+                <input type="text" name="memberDisabilityType" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">If Dependent Has Disability (Col L)</label>
+                <select name="dependentDisability" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                  <option value="No">No</option>
+                  <option value="Yes">Yes</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Type of Disability (Col M)</label>
+                <input type="text" name="dependentDisabilityType" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
               </div>
             </div>
+          </div>
 
-            <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
-              <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">C. Solo Parent ID Details</h3>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">ID Number (Col N)</label>
-                  <input type="text" name="idNumber" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                </div>
-                <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Expiration Date (Col O)</label>
-                  <input type="date" name="idExpirationDate" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                </div>
+          <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
+            <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">C. Solo Parent ID Details</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">ID Number (Col N)</label>
+                <input type="text" name="idNumber" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Expiration Date (Col O)</label>
+                <input type="date" name="idExpirationDate" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
               </div>
             </div>
+          </div>
 
-            <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
-              <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">D. Subsidies & Benefits Status</h3>
-              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Cash Subsidy (Col P)</label>
-                  <select name="cashSubsidyRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
-                </div>
-                <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">INB (Col Q)</label>
-                  <select name="inbRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
-                </div>
-                <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">4Ps (Col R)</label>
-                  <select name="fourPsRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
-                </div>
-                <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Rice Subsidy (Col S)</label>
-                  <select name="riceSubsidyRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
-                </div>
+          <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
+            <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">D. Subsidies & Benefits Status</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Cash Subsidy (Col P)</label>
+                <select name="cashSubsidyRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">INB (Col Q)</label>
+                <select name="inbRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">4Ps (Col R)</label>
+                <select name="fourPsRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Rice Subsidy (Col S)</label>
+                <select name="riceSubsidyRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
               </div>
             </div>
+          </div>
 
-            <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
-              <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">E. Additional Information</h3>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Skill Set (Col T)</label>
-                  <input type="text" name="skillSet" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                </div>
-                <div>
-                  <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Remarks (Col U)</label>
-                  <textarea name="remarks" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff] h-24"></textarea>
-                </div>
+          <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
+            <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">E. Additional Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Skill Set (Col T)</label>
+                <input type="text" name="skillSet" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Remarks (Col U)</label>
+                <textarea name="remarks" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff] h-24"></textarea>
               </div>
             </div>
+          </div>
 
-            <button type="submit" id="submitSoloBtn" class="btn-palette text-white py-4 rounded-xl font-bold tracking-wide shadow-lg shadow-blue-500/25 w-full text-center">
-              Submit Record to Sheet5
-            </button>
-          </form>
-        `;
+          <button type="submit" id="submitSoloBtn" class="btn-palette text-white py-4 rounded-xl font-bold tracking-wide shadow-lg shadow-blue-500/25 w-full text-center">
+            Submit Record to Sheet5
+          </button>
+        </form>
+      `;
 
-        document.getElementById('soloParentForm').onsubmit = async (e) => {
-          e.preventDefault();
-          const btn = document.getElementById('submitSoloBtn');
-          btn.innerText = "Saving to Sheet5...";
-          btn.disabled = true;
+      document.getElementById('soloParentForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('submitSoloBtn');
+        btn.innerText = "Saving to Sheet5...";
+        btn.disabled = true;
 
-          const f = e.target;
-          const formData = {
-            memberName: f.memberName.value,
-            sex: f.sex.value,
-            age: f.age.value,
-            address: f.address.value,
-            contactNumber: f.contactNumber.value,
-            classification: f.classification.value,
-            sourceOfIncome: f.sourceOfIncome.value,
-            noOfDependents: f.noOfDependents.value,
-            memberDisability: f.memberDisability.value,
-            memberDisabilityType: f.memberDisabilityType.value,
-            dependentDisability: f.dependentDisability.value,
-            dependentDisabilityType: f.dependentDisabilityType.value,
-            idNumber: f.idNumber.value,
-            idExpirationDate: f.idExpirationDate.value,
-            cashSubsidyRecipient: f.cashSubsidyRecipient.value,
-            inbRecipient: f.inbRecipient.value,
-            fourPsRecipient: f.fourPsRecipient.value,
-            riceSubsidyRecipient: f.riceSubsidyRecipient.value,
-            skillSet: f.skillSet.value,
-            remarks: f.remarks.value
-          };
-
-          try {
-            const res = await fetch(API_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-              redirect: 'follow',
-              body: JSON.stringify({ action: 'submitSoloParent', formData })
-            });
-            const result = await res.json();
-            if (result.success) {
-              showNotification(result.message || "Record successfully added to Sheet5!", 'success');
-              f.reset();
-            } else {
-              showNotification(result.message || "Failed to save record.", 'error');
-            }
-          } catch(err) {
-            showNotification("Network error submitting record.", 'error');
-          } finally {
-            btn.innerText = "Submit Record to Sheet5";
-            btn.disabled = false;
-          }
+        const f = e.target;
+        const formData = {
+          memberName: f.memberName.value,
+          sex: f.sex.value,
+          age: f.age.value,
+          address: f.address.value,
+          contactNumber: f.contactNumber.value,
+          classification: f.classification.value,
+          sourceOfIncome: f.sourceOfIncome.value,
+          noOfDependents: f.noOfDependents.value,
+          memberDisability: f.memberDisability.value,
+          memberDisabilityType: f.memberDisabilityType.value,
+          dependentDisability: f.dependentDisability.value,
+          dependentDisabilityType: f.dependentDisabilityType.value,
+          idNumber: f.idNumber.value,
+          idExpirationDate: f.idExpirationDate.value,
+          cashSubsidyRecipient: f.cashSubsidyRecipient.value,
+          inbRecipient: f.inbRecipient.value,
+          fourPsRecipient: f.fourPsRecipient.value,
+          riceSubsidyRecipient: f.riceSubsidyRecipient.value,
+          skillSet: f.skillSet.value,
+          remarks: f.remarks.value
         };
-      }
+
+        try {
+          const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            redirect: 'follow',
+            body: JSON.stringify({ action: 'submitSoloParent', formData })
+          });
+          const result = await res.json();
+          if (result.success) {
+            showNotification(result.message || "Record successfully added to Sheet5!", 'success');
+            f.reset();
+          } else {
+            showNotification(result.message || "Failed to save record.", 'error');
+          }
+        } catch(err) {
+          showNotification("Network error submitting record.", 'error');
+        } finally {
+          btn.innerText = "Submit Record to Sheet5";
+          btn.disabled = false;
+        }
+      };
     }
 
     document.getElementById('announcementForm').addEventListener('submit', async (e) => {
