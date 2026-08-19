@@ -295,7 +295,19 @@
       setTimeout(() => toast.remove(), 300);
     }
 
+    // AUTO RESTORE SESSION ON REFRESH / RELOAD
     window.addEventListener('DOMContentLoaded', () => {
+      const activeSession = localStorage.getItem('cswd_active_session');
+      if (activeSession) {
+        try {
+          currentUser = JSON.parse(activeSession);
+          routeUser(currentUser);
+          return; // Skip displaying login page
+        } catch (err) {
+          localStorage.removeItem('cswd_active_session');
+        }
+      }
+
       showPage('page-login');
 
       const savedUser = localStorage.getItem('cswd_remembered_user');
@@ -304,8 +316,10 @@
         document.getElementById('loginUser').value = savedUser;
         document.getElementById('loginPass').value = savedPass;
         const radio = document.getElementById('rememberRadio');
-        radio.checked = true;
-        radio.dataset.wasChecked = "true";
+        if (radio) {
+          radio.checked = true;
+          radio.dataset.wasChecked = "true";
+        }
       }
     });
 
@@ -359,6 +373,9 @@
 
           currentUser = data.user || { role: 'Client', fullname: username };
           
+          // Save active session object so user stays logged in across page refreshes
+          localStorage.setItem('cswd_active_session', JSON.stringify(currentUser));
+
           const displayName = currentUser.fullname || currentUser.username || 'User';
           showNotification(`Welcome back, ${displayName}!`, 'success');
 
@@ -695,6 +712,7 @@
 
     function logout() {
       currentUser = null;
+      localStorage.removeItem('cswd_active_session');
       showPage('page-login');
       showNotification("You have been logged out.", 'success');
     }
