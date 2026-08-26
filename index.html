@@ -1356,6 +1356,23 @@
     if (typeof loadAdminTableData === 'function') loadAdminTableData('Sheet5', 'adminTableContainer'); 
   }
 }
+   function switchClientSubpage(subpageId) {
+  // Hide all client subpages
+  const subpages = document.querySelectorAll('.client-subpage, [id^="client-subpage-"], [id^="subpage-"]');
+  subpages.forEach(sp => {
+    sp.classList.add('hidden');
+    sp.style.display = 'none';
+  });
+
+  // Reveal the selected subpage container
+  const target = document.getElementById(subpageId);
+  if (target) {
+    target.classList.remove('hidden');
+    target.style.display = 'block';
+  } else {
+    console.warn(`Client subpage element with ID "${subpageId}" not found in HTML.`);
+  }
+}
 </script>
 </body>
 </html>
