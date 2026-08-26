@@ -742,35 +742,35 @@
           typeOfClient: "Solo Parent"
         };
 
-        try {
-          const res = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            redirect: 'follow',
-            body: JSON.stringify({ action: 'registerUser', userData })
-          });
+       try {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    redirect: 'follow',
+    body: JSON.stringify({
+      action: 'login',
+      credentials: { username: usernameVal, password: passwordVal }
+    })
+  });
 
-          const textResult = await res.text();
-          let data;
-          try {
-            data = JSON.parse(textResult);
-          } catch (parseErr) {
-            throw new Error("Server returned non-JSON response. Check Apps Script logs.");
-          }
+  const rawText = await res.text();
+  
+  // Verify if Google returned HTML instead of JSON
+  if (rawText.trim().startsWith('<')) {
+    throw new Error("Received HTML error page from Google. Re-check deployment permissions.");
+  }
 
-          if (data.success) {
-            showNotification("Solo Parent account registered successfully!", 'success');
-            if (typeof closeSignUpModal === 'function') closeSignUpModal();
-          } else {
-            showNotification(data.message || "Failed to register account.", 'error');
-          }
-        } catch (err) {
-          console.error("Sign-up request error:", err);
-          showNotification("Error connecting to server. Please try again.", 'error');
-        } finally {
-          btn.innerText = "Register Account";
-          btn.disabled = false;
-        }
+  const data = JSON.parse(rawText);
+  if (data.success) {
+    showNotification("Login successful!", "success");
+    // Handle login success
+  } else {
+    showNotification(data.message || "Invalid credentials", "error");
+  }
+} catch (err) {
+  console.error("Login Error:", err);
+  showNotification(err.message || "Unable to connect to server.", "error");
+}
       });
     }
   });
