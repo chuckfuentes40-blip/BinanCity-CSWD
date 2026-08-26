@@ -1426,115 +1426,119 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof showPage === 'function') showPage('page-login');
     showNotification("You have been logged out.", 'success');
   }
-   // TOGGLE PASSWORD VISIBILITY
-  function togglePasswordVisibility(inputId, iconElement) {
-    const input = document.getElementById(inputId);
-    if (!input) return;
-
-    if (input.type === 'password') {
-      input.type = 'text';
-      if (iconElement) {
-        // Updates icon if using an emoji or SVG text
-        iconElement.innerText = '🙈';
-      }
-    } else {
-      input.type = 'password';
-      if (iconElement) {
-        iconElement.innerText = '👁️';
-      }
-    }
-  }
-   // SIGN IN SUBMIT HANDLER
-document.addEventListener('DOMContentLoaded', () => {
-  const loginForm = document.getElementById('loginForm') || document.querySelector('form');
-
-  if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
-      // Prevent browser default form GET reload (fixes the ? in URL)
-      e.preventDefault();
-
-      // Extract values dynamically using FormData and Fallbacks
-      const formData = new FormData(loginForm);
-      
-      const usernameVal = (
-        formData.get('username') || 
-        formData.get('loginUsername') || 
-        document.getElementById('loginUsername')?.value || 
-        document.querySelector('input[type="text"]')?.value || 
-        ''
-      ).trim();
-
-      const passwordVal = (
-        formData.get('password') || 
-        formData.get('loginPassword') || 
-        document.getElementById('loginPassword')?.value || 
-        document.querySelector('input[type="password"]')?.value || 
-        ''
-      ).trim();
-
-      if (!usernameVal || !passwordVal) {
-        alert("Please fill in both username and password fields.");
-        return;
-      }
-
-      const submitBtn = loginForm.querySelector('button[type="submit"]');
-      if (submitBtn) {
-        submitBtn.innerText = "Signing in...";
-        submitBtn.disabled = true;
-      }
-
-      try {
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          redirect: 'follow',
-          body: JSON.stringify({
-            action: 'login',
-            credentials: {
-              username: usernameVal,
-              password: passwordVal
-            }
-          })
-        });
-
-        const rawText = await res.text();
-        if (rawText.trim().startsWith('<')) {
-          throw new Error("Received HTML error page from server. Re-check Google Apps Script permissions.");
-        }
-
-        const data = JSON.parse(rawText);
-
-        if (data.success) {
-          alert("Login successful!");
-          localStorage.setItem('cswd_user', JSON.stringify(data.user));
-          // Route user based on role
-          const targetPage = data.user.role === 'Admin' ? 'page-admin-dashboard' : 'page-client-dashboard';
-          if (typeof showPage === 'function') showPage(targetPage);
-        } else {
-          alert(data.message || "Invalid credentials.");
-        }
-      } catch (err) {
-        console.error("Login Error:", err);
-        alert(err.message || "Unable to process login request.");
-      } finally {
-        if (submitBtn) {
-          submitBtn.innerText = "Sign In";
-          submitBtn.disabled = false;
-        }
-      }
-    });
-  }
-});
-
-   function handleRadioToggle(element) {
-  if (element.dataset.checked === "true") {
-    element.checked = false;
-    element.dataset.checked = "false";
+  // Toggle password visibility
+function togglePasswordVisibility(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '🙈';
   } else {
-    element.checked = true;
-    element.dataset.checked = "true";
+    input.type = 'password';
+    btn.textContent = '👁️';
   }
 }
+
+// Toggle remember radio button on/off
+function handleRadioToggle(radio) {
+  if (radio.dataset.wasChecked === "true") {
+    radio.checked = false;
+    radio.dataset.wasChecked = "false";
+  } else {
+    radio.dataset.wasChecked = "true";
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Restore remembered username if saved
+  const savedUser = localStorage.getItem('cswd_remembered_user');
+  if (savedUser) {
+    const userField = document.getElementById('loginUser');
+    const rememberRadio = document.getElementById('rememberRadio');
+    if (userField) userField.value = savedUser;
+    if (rememberRadio) {
+      rememberRadio.checked = true;
+      rememberRadio.dataset.wasChecked = "true";
+    }
+  }
+
+  const loginForm = document.getElementById('loginForm');
+  if (!loginForm) return;
+
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Map exact input IDs from HTML
+    const usernameInput = document.getElementById('loginUser');
+    const passwordInput = document.getElementById('loginPassword');
+    const rememberRadio = document.getElementById('rememberRadio');
+    const submitBtn = document.getElementById('loginBtn');
+
+    const usernameVal = usernameInput ? usernameInput.value.trim() : '';
+    const passwordVal = passwordInput ? passwordInput.value.trim() : '';
+
+    if (!usernameVal || !passwordVal) {
+      alert('Please fill in both username and password.');
+      return;
+    }
+
+    // Save or remove remembered username
+    if (rememberRadio && rememberRadio.checked) {
+      localStorage.setItem('cswd_remembered_user', usernameVal);
+    } else {
+      localStorage.removeItem('cswd_remembered_user');
+    }
+
+    if (submitBtn) {
+      submitBtn.innerText = 'Signing in...';
+      submitBtn.disabled = true;
+    }
+
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        redirect: 'follow',
+        body: JSON.stringify({
+          action: 'login',
+          credentials: {
+            username: usernameVal,
+            password: passwordVal
+          }
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        // Store user session data locally
+        localStorage.setItem('cswd_user', JSON.stringify(data.user));
+
+        // Redirect based on role in sheet
+        const userRole = String(data.user.role || '').toLowerCase();
+        const targetPageId = (userRole === 'admin') ? 'page-admin-dashboard' : 'page-client-dashboard';
+
+        if (typeof showPage === 'function') {
+          showPage(targetPageId);
+        } else {
+          document.querySelectorAll('.page-section').forEach(p => p.style.display = 'none');
+          const target = document.getElementById(targetPageId);
+          if (target) target.style.display = 'block';
+        }
+      } else {
+        alert(data.message || 'Invalid username or password.');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      alert('Network error. Unable to reach server.');
+    } finally {
+      if (submitBtn) {
+        submitBtn.innerText = 'Sign In';
+        submitBtn.disabled = false;
+      }
+    }
+  });
+});
 </script>
 </body>
 </html>
