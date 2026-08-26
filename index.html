@@ -392,14 +392,13 @@
       style="z-index: 999999 !important;"
     ></div>
 
- <script>
+<script>
   // ==========================================
   // PART 1: CONFIGURATION & GLOBAL STATE
   // ==========================================
   const SUPABASE_URL = "https://gfnvmbxzmxxsguaqihvz.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_dBrlQfriRIdMPW8ueyhh4Q_IGKMtkIz";
-  const API_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"; // Replace with your active Google Apps Script Web App URL
-
+  
   // Initialize Supabase Client
   window.db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -411,7 +410,7 @@
   let searchQuery = '';
 
   // ==========================================
-  // PART 2: UI HELPERS & UTILITIES
+  // PART 2: UI HELPERS, MODALS & NAVIGATION
   // ==========================================
   function showNotification(message, type = 'info') {
     const toast = document.createElement('div');
@@ -436,7 +435,7 @@
     currentUser = null;
     localStorage.removeItem('cswd_active_session');
     localStorage.removeItem('cswd_user');
-    if (typeof showPage === 'function') showPage('page-login');
+    showPage('page-login');
     showNotification("You have been logged out.", 'success');
   }
 
@@ -452,12 +451,95 @@
     }
   }
 
-  function handleRadioToggle(radio) {
-    if (radio.dataset.wasChecked === "true") {
-      radio.checked = false;
-      radio.dataset.wasChecked = "false";
+  // Modal Control Helpers
+  function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.style.display = 'flex';
+    }
+  }
+
+  function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.style.display = 'none';
+    }
+  }
+
+  // Main Page Router (page-login, page-client, page-admin)
+  function showPage(pageId) {
+    const sections = document.querySelectorAll('.page-section, [id^="page-"]');
+    sections.forEach(sec => {
+      sec.classList.add('hidden');
+      sec.style.display = 'none';
+    });
+
+    let target = document.getElementById(pageId);
+    if (!target && pageId === 'page-admin-dashboard') target = document.getElementById('page-admin');
+    if (!target && pageId === 'page-client-dashboard') target = document.getElementById('page-client');
+
+    if (target) {
+      target.classList.remove('hidden');
+      target.style.display = 'block';
     } else {
-      radio.dataset.wasChecked = "true";
+      console.error(`Page container with ID "${pageId}" not found.`);
+      return;
+    }
+
+    if (target.id === 'page-client') {
+      if (typeof renderClientForm === 'function') renderClientForm(currentUser);
+      if (typeof loadAnnouncements === 'function') loadAnnouncements();
+    } else if (target.id === 'page-admin') {
+      switchAdminSubpage('admin-sub-soloparent');
+    }
+  }
+
+  // Subpage Routers
+  function switchClientSubpage(subpageId) {
+    const subpages = document.querySelectorAll('[id^="client-sub-"]');
+    subpages.forEach(sp => {
+      sp.classList.add('hidden');
+      sp.style.display = 'none';
+    });
+
+    let targetId = subpageId;
+    if (!subpageId.startsWith('client-sub-')) {
+      targetId = `client-sub-${subpageId}`;
+    }
+
+    const target = document.getElementById(targetId) || document.getElementById(subpageId);
+    if (target) {
+      target.classList.remove('hidden');
+      target.style.display = 'block';
+    } else {
+      console.warn(`Client subpage element matching "${subpageId}" not found.`);
+    }
+  }
+
+  function switchAdminSubpage(subpageId) {
+    const subpages = document.querySelectorAll('[id^="admin-sub-"]');
+    subpages.forEach(sp => {
+      sp.classList.add('hidden');
+      sp.style.display = 'none';
+    });
+
+    let targetId = subpageId;
+    if (!subpageId.startsWith('admin-sub-')) {
+      targetId = `admin-sub-${subpageId}`;
+    }
+
+    const target = document.getElementById(targetId) || document.getElementById(subpageId);
+    if (target) {
+      target.classList.remove('hidden');
+      target.style.display = 'block';
+
+      if (target.id === 'admin-sub-soloparent') {
+        loadAdminTableData('Sheet5', 'adminTableContainer');
+      }
+    } else {
+      console.warn(`Admin subpage element matching "${subpageId}" not found.`);
     }
   }
 
@@ -661,99 +743,85 @@
   }
 
   async function loadAnnouncements() {
-    try {
-      const res = await fetch(`${API_URL}?action=getAnnouncements`, { redirect: 'follow' });
-      const data = await res.json();
-      const container = document.getElementById('client-announcements-list');
+  try {
+    const { data, error } = await window.db
+      .from('announcements')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-      if (!container) return;
+    if (error) throw error;
 
-      if (!data || !data.length) {
-        container.innerHTML = "<p class='text-slate-500'>No announcements posted yet.</p>";
-        return;
-      }
+    const container = document.getElementById('client-announcements-list');
+    if (!container) return;
 
-      container.innerHTML = data.map(item => `
-        <div class="glass-card p-6 rounded-2xl shadow-md space-y-2">
-          <div class="flex justify-between items-start">
-            <h3 class="font-bold text-lg text-slate-900">${item.Title || ''}</h3>
-            <span class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-semibold">${item.Timestamp || ''}</span>
-          </div>
-          <p class="text-slate-600 leading-relaxed">${item.Content || ''}</p>
-        </div>
-      `).join('');
-    } catch (err) {
-      showNotification("Could not load announcements.", 'error');
+    if (!data || !data.length) {
+      container.innerHTML = "<p class='text-slate-500'>No announcements posted yet.</p>";
+      return;
     }
+
+    container.innerHTML = data.map(item => `
+      <div class="glass-card p-6 rounded-2xl shadow-md space-y-2">
+        <div class="flex justify-between items-start">
+          <h3 class="font-bold text-lg text-slate-900">${item.title || ''}</h3>
+          <span class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-semibold">
+            ${item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}
+          </span>
+        </div>
+        <p class="text-slate-600 leading-relaxed">${item.content || ''}</p>
+      </div>
+    `).join('');
+  } catch (err) {
+    console.error("Announcements Fetch Error:", err);
+    showNotification("Could not load announcements.", 'error');
   }
+}
 
   // ==========================================
   // PART 4: ADMIN DATA TABLE & FILTERING
   // ==========================================
-  async function loadAdminTableData(tabName, targetId) {
-    const container = document.getElementById(targetId);
-    if (!container) return;
+  async function loadAdminTableData(tabName, targetId = 'adminTableContainer') {
+  const container = document.getElementById(targetId);
+  if (!container) return;
 
-    // 1. Instant Skeleton Loader
-    container.innerHTML = `
-      <div class="p-8 text-center">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-600 border-t-transparent mb-2"></div>
-        <p class="text-slate-500 font-medium text-sm">Loading ${tabName} records...</p>
-      </div>
-    `;
+  container.innerHTML = `
+    <div class="p-8 text-center">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-600 border-t-transparent mb-2"></div>
+      <p class="text-slate-500 font-medium text-sm">Loading records from Supabase...</p>
+    </div>
+  `;
 
-    try {
-      const res = await fetch(`${API_URL}?action=getData&tabName=${tabName}`, { redirect: 'follow' });
+  try {
+    const { data, error } = await window.db
+      .from('applications')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-      if (!res.ok) {
-        throw new Error(`Server returned HTTP ${res.status} error.`);
-      }
+    if (error) throw error;
 
-      const responseText = await res.text();
-      let data;
-
-      try {
-        data = JSON.parse(responseText);
-      } catch (parseErr) {
-        console.error("Non-JSON Response Received:", responseText);
-        throw new Error("Server returned HTML or invalid response instead of JSON.");
-      }
-
-      if (!data || !Array.isArray(data) || !data.length) {
-        container.innerHTML = "<p class='text-slate-500 p-4 text-center'>No records found in Sheet5.</p>";
-        return;
-      }
-
-      // 2. Fast Filtering of Sub-headers
-      const cleanData = data.filter(row => {
-        const isSubheaderRow = Object.values(row).some(val => {
-          const str = String(val).trim().toUpperCase();
-          return str === 'ID NUMBER' || str === 'EXPIRATION DATE';
-        });
-        return !isSubheaderRow;
-      });
-
-      window.sheet5Data = cleanData;
-      currentPage = 1;
-      searchQuery = '';
-
-      // 3. Render Table with Pagination
-      renderAdminTable(targetId);
-
-    } catch(err) {
-      console.error("Error loading table data:", err);
-      showNotification("Error loading sheet records.", 'error');
-      container.innerHTML = "<p class='text-rose-500 p-4 text-center font-medium'>Failed to load table data. Please try again.</p>";
+    if (!data || !data.length) {
+      container.innerHTML = "<p class='text-slate-500 p-4 text-center'>No records found in database.</p>";
+      return;
     }
-  }
 
-  function renderAdminTable(targetId) {
+    window.sheet5Data = data;
+    currentPage = 1;
+    searchQuery = '';
+
+    renderAdminTable(targetId);
+
+  } catch(err) {
+    console.error("Error loading table data:", err);
+    showNotification("Error loading database records.", 'error');
+    container.innerHTML = "<p class='text-rose-500 p-4 text-center font-medium'>Failed to load table data. Please try again.</p>";
+  }
+}
+
+  function renderAdminTable(targetId = 'adminTableContainer') {
     const container = document.getElementById(targetId);
     if (!container || !window.sheet5Data || !window.sheet5Data.length) return;
 
     const headers = Object.keys(window.sheet5Data[0]);
 
-    // Search Query Filtering
     const filteredData = window.sheet5Data.filter(row => {
       if (!searchQuery) return true;
       return Object.values(row).some(val => 
@@ -761,7 +829,6 @@
       );
     });
 
-    // Pagination Slice
     const totalRecords = filteredData.length;
     const totalPages = Math.ceil(totalRecords / rowsPerPage) || 1;
     if (currentPage > totalPages) currentPage = totalPages;
@@ -769,7 +836,6 @@
     const startIndex = (currentPage - 1) * rowsPerPage;
     const pageData = filteredData.slice(startIndex, startIndex + rowsPerPage);
 
-    // Build 2-Tier Headers
     let row1Html = '';
     let row2Html = '';
     let hasSubheaders = false;
@@ -808,7 +874,6 @@
         ACTION
       </th>`;
 
-    // Search Bar & Meta Stats
     let controlsHtml = `
       <div class="p-3 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-3">
         <div class="relative w-full sm:w-64">
@@ -826,7 +891,6 @@
       </div>
     `;
 
-    // Table Body
     let tableHtml = `<div class="overflow-x-auto"><table class="w-full text-left text-sm border-collapse border border-slate-300"><thead>`;
     tableHtml += `<tr>${row1Html}</tr>`;
     if (hasSubheaders) {
@@ -858,7 +922,6 @@
 
     tableHtml += `</tbody></table></div>`;
 
-    // Footer Controls
     let paginationHtml = `
       <div class="p-3 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-xs">
         <button 
@@ -896,7 +959,7 @@
   }
 
   // ==========================================
-  // PART 5: PRINT ROUTINES & DOM LISTENERS
+  // PART 5: PRINT ROUTINES & EVENT LISTENERS
   // ==========================================
   async function printSheet5Data() {
     try {
@@ -1266,113 +1329,69 @@
     printWindow.document.close();
   }
 
- document.addEventListener('DOMContentLoaded', () => {
-  // Auto-redirect if session exists
-  if (currentUser) {
-    const role = String(currentUser.role || '').toLowerCase();
-    showPage(role === 'admin' ? 'page-admin-dashboard' : 'page-client');
-  }
-
-  const loginForm = document.getElementById('loginForm');
-  if (!loginForm) return;
-
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const usernameVal = document.getElementById('loginUser')?.value.trim() || '';
-    const passwordVal = document.getElementById('loginPassword')?.value.trim() || '';
-    const submitBtn = document.getElementById('loginBtn');
-
-    if (!usernameVal || !passwordVal) {
-      showNotification('Please enter both username and password.', 'error');
-      return;
+  // DOM Event Listeners & Login Handler
+  document.addEventListener('DOMContentLoaded', () => {
+    // Auto-login session restore
+    if (currentUser) {
+      const role = String(currentUser.role || '').toLowerCase();
+      showPage(role === 'admin' ? 'page-admin' : 'page-client');
     }
 
-    if (submitBtn) {
-      submitBtn.innerText = 'Signing in...';
-      submitBtn.disabled = true;
-    }
+    const loginForm = document.getElementById('loginForm');
+    if (!loginForm) return;
 
-    try {
-      const { data: user, error } = await window.db
-        .from('users')
-        .select('*')
-        .ilike('username', usernameVal)
-        .eq('password', passwordVal)
-        .maybeSingle();
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-      if (error) throw error;
+      const usernameVal = document.getElementById('loginUser')?.value.trim() || '';
+      const passwordVal = document.getElementById('loginPassword')?.value.trim() || '';
+      const submitBtn = document.getElementById('loginBtn');
 
-      if (user) {
-        localStorage.setItem('cswd_user', JSON.stringify(user));
-        localStorage.setItem('cswd_active_session', JSON.stringify(user));
-        currentUser = user;
-
-        showNotification(`Welcome back, ${user.fullname || user.username}!`, 'success');
-
-        // Target 'page-client' for client users
-        const userRole = String(user.role || '').toLowerCase();
-        const targetPageId = (userRole === 'admin') ? 'page-admin-dashboard' : 'page-client';
-
-        showPage(targetPageId);
-      } else {
-        showNotification('Invalid username or password.', 'error');
+      if (!usernameVal || !passwordVal) {
+        showNotification('Please enter both username and password.', 'error');
+        return;
       }
-    } catch (err) {
-      console.error('Login Error:', err);
-      showNotification('Login failed: ' + (err.message || 'Unable to connect.'), 'error');
-    } finally {
+
       if (submitBtn) {
-        submitBtn.innerText = 'Sign In';
-        submitBtn.disabled = false;
+        submitBtn.innerText = 'Signing in...';
+        submitBtn.disabled = true;
       }
-    }
+
+      try {
+        const { data: user, error } = await window.db
+          .from('users')
+          .select('*')
+          .ilike('username', usernameVal)
+          .eq('password', passwordVal)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        if (user) {
+          localStorage.setItem('cswd_user', JSON.stringify(user));
+          localStorage.setItem('cswd_active_session', JSON.stringify(user));
+          currentUser = user;
+
+          showNotification(`Welcome back, ${user.fullname || user.username}!`, 'success');
+
+          const userRole = String(user.role || '').toLowerCase();
+          const targetPageId = (userRole === 'admin') ? 'page-admin' : 'page-client';
+
+          showPage(targetPageId);
+        } else {
+          showNotification('Invalid username or password.', 'error');
+        }
+      } catch (err) {
+        console.error('Login Error:', err);
+        showNotification('Login failed: ' + (err.message || 'Unable to connect.'), 'error');
+      } finally {
+        if (submitBtn) {
+          submitBtn.innerText = 'Sign In';
+          submitBtn.disabled = false;
+        }
+      }
+    });
   });
-});
-
-   function showPage(pageId) {
-  // Hide all sections
-  const sections = document.querySelectorAll('.page-section, [id^="page-"]');
-  sections.forEach(sec => {
-    sec.classList.add('hidden');
-    sec.style.display = 'none';
-  });
-
-  // Display target page
-  const target = document.getElementById(pageId);
-  if (target) {
-    target.classList.remove('hidden');
-    target.style.display = 'block';
-  } else {
-    console.error(`Page container with ID "${pageId}" not found.`);
-    return;
-  }
-
-  // Trigger content rendering
-  if (pageId === 'page-client') {
-    if (typeof renderClientForm === 'function') renderClientForm(currentUser);
-    if (typeof loadAnnouncements === 'function') loadAnnouncements();
-  } else if (pageId === 'page-admin-dashboard' || pageId === 'page-admin') {
-    if (typeof loadAdminTableData === 'function') loadAdminTableData('Sheet5', 'adminTableContainer'); 
-  }
-}
-   function switchClientSubpage(subpageId) {
-  // Hide all client subpages
-  const subpages = document.querySelectorAll('.client-subpage, [id^="client-subpage-"], [id^="subpage-"]');
-  subpages.forEach(sp => {
-    sp.classList.add('hidden');
-    sp.style.display = 'none';
-  });
-
-  // Reveal the selected subpage container
-  const target = document.getElementById(subpageId);
-  if (target) {
-    target.classList.remove('hidden');
-    target.style.display = 'block';
-  } else {
-    console.warn(`Client subpage element with ID "${subpageId}" not found in HTML.`);
-  }
-}
 </script>
 </body>
 </html>
