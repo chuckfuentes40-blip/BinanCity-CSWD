@@ -393,23 +393,26 @@
     ></div>
 
  <script>
-   // Initialize Supabase Client
-
+  // ==========================================
+  // PART 1: CONFIGURATION & GLOBAL STATE
+  // ==========================================
   const SUPABASE_URL = "https://gfnvmbxzmxxsguaqihvz.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_dBrlQfriRIdMPW8ueyhh4Q_IGKMtkIz"; // Your full key
+  const SUPABASE_ANON_KEY = "sb_publishable_dBrlQfriRIdMPW8ueyhh4Q_IGKMtkIz";
+  const API_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"; // Replace with your active Google Apps Script Web App URL
 
-  // Attach to window.db to avoid name collisions
+  // Initialize Supabase Client
   window.db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-
-  // Configuration & Global State
+  // Global Application State
   let currentUser = JSON.parse(localStorage.getItem('cswd_active_session')) || null;
   window.sheet5Data = [];
   let currentPage = 1;
   const rowsPerPage = 25;
   let searchQuery = '';
 
-  // Utility Notifications
+  // ==========================================
+  // PART 2: UI HELPERS & UTILITIES
+  // ==========================================
   function showNotification(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `fixed bottom-5 right-5 px-4 py-3 rounded-xl text-white text-sm font-semibold shadow-2xl z-50 transition-all transform translate-y-2 opacity-0 ${
@@ -424,124 +427,43 @@
     }, 3000);
   }
 
-  // PRINT ENTIRE SHEET5 MASTER LIST
-  async function printSheet5Data() {
-    try {
-      const res = await fetch(`${API_URL}?action=getData&tabName=Sheet5`, { redirect: 'follow' });
-      const data = await res.json();
-      
-      let cleanData = data;
-      if (data && data.length) {
-        // Filter out duplicate sub-header row
-        cleanData = data.filter(row => {
-          const isSubheaderRow = Object.values(row).some(val => {
-            const str = String(val).trim().toUpperCase();
-            return str === 'ID NUMBER' || str === 'EXPIRATION DATE';
-          });
-          return !isSubheaderRow;
-        });
-      }
+  function toggleMobileMenu(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('hidden');
+  }
 
-      if (!cleanData || !cleanData.length) {
-        showNotification("No records found in Sheet5 to print.", "error");
-        return;
-      }
+  function logout() {
+    currentUser = null;
+    localStorage.removeItem('cswd_active_session');
+    localStorage.removeItem('cswd_user');
+    if (typeof showPage === 'function') showPage('page-login');
+    showNotification("You have been logged out.", 'success');
+  }
 
-      const headers = Object.keys(cleanData[0]);
-
-      let row1Html = '';
-      let row2Html = '';
-      let hasSubheaders = false;
-
-      // Build 2-tier merged header structure
-      for (let i = 0; i < headers.length; i++) {
-        const h = headers[i];
-
-        if (h.trim().toUpperCase() === 'SOLO PARENT ID DETAILS') {
-          hasSubheaders = true;
-          row1Html += `
-            <th colspan="2" style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: center; background-color: #f1f5f9; font-size: 8pt; text-transform: uppercase;">
-              SOLO PARENT ID DETAILS
-            </th>`;
-          
-          row2Html += `
-            <th style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: center; background-color: #f8fafc; font-size: 7.5pt; text-transform: uppercase;">
-              ID NUMBER
-            </th>
-            <th style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: center; background-color: #f8fafc; font-size: 7.5pt; text-transform: uppercase;">
-              EXPIRATION DATE
-            </th>`;
-
-          // Skip placeholder secondary header (e.g., 'Col_15') from top row
-          if (i + 1 < headers.length && (headers[i + 1].startsWith('Col_') || headers[i + 1] === '')) {
-            i++;
-          }
-        } else {
-          row1Html += `
-            <th rowspan="2" style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: left; background-color: #f1f5f9; vertical-align: middle; font-size: 8pt; text-transform: uppercase;">
-              ${h}
-            </th>`;
-        }
-      }
-
-      // Generate clean HTML document for print
-      const printHtml = `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="UTF-8">
-          <title>CSWD Community Portal - Sheet5 Data Sheet</title>
-          <style>
-            body { font-family: 'Arial', sans-serif; margin: 15px; color: #1e293b; }
-            .header { text-align: center; margin-bottom: 20px; }
-            .header h1 { margin: 0; font-size: 18pt; color: #0f172a; }
-            .header p { margin: 4px 0 0; font-size: 10pt; color: #64748b; }
-            table { width: 100%; border-collapse: collapse; font-size: 8pt; margin-top: 10px; }
-            th, td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; word-break: break-word; }
-            tr:nth-child(even) { background-color: #f8fafc; }
-            @page { size: landscape; margin: 10mm; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>CSWD Solo Parents Master List (Sheet5)</h1>
-            <p>City Social Welfare and Development Office - Generated on ${new Date().toLocaleString()}</p>
-          </div>
-          <table>
-            <thead>
-              <tr>${row1Html}</tr>
-              ${hasSubheaders ? `<tr>${row2Html}</tr>` : ''}
-            </thead>
-            <tbody>
-              ${cleanData.map(row => `
-                <tr>
-                  ${headers.map(h => `<td>${row[h] !== undefined && row[h] !== null ? row[h] : ''}</td>`).join('')}
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </body>
-        </html>
-      `;
-
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(printHtml);
-        printWindow.document.close();
-        printWindow.focus();
-        setTimeout(() => {
-          printWindow.print();
-        }, 300);
-      } else {
-        showNotification("Pop-up blocked! Please allow pop-ups for this site to print.", "error");
-      }
-    } catch (err) {
-      console.error("Print Error:", err);
-      showNotification("Failed to prepare Sheet5 data for printing.", "error");
+  function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.textContent = '🙈';
+    } else {
+      input.type = 'password';
+      btn.textContent = '👁️';
     }
   }
 
-  // RENDER CLIENT REGISTRATION / DATA ENTRY FORM
+  function handleRadioToggle(radio) {
+    if (radio.dataset.wasChecked === "true") {
+      radio.checked = false;
+      radio.dataset.wasChecked = "false";
+    } else {
+      radio.dataset.wasChecked = "true";
+    }
+  }
+
+  // ==========================================
+  // PART 3: CLIENT REGISTRATION & ANNOUNCEMENTS
+  // ==========================================
   function renderClientForm(user) {
     const container = document.getElementById('formContainer');
     if (!container) return;
@@ -555,38 +477,38 @@
           <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">A. Member Details</h3>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="md:col-span-2">
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Name of Member (Col B)</label>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Name of Member</label>
               <input type="text" name="memberName" value="${userNameVal}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]" required>
             </div>
             <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Sex (Col C)</label>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Sex</label>
               <select name="sex" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
                 <option value="Female">Female</option>
                 <option value="Male">Male</option>
               </select>
             </div>
             <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Age (Col D)</label>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Age</label>
               <input type="number" name="age" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
             </div>
             <div class="md:col-span-2">
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Address (Col E)</label>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Address</label>
               <input type="text" name="address" placeholder="House No, Street, Barangay, City" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
             </div>
             <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Contact Number (Col F)</label>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Contact Number</label>
               <input type="text" name="contactNumber" value="${userContactVal}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
             </div>
             <div class="md:col-span-2">
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Classification of Solo Parent (Col G)</label>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Classification of Solo Parent</label>
               <input type="text" name="classification" placeholder="e.g. Death of spouse, Abandonment" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
             </div>
             <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Source of Income (Col H)</label>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Source of Income</label>
               <input type="text" name="sourceOfIncome" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
             </div>
             <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">No. of Dependents (Col I)</label>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">No. of Dependents</label>
               <input type="number" name="noOfDependents" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
             </div>
           </div>
@@ -596,25 +518,25 @@
           <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">B. Disability Information</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">If Member Has Disability (Col J)</label>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">If Member Has Disability</label>
               <select name="memberDisability" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
                 <option value="No">No</option>
                 <option value="Yes">Yes</option>
               </select>
             </div>
             <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Type of Disability (Col K)</label>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Type of Disability</label>
               <input type="text" name="memberDisabilityType" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
             </div>
             <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">If Dependent Has Disability (Col L)</label>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">If Dependent Has Disability</label>
               <select name="dependentDisability" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
                 <option value="No">No</option>
                 <option value="Yes">Yes</option>
               </select>
             </div>
             <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Type of Disability (Col M)</label>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Type of Disability (Dependent)</label>
               <input type="text" name="dependentDisabilityType" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
             </div>
           </div>
@@ -624,11 +546,11 @@
           <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">C. Solo Parent ID Details</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">ID Number (Col N)</label>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">ID Number</label>
               <input type="text" name="idNumber" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
             </div>
             <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Expiration Date (Col O)</label>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Expiration Date</label>
               <input type="date" name="idExpirationDate" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
             </div>
           </div>
@@ -638,19 +560,19 @@
           <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">D. Subsidies & Benefits Status</h3>
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Cash Subsidy (Col P)</label>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Cash Subsidy</label>
               <select name="cashSubsidyRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
             </div>
             <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">INB (Col Q)</label>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">INB</label>
               <select name="inbRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
             </div>
             <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">4Ps (Col R)</label>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">4Ps</label>
               <select name="fourPsRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
             </div>
             <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Rice Subsidy (Col S)</label>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Rice Subsidy</label>
               <select name="riceSubsidyRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
             </div>
           </div>
@@ -660,145 +582,84 @@
           <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">E. Additional Information</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Skill Set (Col T)</label>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Skill Set</label>
               <input type="text" name="skillSet" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
             </div>
             <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Remarks (Col U)</label>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Remarks</label>
               <textarea name="remarks" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff] h-24"></textarea>
             </div>
           </div>
         </div>
 
         <button type="submit" id="submitSoloBtn" class="btn-palette text-white py-4 rounded-xl font-bold tracking-wide shadow-lg shadow-blue-500/25 w-full text-center">
-          Submit Record to Sheet5
+          Submit Record to Database
         </button>
       </form>
     `;
 
-   document.addEventListener('DOMContentLoaded', () => {
-  const soloParentForm = document.getElementById('soloParentForm');
-  if (!soloParentForm) return;
+    bindSoloParentForm();
+  }
 
-  soloParentForm.onsubmit = async (e) => {
-    e.preventDefault();
+  function bindSoloParentForm() {
+    const soloParentForm = document.getElementById('soloParentForm');
+    if (!soloParentForm) return;
 
-    const btn = document.getElementById('submitSoloBtn');
-    if (btn) {
-      btn.innerText = "Saving to Database...";
-      btn.disabled = true;
-    }
+    soloParentForm.onsubmit = async (e) => {
+      e.preventDefault();
 
-    const f = e.target;
-
-    // Map form fields to Supabase column names
-    const applicationData = {
-      member_name: f.memberName?.value || '',
-      sex: f.sex?.value || '',
-      age: f.age?.value || '',
-      address: f.address?.value || '',
-      contact_number: f.contactNumber?.value || '',
-      classification: f.classification?.value || '',
-      source_of_income: f.sourceOfIncome?.value || '',
-      no_of_dependents: f.noOfDependents?.value || '',
-      member_disability: f.memberDisability?.value || 'No',
-      member_disability_type: f.memberDisabilityType?.value || '',
-      dependent_disability: f.dependentDisability?.value || 'No',
-      dependent_disability_type: f.dependentDisabilityType?.value || '',
-      id_number: f.idNumber?.value || '',
-      id_expiration_date: f.idExpirationDate?.value || '',
-      cash_subsidy_recipient: f.cashSubsidyRecipient?.value || 'No',
-      inb_recipient: f.inbRecipient?.value || 'No',
-      four_ps_recipient: f.fourPsRecipient?.value || 'No',
-      rice_subsidy_recipient: f.riceSubsidyRecipient?.value || 'No',
-      skill_set: f.skillSet?.value || '',
-      remarks: f.remarks?.value || 'Pending'
-    };
-
-    try {
-      // Insert record into Supabase applications table
-      const { data, error } = await window.db
-        .from('applications')
-        .insert([applicationData])
-        .select();
-
-      if (error) throw error;
-
-      showNotification("Record successfully added!", 'success');
-      f.reset();
-    } catch (err) {
-      console.error("Submission Error:", err);
-      showNotification("Error submitting record: " + (err.message || 'Database error'), 'error');
-    } finally {
+      const btn = document.getElementById('submitSoloBtn');
       if (btn) {
-        btn.innerText = "Submit Record";
-        btn.disabled = false;
+        btn.innerText = "Saving to Database...";
+        btn.disabled = true;
       }
-    }
-  };
-});
 
+      const f = e.target;
+      const applicationData = {
+        member_name: f.memberName?.value || '',
+        sex: f.sex?.value || '',
+        age: f.age?.value || '',
+        address: f.address?.value || '',
+        contact_number: f.contactNumber?.value || '',
+        classification: f.classification?.value || '',
+        source_of_income: f.sourceOfIncome?.value || '',
+        no_of_dependents: f.noOfDependents?.value || '',
+        member_disability: f.memberDisability?.value || 'No',
+        member_disability_type: f.memberDisabilityType?.value || '',
+        dependent_disability: f.dependentDisability?.value || 'No',
+        dependent_disability_type: f.dependentDisabilityType?.value || '',
+        id_number: f.idNumber?.value || '',
+        id_expiration_date: f.idExpirationDate?.value || '',
+        cash_subsidy_recipient: f.cashSubsidyRecipient?.value || 'No',
+        inb_recipient: f.inbRecipient?.value || 'No',
+        four_ps_recipient: f.fourPsRecipient?.value || 'No',
+        rice_subsidy_recipient: f.riceSubsidyRecipient?.value || 'No',
+        skill_set: f.skillSet?.value || '',
+        remarks: f.remarks?.value || 'Pending'
+      };
 
-// Login handler
-document.addEventListener('DOMContentLoaded', () => {
-  const loginForm = document.getElementById('loginForm');
-  if (!loginForm) return;
+      try {
+        const { data, error } = await window.db
+          .from('applications')
+          .insert([applicationData])
+          .select();
 
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+        if (error) throw error;
 
-    const usernameVal = document.getElementById('loginUser')?.value.trim() || '';
-    const passwordVal = document.getElementById('loginPassword')?.value.trim() || '';
-    const submitBtn = document.getElementById('loginBtn');
-
-    if (!usernameVal || !passwordVal) {
-      alert('Please enter both username and password.');
-      return;
-    }
-
-    if (submitBtn) {
-      submitBtn.innerText = 'Signing in...';
-      submitBtn.disabled = true;
-    }
-
-    try {
-      // Query Supabase using window.db
-      const { data: user, error } = await window.db
-        .from('users')
-        .select('*')
-        .ilike('username', usernameVal)
-        .eq('password', passwordVal)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      if (user) {
-        localStorage.setItem('cswd_user', JSON.stringify(user));
-
-        const userRole = String(user.role || '').toLowerCase();
-        const targetPageId = (userRole === 'admin') ? 'page-admin-dashboard' : 'page-client-dashboard';
-
-        if (typeof showPage === 'function') {
-          showPage(targetPageId);
-        } else {
-          document.querySelectorAll('.page-section').forEach(p => p.style.display = 'none');
-          const target = document.getElementById(targetPageId);
-          if (target) target.style.display = 'block';
+        showNotification("Record successfully added!", 'success');
+        f.reset();
+      } catch (err) {
+        console.error("Submission Error:", err);
+        showNotification("Error submitting record: " + (err.message || 'Database error'), 'error');
+      } finally {
+        if (btn) {
+          btn.innerText = "Submit Record to Database";
+          btn.disabled = false;
         }
-      } else {
-        alert('Invalid username or password.');
       }
-    } catch (err) {
-      console.error('Login Error:', err);
-      alert('Login failed: ' + (err.message || 'Unable to connect to database.'));
-    } finally {
-      if (submitBtn) {
-        submitBtn.innerText = 'Sign In';
-        submitBtn.disabled = false;
-      }
-    }
-  });
-  // LOAD ANNOUNCEMENTS FEED
+    };
+  }
+
   async function loadAnnouncements() {
     try {
       const res = await fetch(`${API_URL}?action=getAnnouncements`, { redirect: 'follow' });
@@ -807,7 +668,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!container) return;
 
-      if (!data.length) {
+      if (!data || !data.length) {
         container.innerHTML = "<p class='text-slate-500'>No announcements posted yet.</p>";
         return;
       }
@@ -821,17 +682,19 @@ document.addEventListener('DOMContentLoaded', () => {
           <p class="text-slate-600 leading-relaxed">${item.Content || ''}</p>
         </div>
       `).join('');
-    } catch(err) {
+    } catch (err) {
       showNotification("Could not load announcements.", 'error');
     }
   }
 
-  // FETCH ADMIN DATA TABLE WITH FILTERING
+  // ==========================================
+  // PART 4: ADMIN DATA TABLE & FILTERING
+  // ==========================================
   async function loadAdminTableData(tabName, targetId) {
     const container = document.getElementById(targetId);
     if (!container) return;
 
-    // 1. SHOW INSTANT SKELETON LOADER
+    // 1. Instant Skeleton Loader
     container.innerHTML = `
       <div class="p-8 text-center">
         <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-600 border-t-transparent mb-2"></div>
@@ -861,7 +724,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // 2. FAST FILTERING OF SUB-HEADERS
+      // 2. Fast Filtering of Sub-headers
       const cleanData = data.filter(row => {
         const isSubheaderRow = Object.values(row).some(val => {
           const str = String(val).trim().toUpperCase();
@@ -870,12 +733,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return !isSubheaderRow;
       });
 
-      // Store cleaned data in global array
       window.sheet5Data = cleanData;
       currentPage = 1;
       searchQuery = '';
 
-      // 3. RENDER TABLE WITH PAGINATION
+      // 3. Render Table with Pagination
       renderAdminTable(targetId);
 
     } catch(err) {
@@ -885,14 +747,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // HIGH-PERFORMANCE TABLE RENDERER WITH PAGINATION
   function renderAdminTable(targetId) {
     const container = document.getElementById(targetId);
     if (!container || !window.sheet5Data || !window.sheet5Data.length) return;
 
     const headers = Object.keys(window.sheet5Data[0]);
 
-    // Filter dataset by search query
+    // Search Query Filtering
     const filteredData = window.sheet5Data.filter(row => {
       if (!searchQuery) return true;
       return Object.values(row).some(val => 
@@ -900,7 +761,7 @@ document.addEventListener('DOMContentLoaded', () => {
       );
     });
 
-    // Calculate Pagination slice
+    // Pagination Slice
     const totalRecords = filteredData.length;
     const totalPages = Math.ceil(totalRecords / rowsPerPage) || 1;
     if (currentPage > totalPages) currentPage = totalPages;
@@ -942,13 +803,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Sticky Action Header
     row1Html += `
       <th rowspan="2" class="p-3 font-bold text-slate-700 border border-slate-300 bg-slate-100 whitespace-nowrap align-middle text-center text-xs uppercase tracking-wider sticky right-0 bg-slate-100 shadow-sm">
         ACTION
       </th>`;
 
-    // Control Header (Search Bar & Stats)
+    // Search Bar & Meta Stats
     let controlsHtml = `
       <div class="p-3 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-3">
         <div class="relative w-full sm:w-64">
@@ -966,7 +826,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
 
-    // Build Table Body
+    // Table Body
     let tableHtml = `<div class="overflow-x-auto"><table class="w-full text-left text-sm border-collapse border border-slate-300"><thead>`;
     tableHtml += `<tr>${row1Html}</tr>`;
     if (hasSubheaders) {
@@ -978,7 +838,6 @@ document.addEventListener('DOMContentLoaded', () => {
       tableHtml += `<tr><td colspan="${headers.length + 1}" class="p-6 text-center text-slate-500">No matching records found.</td></tr>`;
     } else {
       pageData.forEach((row) => {
-        // Find original index in global dataset to keep print Form linked correctly
         const originalIndex = window.sheet5Data.indexOf(row);
 
         tableHtml += `<tr class="hover:bg-slate-50/80 transition">`;
@@ -999,7 +858,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     tableHtml += `</tbody></table></div>`;
 
-    // Build Pagination Footer Controls
+    // Footer Controls
     let paginationHtml = `
       <div class="p-3 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-xs">
         <button 
@@ -1025,20 +884,129 @@ document.addEventListener('DOMContentLoaded', () => {
     container.innerHTML = controlsHtml + tableHtml + paginationHtml;
   }
 
-  // PAGINATION HELPER
   function changeTablePage(direction, targetId) {
     currentPage += direction;
     renderAdminTable(targetId);
   }
 
-  // INSTANT SEARCH HELPER
   function handleTableSearch(query, targetId) {
     searchQuery = query;
     currentPage = 1;
     renderAdminTable(targetId);
   }
 
-  // PRINT INDIVIDUAL MEMBER SURVEY FORM WITH LOGOS (2 PAGES)
+  // ==========================================
+  // PART 5: PRINT ROUTINES & DOM LISTENERS
+  // ==========================================
+  async function printSheet5Data() {
+    try {
+      const res = await fetch(`${API_URL}?action=getData&tabName=Sheet5`, { redirect: 'follow' });
+      const data = await res.json();
+      
+      let cleanData = data;
+      if (data && data.length) {
+        cleanData = data.filter(row => {
+          const isSubheaderRow = Object.values(row).some(val => {
+            const str = String(val).trim().toUpperCase();
+            return str === 'ID NUMBER' || str === 'EXPIRATION DATE';
+          });
+          return !isSubheaderRow;
+        });
+      }
+
+      if (!cleanData || !cleanData.length) {
+        showNotification("No records found in Sheet5 to print.", "error");
+        return;
+      }
+
+      const headers = Object.keys(cleanData[0]);
+      let row1Html = '';
+      let row2Html = '';
+      let hasSubheaders = false;
+
+      for (let i = 0; i < headers.length; i++) {
+        const h = headers[i];
+
+        if (h.trim().toUpperCase() === 'SOLO PARENT ID DETAILS') {
+          hasSubheaders = true;
+          row1Html += `
+            <th colspan="2" style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: center; background-color: #f1f5f9; font-size: 8pt; text-transform: uppercase;">
+              SOLO PARENT ID DETAILS
+            </th>`;
+          
+          row2Html += `
+            <th style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: center; background-color: #f8fafc; font-size: 7.5pt; text-transform: uppercase;">
+              ID NUMBER
+            </th>
+            <th style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: center; background-color: #f8fafc; font-size: 7.5pt; text-transform: uppercase;">
+              EXPIRATION DATE
+            </th>`;
+
+          if (i + 1 < headers.length && (headers[i + 1].startsWith('Col_') || headers[i + 1] === '')) {
+            i++;
+          }
+        } else {
+          row1Html += `
+            <th rowspan="2" style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: left; background-color: #f1f5f9; vertical-align: middle; font-size: 8pt; text-transform: uppercase;">
+              ${h}
+            </th>`;
+        }
+      }
+
+      const printHtml = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <title>CSWD Master List - Sheet5</title>
+          <style>
+            body { font-family: 'Arial', sans-serif; margin: 15px; color: #1e293b; }
+            .header { text-align: center; margin-bottom: 20px; }
+            .header h1 { margin: 0; font-size: 18pt; color: #0f172a; }
+            .header p { margin: 4px 0 0; font-size: 10pt; color: #64748b; }
+            table { width: 100%; border-collapse: collapse; font-size: 8pt; margin-top: 10px; }
+            th, td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; word-break: break-word; }
+            tr:nth-child(even) { background-color: #f8fafc; }
+            @page { size: landscape; margin: 10mm; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>CSWD Solo Parents Master List (Sheet5)</h1>
+            <p>City Social Welfare and Development Office - Generated on ${new Date().toLocaleString()}</p>
+          </div>
+          <table>
+            <thead>
+              <tr>${row1Html}</tr>
+              ${hasSubheaders ? `<tr>${row2Html}</tr>` : ''}
+            </thead>
+            <tbody>
+              ${cleanData.map(row => `
+                <tr>
+                  ${headers.map(h => `<td>${row[h] !== undefined && row[h] !== null ? row[h] : ''}</td>`).join('')}
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `;
+
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(printHtml);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => printWindow.print(), 300);
+      } else {
+        showNotification("Pop-up blocked! Please allow pop-ups to print.", "error");
+      }
+    } catch (err) {
+      console.error("Print Error:", err);
+      showNotification("Failed to prepare Sheet5 data for printing.", "error");
+    }
+  }
+
   function printIndividualForm(rowIndex) {
     const row = window.sheet5Data[rowIndex];
     if (!row) {
@@ -1046,11 +1014,9 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Direct raw image URLs for printing
     const logoBiNaN = "https://raw.githubusercontent.com/chuckfuentes40-blip/BinanCity-CSWD/main/Binan_City_Seal.png";
     const logoCSWD = "https://raw.githubusercontent.com/chuckfuentes40-blip/BinanCity-CSWD/main/cswd.png";
 
-    // Helper function to safely read sheet fields case-insensitively
     const getField = (...possibleKeys) => {
       for (let key of Object.keys(row)) {
         for (let pKey of possibleKeys) {
@@ -1062,7 +1028,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return '';
     };
 
-    // Helper function to check/uncheck PDF checkboxes
     const isChecked = (fieldValue, expectedVal) => {
       if (!fieldValue) return '☐';
       const cleanStr = String(fieldValue).trim().toLowerCase();
@@ -1070,7 +1035,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return cleanStr === cleanExp || cleanStr.startsWith(cleanExp) ? '☑' : '☐';
     };
 
-    // Data mapping
     const name = getField('NAME OF MEMBER', 'NAME', 'MEMBER NAME');
     const sex = getField('SEX', 'GENDER');
     const age = getField('AGE');
@@ -1109,104 +1073,23 @@ document.addEventListener('DOMContentLoaded', () => {
       <head>
         <title>Member Profile & Survey Form - ${name}</title>
         <style>
-          @page {
-            size: A4 portrait;
-            margin: 10mm;
-          }
-          body {
-            font-family: Arial, sans-serif;
-            font-size: 12px;
-            color: #000;
-            margin: 0;
-            padding: 0;
-          }
-          .page {
-            width: 100%;
-            box-sizing: border-box;
-            min-height: 270mm;
-            position: relative;
-            page-break-after: always;
-          }
-          .logos-header {
-            text-align: center;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-          }
-          .logos-header img {
-            height: 55px;
-            width: auto;
-            object-fit: contain;
-          }
-          .header-meta {
-            width: 100%;
-            margin-bottom: 10px;
-          }
-          .header-meta td {
-            font-size: 11px;
-            padding: 3px 0;
-          }
-          .form-title {
-            text-align: center;
-            border: 2px solid #000;
-            padding: 8px;
-            font-weight: bold;
-            font-size: 14px;
-            margin-bottom: 10px;
-            background-color: #f8fafc;
-          }
-          .section-header {
-            background-color: #e2e8f0;
-            border: 1px solid #000;
-            font-weight: bold;
-            padding: 5px 8px;
-            font-size: 12px;
-            margin-top: 10px;
-          }
-          .form-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 5px;
-          }
-          .form-table td, .form-table th {
-            border: 1px solid #000;
-            padding: 6px 8px;
-            vertical-align: middle;
-          }
-          .label {
-            font-weight: bold;
-            background-color: #f1f5f9;
-            width: 35%;
-          }
-          .value {
-            width: 65%;
-          }
-          .checkbox-group span {
-            margin-right: 15px;
-          }
-          .footer {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            text-align: center;
-            font-size: 9px;
-            border-top: 1px solid #000;
-            padding-top: 4px;
-          }
-          .signature-box {
-            margin-top: 30px;
-            width: 100%;
-          }
-          .signature-line {
-            border-top: 1px solid #000;
-            text-align: center;
-            padding-top: 4px;
-            font-weight: bold;
-            width: 80%;
-            margin: 0 auto;
-          }
+          @page { size: A4 portrait; margin: 10mm; }
+          body { font-family: Arial, sans-serif; font-size: 12px; color: #000; margin: 0; padding: 0; }
+          .page { width: 100%; box-sizing: border-box; min-height: 265mm; position: relative; page-break-after: always; }
+          .logos-header { text-align: center; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 15px; }
+          .logos-header img { height: 55px; width: auto; object-fit: contain; }
+          .header-meta { width: 100%; margin-bottom: 10px; }
+          .header-meta td { font-size: 11px; padding: 3px 0; }
+          .form-title { text-align: center; border: 2px solid #000; padding: 8px; font-weight: bold; font-size: 14px; margin-bottom: 10px; background-color: #f8fafc; }
+          .section-header { background-color: #e2e8f0; border: 1px solid #000; font-weight: bold; padding: 5px 8px; font-size: 12px; margin-top: 10px; }
+          .form-table { width: 100%; border-collapse: collapse; margin-bottom: 5px; }
+          .form-table td, .form-table th { border: 1px solid #000; padding: 6px 8px; vertical-align: middle; }
+          .label { font-weight: bold; background-color: #f1f5f9; width: 35%; }
+          .value { width: 65%; }
+          .checkbox-group span { margin-right: 15px; }
+          .footer { position: absolute; bottom: 0; width: 100%; text-align: center; font-size: 9px; border-top: 1px solid #000; padding-top: 4px; }
+          .signature-box { margin-top: 30px; width: 100%; }
+          .signature-line { border-top: 1px solid #000; text-align: center; padding-top: 4px; font-weight: bold; width: 80%; margin: 0 auto; }
         </style>
       </head>
       <body>
@@ -1236,13 +1119,9 @@ document.addEventListener('DOMContentLoaded', () => {
             </tr>
           </table>
 
-          <!-- A. MEMBER INFORMATION -->
           <div class="section-header">A. MEMBER INFORMATION</div>
           <table class="form-table">
-            <tr>
-              <td class="label">Name of Member:</td>
-              <td class="value"><strong>${name}</strong></td>
-            </tr>
+            <tr><td class="label">Name of Member:</td><td class="value"><strong>${name}</strong></td></tr>
             <tr>
               <td class="label">Sex:</td>
               <td class="value checkbox-group">
@@ -1251,33 +1130,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span>${isChecked(sex, 'Prefer not to say')} Prefer not to say</span>
               </td>
             </tr>
-            <tr>
-              <td class="label">Age:</td>
-              <td class="value">${age} years old</td>
-            </tr>
-            <tr>
-              <td class="label">Complete Address:</td>
-              <td class="value">${address}</td>
-            </tr>
-            <tr>
-              <td class="label">Contact Number:</td>
-              <td class="value">${contact}</td>
-            </tr>
-            <tr>
-              <td class="label">Classification of Solo Parent:</td>
-              <td class="value">${classification}</td>
-            </tr>
-            <tr>
-              <td class="label">Source of Income / Livelihood:</td>
-              <td class="value">${incomeSource}</td>
-            </tr>
-            <tr>
-              <td class="label">No. of Dependents:</td>
-              <td class="value">${dependents}</td>
-            </tr>
+            <tr><td class="label">Age:</td><td class="value">${age} years old</td></tr>
+            <tr><td class="label">Complete Address:</td><td class="value">${address}</td></tr>
+            <tr><td class="label">Contact Number:</td><td class="value">${contact}</td></tr>
+            <tr><td class="label">Classification of Solo Parent:</td><td class="value">${classification}</td></tr>
+            <tr><td class="label">Source of Income / Livelihood:</td><td class="value">${incomeSource}</td></tr>
+            <tr><td class="label">No. of Dependents:</td><td class="value">${dependents}</td></tr>
           </table>
 
-          <!-- B. DISABILITY INFORMATION -->
           <div class="section-header">B. DISABILITY INFORMATION</div>
           <table class="form-table">
             <tr>
@@ -1287,10 +1147,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span>${isChecked(memberDisability, 'No')} No</span>
               </td>
             </tr>
-            <tr>
-              <td class="label">Type of Disability (if any):</td>
-              <td class="value">${typeDisabilityMember}</td>
-            </tr>
+            <tr><td class="label">Type of Disability (if any):</td><td class="value">${typeDisabilityMember}</td></tr>
             <tr>
               <td class="label">Does any dependent have a disability?</td>
               <td class="value checkbox-group">
@@ -1298,23 +1155,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span>${isChecked(depDisability, 'No')} No</span>
               </td>
             </tr>
-            <tr>
-              <td class="label">Type of Disability (if any):</td>
-              <td class="value">${typeDisabilityDep}</td>
-            </tr>
+            <tr><td class="label">Type of Disability (if any):</td><td class="value">${typeDisabilityDep}</td></tr>
           </table>
 
-          <!-- C. SOLO PARENT ID DETAILS -->
           <div class="section-header">C. SOLO PARENT ID DETAILS</div>
           <table class="form-table">
-            <tr>
-              <td class="label">ID Number:</td>
-              <td class="value"><strong>${idNum}</strong></td>
-            </tr>
-            <tr>
-              <td class="label">Expiration Date:</td>
-              <td class="value">${expDate}</td>
-            </tr>
+            <tr><td class="label">ID Number:</td><td class="value"><strong>${idNum}</strong></td></tr>
+            <tr><td class="label">Expiration Date:</td><td class="value">${expDate}</td></tr>
             <tr>
               <td class="label">ID Status:</td>
               <td class="value checkbox-group">
@@ -1331,9 +1178,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </tr>
           </table>
 
-          <div class="footer">
-            Solo Parent Federation - City of Biñan | Member Survey Form
-          </div>
+          <div class="footer">Solo Parent Federation - City of Biñan | Member Survey Form</div>
         </div>
 
         <!-- PAGE 2 -->
@@ -1348,7 +1193,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <span style="font-size: 12px; font-weight: normal;">MEMBER PROFILE AND SURVEY FORM - PAGE 2</span>
           </div>
 
-          <!-- D. ASSISTANCE/PROGRAM STATUS -->
           <div class="section-header">D. ASSISTANCE/PROGRAM STATUS</div>
           <table class="form-table">
             <tr>
@@ -1374,29 +1218,16 @@ document.addEventListener('DOMContentLoaded', () => {
             </tr>
           </table>
 
-          <!-- E. SKILLS AND LIVELIHOOD PROFILE -->
           <div class="section-header">E. SKILLS AND LIVELIHOOD PROFILE</div>
           <table class="form-table">
-            <tr>
-              <td class="label">Skill Set / Existing Skills:</td>
-              <td class="value">${skills}</td>
-            </tr>
-            <tr>
-              <td class="label">Skills Training Interested In:</td>
-              <td class="value">${trainingInterested}</td>
-            </tr>
-            <tr>
-              <td class="label">Preferred Livelihood / Income Opportunity:</td>
-              <td class="value">${livelihoodPref}</td>
-            </tr>
+            <tr><td class="label">Skill Set / Existing Skills:</td><td class="value">${skills}</td></tr>
+            <tr><td class="label">Skills Training Interested In:</td><td class="value">${trainingInterested}</td></tr>
+            <tr><td class="label">Preferred Livelihood / Income Opportunity:</td><td class="value">${livelihoodPref}</td></tr>
           </table>
 
-          <!-- F. REMARKS / OTHER CONCERNS -->
           <div class="section-header">F. REMARKS / OTHER CONCERNS</div>
           <table class="form-table">
-            <tr>
-              <td style="height: 60px; vertical-align: top;">${remarks}</td>
-            </tr>
+            <tr><td style="height: 60px; vertical-align: top;">${remarks}</td></tr>
           </table>
 
           <div style="margin-top: 15px; font-size: 10px; line-height: 1.4; text-align: justify;">
@@ -1416,9 +1247,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </tr>
           </table>
 
-          <div class="footer">
-            Solo Parent Federation - City of Biñan | Member Survey Form
-          </div>
+          <div class="footer">Solo Parent Federation - City of Biñan | Member Survey Form</div>
         </div>
 
         <script>
@@ -1437,80 +1266,69 @@ document.addEventListener('DOMContentLoaded', () => {
     printWindow.document.close();
   }
 
-  // NAVIGATION AND UI TOGGLES
-  function toggleMobileMenu(id) {
-    const el = document.getElementById(id);
-    if (el) el.classList.toggle('hidden');
-  }
+  // DOM Event Listeners & Login Handler
+  document.addEventListener('DOMContentLoaded', () => {
+    const loginForm = document.getElementById('loginForm');
+    if (!loginForm) return;
 
-  function logout() {
-    currentUser = null;
-    localStorage.removeItem('cswd_active_session');
-    if (typeof showPage === 'function') showPage('page-login');
-    showNotification("You have been logged out.", 'success');
-  }
-  // Toggle password visibility
-function togglePasswordVisibility(inputId, btn) {
-  const input = document.getElementById(inputId);
-  if (!input) return;
-  if (input.type === 'password') {
-    input.type = 'text';
-    btn.textContent = '🙈';
-  } else {
-    input.type = 'password';
-    btn.textContent = '👁️';
-  }
-}
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-// Toggle remember radio button on/off
-function handleRadioToggle(radio) {
-  if (radio.dataset.wasChecked === "true") {
-    radio.checked = false;
-    radio.dataset.wasChecked = "false";
-  } else {
-    radio.dataset.wasChecked = "true";
-  }
-}
+      const usernameVal = document.getElementById('loginUser')?.value.trim() || '';
+      const passwordVal = document.getElementById('loginPassword')?.value.trim() || '';
+      const submitBtn = document.getElementById('loginBtn');
 
-// Clean Login Handler
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
+      if (!usernameVal || !passwordVal) {
+        alert('Please enter both username and password.');
+        return;
+      }
 
-  const usernameVal = document.getElementById('loginUser').value.trim();
-  const passwordVal = document.getElementById('loginPassword').value.trim();
-  const submitBtn = document.getElementById('loginBtn');
+      if (submitBtn) {
+        submitBtn.innerText = 'Signing in...';
+        submitBtn.disabled = true;
+      }
 
-  submitBtn.innerText = "Signing in...";
-  submitBtn.disabled = true;
+      try {
+        const { data: user, error } = await window.db
+          .from('users')
+          .select('*')
+          .ilike('username', usernameVal)
+          .eq('password', passwordVal)
+          .maybeSingle();
 
-  try {
-    // Query users table directly in 1 line
-    const { data: user, error } = await window.db
-  .from('users')
-  .select('*')
-  .ilike('username', usernameVal)
-  .eq('password', passwordVal)
-  .maybeSingle();
+        if (error) throw error;
 
-    if (error) throw error;
+        if (user) {
+          localStorage.setItem('cswd_user', JSON.stringify(user));
+          localStorage.setItem('cswd_active_session', JSON.stringify(user));
+          currentUser = user;
 
-    if (user) {
-      localStorage.setItem('cswd_user', JSON.stringify(user));
-      alert(`Login Successful! Welcome ${user.fullname}`);
-      
-      const targetPage = user.role === 'Admin' ? 'page-admin-dashboard' : 'page-client-dashboard';
-      if (typeof showPage === 'function') showPage(targetPage);
-    } else {
-      alert("Invalid username or password.");
-    }
-  } catch (err) {
-    console.error("Login Error:", err);
-    alert("Connection error. Please try again.");
-  } finally {
-    submitBtn.innerText = "Sign In";
-    submitBtn.disabled = false;
-  }
-});
+          showNotification(`Login Successful! Welcome ${user.fullname || user.username}`, 'success');
+
+          const userRole = String(user.role || '').toLowerCase();
+          const targetPageId = (userRole === 'admin') ? 'page-admin-dashboard' : 'page-client-dashboard';
+
+          if (typeof showPage === 'function') {
+            showPage(targetPageId);
+          } else {
+            document.querySelectorAll('.page-section').forEach(p => p.style.display = 'none');
+            const target = document.getElementById(targetPageId);
+            if (target) target.style.display = 'block';
+          }
+        } else {
+          alert('Invalid username or password.');
+        }
+      } catch (err) {
+        console.error('Login Error:', err);
+        alert('Login failed: ' + (err.message || 'Unable to connect to database.'));
+      } finally {
+        if (submitBtn) {
+          submitBtn.innerText = 'Sign In';
+          submitBtn.disabled = false;
+        }
+      }
+    });
+  });
 </script>
 </body>
 </html>
