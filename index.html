@@ -394,13 +394,13 @@
 
  <script>
    // Initialize Supabase Client
-<script>
+
   const SUPABASE_URL = "https://gfnvmbxzmxxsguaqihvz.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_dBrlQfriRIdMPW8ueyhh4Q_IGKMt..."; // Your full key
 
   // Attach to window.db to avoid name collisions
   window.db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-</script>
+
 
   // Configuration & Global State
   let currentUser = JSON.parse(localStorage.getItem('cswd_active_session')) || null;
@@ -1470,12 +1470,12 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
   try {
     // Query users table directly in 1 line
-    const { data: user, error } = await supabaseClient
-      .from('users')
-      .select('*')
-      .ilike('username', usernameVal)
-      .eq('password', passwordVal)
-      .maybeSingle();
+    const { data: user, error } = await window.db
+  .from('users')
+  .select('*')
+  .ilike('username', usernameVal)
+  .eq('password', passwordVal)
+  .maybeSingle();
 
     if (error) throw error;
 
