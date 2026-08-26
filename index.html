@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/chuckfuentes40-blip/BinanCity-CSWD/main/cswd.png">
 
   <title>CSWD Community Portal</title>
@@ -1449,95 +1449,49 @@ function handleRadioToggle(radio) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  // Restore remembered username if saved
-  const savedUser = localStorage.getItem('cswd_remembered_user');
-  if (savedUser) {
-    const userField = document.getElementById('loginUser');
-    const rememberRadio = document.getElementById('rememberRadio');
-    if (userField) userField.value = savedUser;
-    if (rememberRadio) {
-      rememberRadio.checked = true;
-      rememberRadio.dataset.wasChecked = "true";
-    }
-  }
+// Initialize Supabase Client
+const SUPABASE_URL = "https://gfnvmbxzmxxsguaqihvz.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_dBrlQfriRIdMPW8ueyhh4Q_IGKMtkIz";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  const loginForm = document.getElementById('loginForm');
-  if (!loginForm) return;
+// Clean Login Handler
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+  const usernameVal = document.getElementById('loginUser').value.trim();
+  const passwordVal = document.getElementById('loginPassword').value.trim();
+  const submitBtn = document.getElementById('loginBtn');
 
-    // Map exact input IDs from HTML
-    const usernameInput = document.getElementById('loginUser');
-    const passwordInput = document.getElementById('loginPassword');
-    const rememberRadio = document.getElementById('rememberRadio');
-    const submitBtn = document.getElementById('loginBtn');
+  submitBtn.innerText = "Signing in...";
+  submitBtn.disabled = true;
 
-    const usernameVal = usernameInput ? usernameInput.value.trim() : '';
-    const passwordVal = passwordInput ? passwordInput.value.trim() : '';
+  try {
+    // Query users table directly in 1 line
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .ilike('username', usernameVal)
+      .eq('password', passwordVal)
+      .maybeSingle();
 
-    if (!usernameVal || !passwordVal) {
-      alert('Please fill in both username and password.');
-      return;
-    }
+    if (error) throw error;
 
-    // Save or remove remembered username
-    if (rememberRadio && rememberRadio.checked) {
-      localStorage.setItem('cswd_remembered_user', usernameVal);
+    if (user) {
+      localStorage.setItem('cswd_user', JSON.stringify(user));
+      alert(`Login Successful! Welcome ${user.fullname}`);
+      
+      const targetPage = user.role === 'Admin' ? 'page-admin-dashboard' : 'page-client-dashboard';
+      if (typeof showPage === 'function') showPage(targetPage);
     } else {
-      localStorage.removeItem('cswd_remembered_user');
+      alert("Invalid username or password.");
     }
-
-    if (submitBtn) {
-      submitBtn.innerText = 'Signing in...';
-      submitBtn.disabled = true;
-    }
-
-    try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        redirect: 'follow',
-        body: JSON.stringify({
-          action: 'login',
-          credentials: {
-            username: usernameVal,
-            password: passwordVal
-          }
-        })
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        // Store user session data locally
-        localStorage.setItem('cswd_user', JSON.stringify(data.user));
-
-        // Redirect based on role in sheet
-        const userRole = String(data.user.role || '').toLowerCase();
-        const targetPageId = (userRole === 'admin') ? 'page-admin-dashboard' : 'page-client-dashboard';
-
-        if (typeof showPage === 'function') {
-          showPage(targetPageId);
-        } else {
-          document.querySelectorAll('.page-section').forEach(p => p.style.display = 'none');
-          const target = document.getElementById(targetPageId);
-          if (target) target.style.display = 'block';
-        }
-      } else {
-        alert(data.message || 'Invalid username or password.');
-      }
-    } catch (err) {
-      console.error('Login error:', err);
-      alert('Network error. Unable to reach server.');
-    } finally {
-      if (submitBtn) {
-        submitBtn.innerText = 'Sign In';
-        submitBtn.disabled = false;
-      }
-    }
-  });
+  } catch (err) {
+    console.error("Login Error:", err);
+    alert("Connection error. Please try again.");
+  } finally {
+    submitBtn.innerText = "Sign In";
+    submitBtn.disabled = false;
+  }
 });
 </script>
 </body>
