@@ -1267,10 +1267,10 @@
   }
 
  document.addEventListener('DOMContentLoaded', () => {
-  // Auto-redirect if an active session already exists
+  // Auto-redirect if session exists
   if (currentUser) {
     const role = String(currentUser.role || '').toLowerCase();
-    showPage(role === 'admin' ? 'page-admin-dashboard' : 'page-client-dashboard');
+    showPage(role === 'admin' ? 'page-admin-dashboard' : 'page-client');
   }
 
   const loginForm = document.getElementById('loginForm');
@@ -1310,9 +1310,9 @@
 
         showNotification(`Welcome back, ${user.fullname || user.username}!`, 'success');
 
-        // Redirect to appropriate dashboard based on role
+        // Target 'page-client' for client users
         const userRole = String(user.role || '').toLowerCase();
-        const targetPageId = (userRole === 'admin') ? 'page-admin-dashboard' : 'page-client-dashboard';
+        const targetPageId = (userRole === 'admin') ? 'page-admin-dashboard' : 'page-client';
 
         showPage(targetPageId);
       } else {
@@ -1331,14 +1331,14 @@
 });
 
    function showPage(pageId) {
-  // Hide all sections using both CSS display and Tailwind classes
+  // Hide all sections
   const sections = document.querySelectorAll('.page-section, [id^="page-"]');
   sections.forEach(sec => {
     sec.classList.add('hidden');
     sec.style.display = 'none';
   });
 
-  // Target and show the selected page
+  // Display target page
   const target = document.getElementById(pageId);
   if (target) {
     target.classList.remove('hidden');
@@ -1348,12 +1348,11 @@
     return;
   }
 
-  // Trigger content population based on destination
-  if (pageId === 'page-client-dashboard') {
+  // Trigger content rendering
+  if (pageId === 'page-client') {
     if (typeof renderClientForm === 'function') renderClientForm(currentUser);
     if (typeof loadAnnouncements === 'function') loadAnnouncements();
-  } else if (pageId === 'page-admin-dashboard') {
-    // Replace 'adminTableContainer' with your HTML container ID if different
+  } else if (pageId === 'page-admin-dashboard' || pageId === 'page-admin') {
     if (typeof loadAdminTableData === 'function') loadAdminTableData('Sheet5', 'adminTableContainer'); 
   }
 }
