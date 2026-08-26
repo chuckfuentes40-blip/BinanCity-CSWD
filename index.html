@@ -394,15 +394,15 @@
 
 <script>
   // ==========================================
-  // PART 1: CONFIGURATION & GLOBAL STATE
+  // PART 1: CONFIGURATION & SUPABASE INIT
   // ==========================================
   const SUPABASE_URL = "https://gfnvmbxzmxxsguaqihvz.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_dBrlQfriRIdMPW8ueyhh4Q_IGKMtkIz";
-  
+
   // Initialize Supabase Client
   window.db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // Global Application State
+  // Global State
   let currentUser = JSON.parse(localStorage.getItem('cswd_active_session')) || null;
   window.sheet5Data = [];
   let currentPage = 1;
@@ -410,7 +410,7 @@
   let searchQuery = '';
 
   // ==========================================
-  // PART 2: UI HELPERS, MODALS & NAVIGATION
+  // PART 2: NOTIFICATIONS & MODAL HELPERS
   // ==========================================
   function showNotification(message, type = 'info') {
     const toast = document.createElement('div');
@@ -451,12 +451,14 @@
     }
   }
 
-  // Modal Control Helpers
+  // General Modal Control
   function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
       modal.classList.remove('hidden');
       modal.style.display = 'flex';
+    } else {
+      console.warn(`Modal with ID "${modalId}" not found.`);
     }
   }
 
@@ -468,48 +470,91 @@
     }
   }
 
-  // Main Page Router (page-login, page-client, page-admin)
+  // Explicit Button Handler Aliases to Fix Missing References
+  function openAddAdminModal() { openModal('addAdminModal'); }
+  function closeAddAdminModal() { closeModal('addAdminModal'); }
+  function openSignUpModal() { openModal('signUpModal'); }
+  function closeSignUpModal() { closeModal('signUpModal'); }
+
+  // ==========================================
+  // PART 3: FLEXIBLE ROUTING & SIDEBAR CONTROL
+  // ==========================================
+  
+  // Main Top-Level Router (page-login, page-client, page-admin)
   function showPage(pageId) {
-    const sections = document.querySelectorAll('.page-section, [id^="page-"]');
-    sections.forEach(sec => {
-      sec.classList.add('hidden');
-      sec.style.display = 'none';
+    const pages = document.querySelectorAll('.page-section, [id^="page-"]');
+    pages.forEach(p => {
+      p.classList.add('hidden');
+      p.style.display = 'none';
     });
 
-    let target = document.getElementById(pageId);
-    if (!target && pageId === 'page-admin-dashboard') target = document.getElementById('page-admin');
-    if (!target && pageId === 'page-client-dashboard') target = document.getElementById('page-client');
+    let targetId = pageId;
+    if (pageId === 'page-admin-dashboard') targetId = 'page-admin';
+    if (pageId === 'page-client-dashboard') targetId = 'page-client';
+
+    const target = document.getElementById(targetId);
+    
+    // Toggle Sidebars based on active section
+    const adminSidebar = document.getElementById('admin-sidebar');
+    const clientSidebar = document.getElementById('client-sidebar');
+
+    if (adminSidebar) adminSidebar.style.display = (targetId === 'page-admin') ? 'block' : 'none';
+    if (clientSidebar) clientSidebar.style.display = (targetId === 'page-client') ? 'block' : 'none';
 
     if (target) {
       target.classList.remove('hidden');
       target.style.display = 'block';
-    } else {
-      console.error(`Page container with ID "${pageId}" not found.`);
-      return;
-    }
 
-    if (target.id === 'page-client') {
-      if (typeof renderClientForm === 'function') renderClientForm(currentUser);
-      if (typeof loadAnnouncements === 'function') loadAnnouncements();
-    } else if (target.id === 'page-admin') {
-      switchAdminSubpage('admin-sub-soloparent');
+      if (targetId === 'page-client') {
+        switchClientSubpage('client-sub-form');
+        if (typeof renderClientForm === 'function') renderClientForm(currentUser);
+        if (typeof loadAnnouncements === 'function') loadAnnouncements();
+      } else if (targetId === 'page-admin') {
+        switchAdminSubpage('admin-sub-soloparent');
+      }
+    } else {
+      console.error(`Page section "${pageId}" not found in HTML.`);
     }
   }
 
-  // Subpage Routers
-  function switchClientSubpage(subpageId) {
-    const subpages = document.querySelectorAll('[id^="client-sub-"]');
-    subpages.forEach(sp => {
+  // Admin Subpage Router (admin-sub-soloparent, admin-sub-announcement)
+  function switchAdminSubpage(subpageId) {
+    const adminSubpages = document.querySelectorAll('[id^="admin-sub-"]');
+    adminSubpages.forEach(sp => {
       sp.classList.add('hidden');
       sp.style.display = 'none';
     });
 
-    let targetId = subpageId;
-    if (!subpageId.startsWith('client-sub-')) {
-      targetId = `client-sub-${subpageId}`;
-    }
+    // Flexible ID Resolution
+    let target = document.getElementById(subpageId) 
+              || document.getElementById(`admin-sub-${subpageId}`)
+              || document.getElementById(subpageId.replace('admin-sub-', ''));
 
-    const target = document.getElementById(targetId) || document.getElementById(subpageId);
+    if (target) {
+      target.classList.remove('hidden');
+      target.style.display = 'block';
+
+      if (target.id === 'admin-sub-soloparent') {
+        loadAdminTableData();
+      }
+    } else {
+      console.warn(`Admin subpage element matching "${subpageId}" not found.`);
+    }
+  }
+
+  // Client Subpage Router (client-sub-form, etc.)
+  function switchClientSubpage(subpageId) {
+    const clientSubpages = document.querySelectorAll('[id^="client-sub-"]');
+    clientSubpages.forEach(sp => {
+      sp.classList.add('hidden');
+      sp.style.display = 'none';
+    });
+
+    // Flexible ID Resolution
+    let target = document.getElementById(subpageId) 
+              || document.getElementById(`client-sub-${subpageId}`)
+              || document.getElementById(subpageId.replace('client-sub-', ''));
+
     if (target) {
       target.classList.remove('hidden');
       target.style.display = 'block';
@@ -518,37 +563,15 @@
     }
   }
 
-  function switchAdminSubpage(subpageId) {
-    const subpages = document.querySelectorAll('[id^="admin-sub-"]');
-    subpages.forEach(sp => {
-      sp.classList.add('hidden');
-      sp.style.display = 'none';
-    });
-
-    let targetId = subpageId;
-    if (!subpageId.startsWith('admin-sub-')) {
-      targetId = `admin-sub-${subpageId}`;
-    }
-
-    const target = document.getElementById(targetId) || document.getElementById(subpageId);
-    if (target) {
-      target.classList.remove('hidden');
-      target.style.display = 'block';
-
-      if (target.id === 'admin-sub-soloparent') {
-        loadAdminTableData('Sheet5', 'adminTableContainer');
-      }
-    } else {
-      console.warn(`Admin subpage element matching "${subpageId}" not found.`);
-    }
-  }
-
   // ==========================================
-  // PART 3: CLIENT REGISTRATION & ANNOUNCEMENTS
+  // PART 4: CLIENT FORM & ANNOUNCEMENTS
   // ==========================================
   function renderClientForm(user) {
-    const container = document.getElementById('formContainer');
+    const container = document.getElementById('formContainer') || document.getElementById('client-sub-form');
     if (!container) return;
+
+    // Check if form is already rendered to avoid overwriting typed input
+    if (document.getElementById('soloParentForm')) return;
 
     const userNameVal = user ? (user.fullname || user.username || '') : '';
     const userContactVal = user ? (user.contact || '') : '';
@@ -560,38 +583,38 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="md:col-span-2">
               <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Name of Member</label>
-              <input type="text" name="memberName" value="${userNameVal}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]" required>
+              <input type="text" name="memberName" value="${userNameVal}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#575aff]" required>
             </div>
             <div>
               <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Sex</label>
-              <select name="sex" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+              <select name="sex" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#575aff]">
                 <option value="Female">Female</option>
                 <option value="Male">Male</option>
               </select>
             </div>
             <div>
               <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Age</label>
-              <input type="number" name="age" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+              <input type="number" name="age" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#575aff]">
             </div>
             <div class="md:col-span-2">
               <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Address</label>
-              <input type="text" name="address" placeholder="House No, Street, Barangay, City" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+              <input type="text" name="address" placeholder="House No, Street, Barangay, City" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#575aff]">
             </div>
             <div>
               <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Contact Number</label>
-              <input type="text" name="contactNumber" value="${userContactVal}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+              <input type="text" name="contactNumber" value="${userContactVal}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#575aff]">
             </div>
             <div class="md:col-span-2">
               <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Classification of Solo Parent</label>
-              <input type="text" name="classification" placeholder="e.g. Death of spouse, Abandonment" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+              <input type="text" name="classification" placeholder="e.g. Death of spouse, Abandonment" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#575aff]">
             </div>
             <div>
               <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Source of Income</label>
-              <input type="text" name="sourceOfIncome" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+              <input type="text" name="sourceOfIncome" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#575aff]">
             </div>
             <div>
               <label class="block text-xs font-bold uppercase text-slate-600 mb-1">No. of Dependents</label>
-              <input type="number" name="noOfDependents" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+              <input type="number" name="noOfDependents" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#575aff]">
             </div>
           </div>
         </div>
@@ -601,81 +624,31 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-bold uppercase text-slate-600 mb-1">If Member Has Disability</label>
-              <select name="memberDisability" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+              <select name="memberDisability" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#575aff]">
                 <option value="No">No</option>
                 <option value="Yes">Yes</option>
               </select>
             </div>
             <div>
               <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Type of Disability</label>
-              <input type="text" name="memberDisabilityType" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+              <input type="text" name="memberDisabilityType" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#575aff]">
             </div>
             <div>
               <label class="block text-xs font-bold uppercase text-slate-600 mb-1">If Dependent Has Disability</label>
-              <select name="dependentDisability" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+              <select name="dependentDisability" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#575aff]">
                 <option value="No">No</option>
                 <option value="Yes">Yes</option>
               </select>
             </div>
             <div>
               <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Type of Disability (Dependent)</label>
-              <input type="text" name="dependentDisabilityType" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+              <input type="text" name="dependentDisabilityType" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#575aff]">
             </div>
           </div>
         </div>
 
-        <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
-          <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">C. Solo Parent ID Details</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">ID Number</label>
-              <input type="text" name="idNumber" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Expiration Date</label>
-              <input type="date" name="idExpirationDate" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-            </div>
-          </div>
-        </div>
-
-        <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
-          <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">D. Subsidies & Benefits Status</h3>
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Cash Subsidy</label>
-              <select name="cashSubsidyRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">INB</label>
-              <select name="inbRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">4Ps</label>
-              <select name="fourPsRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Rice Subsidy</label>
-              <select name="riceSubsidyRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
-            </div>
-          </div>
-        </div>
-
-        <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
-          <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">E. Additional Information</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Skill Set</label>
-              <input type="text" name="skillSet" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Remarks</label>
-              <textarea name="remarks" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff] h-24"></textarea>
-            </div>
-          </div>
-        </div>
-
-        <button type="submit" id="submitSoloBtn" class="btn-palette text-white py-4 rounded-xl font-bold tracking-wide shadow-lg shadow-blue-500/25 w-full text-center">
-          Submit Record to Database
+        <button type="submit" id="submitSoloBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-bold tracking-wide shadow-lg w-full text-center transition">
+          Submit Application
         </button>
       </form>
     `;
@@ -689,12 +662,8 @@
 
     soloParentForm.onsubmit = async (e) => {
       e.preventDefault();
-
       const btn = document.getElementById('submitSoloBtn');
-      if (btn) {
-        btn.innerText = "Saving to Database...";
-        btn.disabled = true;
-      }
+      if (btn) { btn.innerText = "Saving Record..."; btn.disabled = true; }
 
       const f = e.target;
       const applicationData = {
@@ -709,214 +678,158 @@
         member_disability: f.memberDisability?.value || 'No',
         member_disability_type: f.memberDisabilityType?.value || '',
         dependent_disability: f.dependentDisability?.value || 'No',
-        dependent_disability_type: f.dependentDisabilityType?.value || '',
-        id_number: f.idNumber?.value || '',
-        id_expiration_date: f.idExpirationDate?.value || '',
-        cash_subsidy_recipient: f.cashSubsidyRecipient?.value || 'No',
-        inb_recipient: f.inbRecipient?.value || 'No',
-        four_ps_recipient: f.fourPsRecipient?.value || 'No',
-        rice_subsidy_recipient: f.riceSubsidyRecipient?.value || 'No',
-        skill_set: f.skillSet?.value || '',
-        remarks: f.remarks?.value || 'Pending'
+        dependent_disability_type: f.dependentDisabilityType?.value || ''
       };
 
       try {
-        const { data, error } = await window.db
-          .from('applications')
-          .insert([applicationData])
-          .select();
-
+        const { error } = await window.db.from('applications').insert([applicationData]);
         if (error) throw error;
-
-        showNotification("Record successfully added!", 'success');
+        showNotification("Application submitted successfully!", 'success');
         f.reset();
       } catch (err) {
-        console.error("Submission Error:", err);
-        showNotification("Error submitting record: " + (err.message || 'Database error'), 'error');
+        showNotification("Submission failed: " + err.message, 'error');
       } finally {
-        if (btn) {
-          btn.innerText = "Submit Record to Database";
-          btn.disabled = false;
-        }
+        if (btn) { btn.innerText = "Submit Application"; btn.disabled = false; }
       }
     };
   }
 
   async function loadAnnouncements() {
-  try {
-    const { data, error } = await window.db
-      .from('announcements')
-      .select('*')
-      .order('created_at', { ascending: false });
+    try {
+      const { data, error } = await window.db
+        .from('announcements')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    if (error) throw error;
+      if (error) throw error;
 
-    const container = document.getElementById('client-announcements-list');
+      const container = document.getElementById('client-announcements-list') || document.getElementById('admin-sub-announcement');
+      if (!container) return;
+
+      if (!data || !data.length) {
+        container.innerHTML = "<p class='text-slate-500 p-4'>No announcements posted yet.</p>";
+        return;
+      }
+
+      container.innerHTML = data.map(item => `
+        <div class="glass-card p-6 rounded-2xl shadow-md space-y-2 mb-4">
+          <div class="flex justify-between items-start">
+            <h3 class="font-bold text-lg text-slate-900">${item.title || ''}</h3>
+            <span class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-semibold">
+              ${item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}
+            </span>
+          </div>
+          <p class="text-slate-600 leading-relaxed">${item.content || ''}</p>
+        </div>
+      `).join('');
+    } catch (err) {
+      showNotification("Could not load announcements.", 'error');
+    }
+  }
+
+  // ==========================================
+  // PART 5: ADMIN DATA TABLE & PRINTING
+  // ==========================================
+  async function loadAdminTableData(targetId = 'adminTableContainer') {
+    const container = document.getElementById(targetId) || document.getElementById('admin-sub-soloparent');
     if (!container) return;
 
-    if (!data || !data.length) {
-      container.innerHTML = "<p class='text-slate-500'>No announcements posted yet.</p>";
-      return;
-    }
-
-    container.innerHTML = data.map(item => `
-      <div class="glass-card p-6 rounded-2xl shadow-md space-y-2">
-        <div class="flex justify-between items-start">
-          <h3 class="font-bold text-lg text-slate-900">${item.title || ''}</h3>
-          <span class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-semibold">
-            ${item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}
-          </span>
-        </div>
-        <p class="text-slate-600 leading-relaxed">${item.content || ''}</p>
+    container.innerHTML = `
+      <div class="p-8 text-center">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-600 border-t-transparent mb-2"></div>
+        <p class="text-slate-500 font-medium text-sm">Loading Applications from Supabase...</p>
       </div>
-    `).join('');
-  } catch (err) {
-    console.error("Announcements Fetch Error:", err);
-    showNotification("Could not load announcements.", 'error');
-  }
-}
+    `;
 
-  // ==========================================
-  // PART 4: ADMIN DATA TABLE & FILTERING
-  // ==========================================
-  async function loadAdminTableData(tabName, targetId = 'adminTableContainer') {
-  const container = document.getElementById(targetId);
-  if (!container) return;
+    try {
+      const { data, error } = await window.db
+        .from('applications')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-  container.innerHTML = `
-    <div class="p-8 text-center">
-      <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-600 border-t-transparent mb-2"></div>
-      <p class="text-slate-500 font-medium text-sm">Loading records from Supabase...</p>
-    </div>
-  `;
+      if (error) throw error;
 
-  try {
-    const { data, error } = await window.db
-      .from('applications')
-      .select('*')
-      .order('created_at', { ascending: false });
+      if (!data || !data.length) {
+        container.innerHTML = "<p class='text-slate-500 p-6 text-center'>No records found in database.</p>";
+        return;
+      }
 
-    if (error) throw error;
+      window.sheet5Data = data;
+      currentPage = 1;
+      searchQuery = '';
+      renderAdminTable(container.id);
 
-    if (!data || !data.length) {
-      container.innerHTML = "<p class='text-slate-500 p-4 text-center'>No records found in database.</p>";
-      return;
+    } catch(err) {
+      console.error("Error loading table data:", err);
+      showNotification("Error loading applications.", 'error');
     }
-
-    window.sheet5Data = data;
-    currentPage = 1;
-    searchQuery = '';
-
-    renderAdminTable(targetId);
-
-  } catch(err) {
-    console.error("Error loading table data:", err);
-    showNotification("Error loading database records.", 'error');
-    container.innerHTML = "<p class='text-rose-500 p-4 text-center font-medium'>Failed to load table data. Please try again.</p>";
   }
-}
 
   function renderAdminTable(targetId = 'adminTableContainer') {
     const container = document.getElementById(targetId);
     if (!container || !window.sheet5Data || !window.sheet5Data.length) return;
 
-    const headers = Object.keys(window.sheet5Data[0]);
-
     const filteredData = window.sheet5Data.filter(row => {
       if (!searchQuery) return true;
       return Object.values(row).some(val => 
-        String(val).toLowerCase().includes(searchQuery.toLowerCase())
+        String(val || '').toLowerCase().includes(searchQuery.toLowerCase())
       );
     });
 
     const totalRecords = filteredData.length;
     const totalPages = Math.ceil(totalRecords / rowsPerPage) || 1;
-    if (currentPage > totalPages) currentPage = totalPages;
-
     const startIndex = (currentPage - 1) * rowsPerPage;
     const pageData = filteredData.slice(startIndex, startIndex + rowsPerPage);
 
-    let row1Html = '';
-    let row2Html = '';
-    let hasSubheaders = false;
-
-    for (let i = 0; i < headers.length; i++) {
-      const h = headers[i];
-
-      if (h.trim().toUpperCase() === 'SOLO PARENT ID DETAILS') {
-        hasSubheaders = true;
-        row1Html += `
-          <th colspan="2" class="p-2 font-bold text-slate-800 text-center border border-slate-300 bg-slate-100 uppercase tracking-wider text-xs">
-            SOLO PARENT ID DETAILS
-          </th>`;
-        
-        row2Html += `
-          <th class="p-2 font-bold text-slate-700 text-center border border-slate-300 bg-slate-50 text-xs uppercase tracking-wider whitespace-nowrap">
-            ID NUMBER
-          </th>
-          <th class="p-2 font-bold text-slate-700 text-center border border-slate-300 bg-slate-50 text-xs uppercase tracking-wider whitespace-nowrap">
-            EXPIRATION DATE
-          </th>`;
-
-        if (i + 1 < headers.length && (headers[i + 1].startsWith('Col_') || headers[i + 1] === '')) {
-          i++;
-        }
-      } else {
-        row1Html += `
-          <th rowspan="2" class="p-3 font-bold text-slate-700 border border-slate-300 bg-slate-100 whitespace-nowrap align-middle text-left text-xs uppercase tracking-wider">
-            ${h}
-          </th>`;
-      }
-    }
-
-    row1Html += `
-      <th rowspan="2" class="p-3 font-bold text-slate-700 border border-slate-300 bg-slate-100 whitespace-nowrap align-middle text-center text-xs uppercase tracking-wider sticky right-0 bg-slate-100 shadow-sm">
-        ACTION
-      </th>`;
-
     let controlsHtml = `
       <div class="p-3 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-3">
-        <div class="relative w-full sm:w-64">
-          <input 
-            type="text" 
-            placeholder="🔍 Search records..." 
-            value="${searchQuery}"
-            oninput="handleTableSearch(this.value, '${targetId}')"
-            class="w-full pl-3 pr-3 py-1.5 text-xs border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-          />
-        </div>
-        <div class="text-xs text-slate-500 font-medium">
-          Showing ${totalRecords > 0 ? startIndex + 1 : 0} to ${Math.min(startIndex + rowsPerPage, totalRecords)} of ${totalRecords} records
-        </div>
+        <input 
+          type="text" 
+          placeholder="🔍 Search applications..." 
+          value="${searchQuery}"
+          oninput="handleTableSearch(this.value, '${targetId}')"
+          class="w-full sm:w-64 pl-3 pr-3 py-1.5 text-xs border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+        />
+        <button onclick="printDataSheet()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded font-bold transition">
+          🖨️ Print All Records
+        </button>
       </div>
     `;
 
-    let tableHtml = `<div class="overflow-x-auto"><table class="w-full text-left text-sm border-collapse border border-slate-300"><thead>`;
-    tableHtml += `<tr>${row1Html}</tr>`;
-    if (hasSubheaders) {
-      tableHtml += `<tr>${row2Html}</tr>`;
-    }
-    tableHtml += `</thead><tbody class="divide-y divide-slate-200">`;
+    let tableHtml = `
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm border-collapse border border-slate-300">
+          <thead>
+            <tr class="bg-slate-100 text-slate-700 text-xs uppercase">
+              <th class="p-3 border">Name</th>
+              <th class="p-3 border">Sex</th>
+              <th class="p-3 border">Age</th>
+              <th class="p-3 border">Contact</th>
+              <th class="p-3 border">Classification</th>
+              <th class="p-3 border text-center">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
 
     if (pageData.length === 0) {
-      tableHtml += `<tr><td colspan="${headers.length + 1}" class="p-6 text-center text-slate-500">No matching records found.</td></tr>`;
+      tableHtml += `<tr><td colspan="6" class="p-6 text-center text-slate-500">No matching records.</td></tr>`;
     } else {
-      pageData.forEach((row) => {
-        const originalIndex = window.sheet5Data.indexOf(row);
-
-        tableHtml += `<tr class="hover:bg-slate-50/80 transition">`;
-        headers.forEach(h => {
-          const val = row[h] !== undefined && row[h] !== null ? row[h] : '';
-          tableHtml += `<td class="p-3 text-slate-600 border border-slate-200 whitespace-nowrap">${val}</td>`;
-        });
-        
+      pageData.forEach((row, idx) => {
         tableHtml += `
-          <td class="p-2 border border-slate-200 text-center sticky right-0 bg-white">
-            <button onclick="printIndividualForm(${originalIndex})" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1.5 rounded transition font-medium shadow-sm flex items-center justify-center gap-1 mx-auto whitespace-nowrap">
-              🖨️ Print Form
-            </button>
-          </td>`;
-        tableHtml += `</tr>`;
+          <tr class="hover:bg-slate-50 transition border-b">
+            <td class="p-3 font-semibold text-slate-800">${row.member_name || 'N/A'}</td>
+            <td class="p-3">${row.sex || ''}</td>
+            <td class="p-3">${row.age || ''}</td>
+            <td class="p-3">${row.contact_number || ''}</td>
+            <td class="p-3">${row.classification || ''}</td>
+            <td class="p-3 text-center">
+              <button onclick="printIndividualForm(${idx})" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1 rounded">
+                🖨️ Print Form
+              </button>
+            </td>
+          </tr>
+        `;
       });
     }
 
@@ -924,473 +837,166 @@
 
     let paginationHtml = `
       <div class="p-3 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-xs">
-        <button 
-          onclick="changeTablePage(-1, '${targetId}')" 
-          ${currentPage === 1 ? 'disabled' : ''} 
-          class="px-3 py-1.5 bg-white border border-slate-300 rounded font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">
-          ◀ Previous
-        </button>
-
-        <span class="font-semibold text-slate-600">
-          Page ${currentPage} of ${totalPages}
-        </span>
-
-        <button 
-          onclick="changeTablePage(1, '${targetId}')" 
-          ${currentPage >= totalPages ? 'disabled' : ''} 
-          class="px-3 py-1.5 bg-white border border-slate-300 rounded font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">
-          Next ▶
-        </button>
+        <button onclick="changeTablePage(-1, '${targetId}')" ${currentPage === 1 ? 'disabled' : ''} class="px-3 py-1 bg-white border rounded disabled:opacity-40">Previous</button>
+        <span>Page ${currentPage} of ${totalPages}</span>
+        <button onclick="changeTablePage(1, '${targetId}')" ${currentPage >= totalPages ? 'disabled' : ''} class="px-3 py-1 bg-white border rounded disabled:opacity-40">Next</button>
       </div>
     `;
 
     container.innerHTML = controlsHtml + tableHtml + paginationHtml;
   }
 
-  function changeTablePage(direction, targetId) {
-    currentPage += direction;
-    renderAdminTable(targetId);
-  }
+  function changeTablePage(dir, targetId) { currentPage += dir; renderAdminTable(targetId); }
+  function handleTableSearch(q, targetId) { searchQuery = q; currentPage = 1; renderAdminTable(targetId); }
 
-  function handleTableSearch(query, targetId) {
-    searchQuery = query;
-    currentPage = 1;
-    renderAdminTable(targetId);
-  }
-
-  // ==========================================
-  // PART 5: PRINT ROUTINES & EVENT LISTENERS
-  // ==========================================
-  async function printSheet5Data() {
-    try {
-      const res = await fetch(`${API_URL}?action=getData&tabName=Sheet5`, { redirect: 'follow' });
-      const data = await res.json();
-      
-      let cleanData = data;
-      if (data && data.length) {
-        cleanData = data.filter(row => {
-          const isSubheaderRow = Object.values(row).some(val => {
-            const str = String(val).trim().toUpperCase();
-            return str === 'ID NUMBER' || str === 'EXPIRATION DATE';
-          });
-          return !isSubheaderRow;
-        });
-      }
-
-      if (!cleanData || !cleanData.length) {
-        showNotification("No records found in Sheet5 to print.", "error");
-        return;
-      }
-
-      const headers = Object.keys(cleanData[0]);
-      let row1Html = '';
-      let row2Html = '';
-      let hasSubheaders = false;
-
-      for (let i = 0; i < headers.length; i++) {
-        const h = headers[i];
-
-        if (h.trim().toUpperCase() === 'SOLO PARENT ID DETAILS') {
-          hasSubheaders = true;
-          row1Html += `
-            <th colspan="2" style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: center; background-color: #f1f5f9; font-size: 8pt; text-transform: uppercase;">
-              SOLO PARENT ID DETAILS
-            </th>`;
-          
-          row2Html += `
-            <th style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: center; background-color: #f8fafc; font-size: 7.5pt; text-transform: uppercase;">
-              ID NUMBER
-            </th>
-            <th style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: center; background-color: #f8fafc; font-size: 7.5pt; text-transform: uppercase;">
-              EXPIRATION DATE
-            </th>`;
-
-          if (i + 1 < headers.length && (headers[i + 1].startsWith('Col_') || headers[i + 1] === '')) {
-            i++;
-          }
-        } else {
-          row1Html += `
-            <th rowspan="2" style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: left; background-color: #f1f5f9; vertical-align: middle; font-size: 8pt; text-transform: uppercase;">
-              ${h}
-            </th>`;
-        }
-      }
-
-      const printHtml = `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="UTF-8">
-          <title>CSWD Master List - Sheet5</title>
-          <style>
-            body { font-family: 'Arial', sans-serif; margin: 15px; color: #1e293b; }
-            .header { text-align: center; margin-bottom: 20px; }
-            .header h1 { margin: 0; font-size: 18pt; color: #0f172a; }
-            .header p { margin: 4px 0 0; font-size: 10pt; color: #64748b; }
-            table { width: 100%; border-collapse: collapse; font-size: 8pt; margin-top: 10px; }
-            th, td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; word-break: break-word; }
-            tr:nth-child(even) { background-color: #f8fafc; }
-            @page { size: landscape; margin: 10mm; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>CSWD Solo Parents Master List (Sheet5)</h1>
-            <p>City Social Welfare and Development Office - Generated on ${new Date().toLocaleString()}</p>
-          </div>
-          <table>
-            <thead>
-              <tr>${row1Html}</tr>
-              ${hasSubheaders ? `<tr>${row2Html}</tr>` : ''}
-            </thead>
-            <tbody>
-              ${cleanData.map(row => `
-                <tr>
-                  ${headers.map(h => `<td>${row[h] !== undefined && row[h] !== null ? row[h] : ''}</td>`).join('')}
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </body>
-        </html>
-      `;
-
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(printHtml);
-        printWindow.document.close();
-        printWindow.focus();
-        setTimeout(() => printWindow.print(), 300);
-      } else {
-        showNotification("Pop-up blocked! Please allow pop-ups to print.", "error");
-      }
-    } catch (err) {
-      console.error("Print Error:", err);
-      showNotification("Failed to prepare Sheet5 data for printing.", "error");
-    }
-  }
-
-  function printIndividualForm(rowIndex) {
-    const row = window.sheet5Data[rowIndex];
-    if (!row) {
-      showNotification("Error: Member data not found.", "error");
+  // Fix Missing Reference Function: printDataSheet
+  function printDataSheet() {
+    if (!window.sheet5Data || !window.sheet5Data.length) {
+      showNotification("No records available to print.", "error");
       return;
     }
 
-    const logoBiNaN = "https://raw.githubusercontent.com/chuckfuentes40-blip/BinanCity-CSWD/main/Binan_City_Seal.png";
-    const logoCSWD = "https://raw.githubusercontent.com/chuckfuentes40-blip/BinanCity-CSWD/main/cswd.png";
+    const printWin = window.open('', '_blank');
+    if (!printWin) return showNotification("Pop-up blocked!", "error");
 
-    const getField = (...possibleKeys) => {
-      for (let key of Object.keys(row)) {
-        for (let pKey of possibleKeys) {
-          if (key.toLowerCase().trim() === pKey.toLowerCase().trim()) {
-            return row[key] !== undefined && row[key] !== null ? String(row[key]) : '';
-          }
-        }
-      }
-      return '';
-    };
+    const rows = window.sheet5Data.map(r => `
+      <tr>
+        <td style="border:1px solid #ccc; padding:6px;">${r.member_name || ''}</td>
+        <td style="border:1px solid #ccc; padding:6px;">${r.sex || ''}</td>
+        <td style="border:1px solid #ccc; padding:6px;">${r.age || ''}</td>
+        <td style="border:1px solid #ccc; padding:6px;">${r.contact_number || ''}</td>
+        <td style="border:1px solid #ccc; padding:6px;">${r.classification || ''}</td>
+      </tr>
+    `).join('');
 
-    const isChecked = (fieldValue, expectedVal) => {
-      if (!fieldValue) return '☐';
-      const cleanStr = String(fieldValue).trim().toLowerCase();
-      const cleanExp = String(expectedVal).trim().toLowerCase();
-      return cleanStr === cleanExp || cleanStr.startsWith(cleanExp) ? '☑' : '☐';
-    };
-
-    const name = getField('NAME OF MEMBER', 'NAME', 'MEMBER NAME');
-    const sex = getField('SEX', 'GENDER');
-    const age = getField('AGE');
-    const address = getField('ADDRESS', 'COMPLETE ADDRESS');
-    const contact = getField('CONTACT NUMBER', 'CONTACT NO.', 'PHONE');
-    const classification = getField('CLASSIFICATION OF SOLO PARENT', 'CLASSIFICATION');
-    const incomeSource = getField('SOURCE OF INCOME', 'SOURCE OF INCOME / LIVELIHOOD', 'LIVELIHOOD');
-    const dependents = getField('NO. OF DEPENDENTS', 'DEPENDENTS');
-
-    const memberDisability = getField('IF MEMBER HAS DISABILITY', 'DOES THE MEMBER HAVE A DISABILITY?', 'MEMBER DISABILITY');
-    const typeDisabilityMember = getField('TYPE OF DISABILITY', 'MEMBER DISABILITY TYPE');
-    const depDisability = getField('IF DEPENDENT HAS DISABILITY', 'DOES ANY DEPENDENT HAVE A DISABILITY?', 'DEPENDENT DISABILITY');
-    const typeDisabilityDep = getField('TYPE OF DISABILITY (DEPENDENT)', 'DEPENDENT DISABILITY TYPE');
-
-    const idNum = getField('ID NUMBER', 'ID NO');
-    const expDate = getField('EXPIRATION DATE', 'EXPIRATION');
-    
-    const subsidy = getField('CASH SUBSIDY RECIPIENT', 'SUBSIDY RECIPIENT');
-    const inb = getField('INB');
-    const fourPs = getField('4PS', '4PS RECIPIENT');
-
-    const skills = getField('SKILL SET / EXISTING SKILLS', 'SKILL SET', 'EXISTING SKILLS');
-    const trainingInterested = getField('SKILLS TRAINING INTERESTED IN', 'TRAINING INTERESTED');
-    const livelihoodPref = getField('PREFERRED LIVELIHOOD / INCOME OPPORTUNITY', 'PREFERRED LIVELIHOOD');
-    const remarks = getField('REMARKS / OTHER CONCERNS', 'REMARKS');
-
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      showNotification("Pop-up blocked! Allow pop-ups to print the form.", "error");
-      return;
-    }
-
-    const printContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Member Profile & Survey Form - ${name}</title>
-        <style>
-          @page { size: A4 portrait; margin: 10mm; }
-          body { font-family: Arial, sans-serif; font-size: 12px; color: #000; margin: 0; padding: 0; }
-          .page { width: 100%; box-sizing: border-box; min-height: 265mm; position: relative; page-break-after: always; }
-          .logos-header { text-align: center; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 15px; }
-          .logos-header img { height: 55px; width: auto; object-fit: contain; }
-          .header-meta { width: 100%; margin-bottom: 10px; }
-          .header-meta td { font-size: 11px; padding: 3px 0; }
-          .form-title { text-align: center; border: 2px solid #000; padding: 8px; font-weight: bold; font-size: 14px; margin-bottom: 10px; background-color: #f8fafc; }
-          .section-header { background-color: #e2e8f0; border: 1px solid #000; font-weight: bold; padding: 5px 8px; font-size: 12px; margin-top: 10px; }
-          .form-table { width: 100%; border-collapse: collapse; margin-bottom: 5px; }
-          .form-table td, .form-table th { border: 1px solid #000; padding: 6px 8px; vertical-align: middle; }
-          .label { font-weight: bold; background-color: #f1f5f9; width: 35%; }
-          .value { width: 65%; }
-          .checkbox-group span { margin-right: 15px; }
-          .footer { position: absolute; bottom: 0; width: 100%; text-align: center; font-size: 9px; border-top: 1px solid #000; padding-top: 4px; }
-          .signature-box { margin-top: 30px; width: 100%; }
-          .signature-line { border-top: 1px solid #000; text-align: center; padding-top: 4px; font-weight: bold; width: 80%; margin: 0 auto; }
-        </style>
-      </head>
-      <body>
-        <!-- PAGE 1 -->
-        <div class="page">
-          <div class="logos-header">
-            <img src="${logoBiNaN}" alt="City of Biñan Seal">
-            <img src="${logoCSWD}" alt="CSWD Logo">
-          </div>
-
-          <table class="header-meta">
-            <tr>
-              <td><strong>Barangay:</strong> ___________________</td>
-              <td style="text-align: right;"><strong>Control No.:</strong> ___________________</td>
+    printWin.document.write(`
+      <html><head><title>Master List</title></head>
+      <body style="font-family:sans-serif; padding:20px;">
+        <h2>CSWD Solo Parents Master List</h2>
+        <table style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr style="background:#eee;">
+              <th style="border:1px solid #ccc; padding:6px;">Name</th>
+              <th style="border:1px solid #ccc; padding:6px;">Sex</th>
+              <th style="border:1px solid #ccc; padding:6px;">Age</th>
+              <th style="border:1px solid #ccc; padding:6px;">Contact</th>
+              <th style="border:1px solid #ccc; padding:6px;">Classification</th>
             </tr>
-          </table>
-
-          <div class="form-title">
-            SOLO PARENT FEDERATION - CITY OF BIÑAN<br>
-            <span style="font-size: 12px; font-weight: normal;">MEMBER PROFILE AND SURVEY FORM</span>
-          </div>
-
-          <table class="header-meta">
-            <tr>
-              <td><strong>Date:</strong> ${new Date().toLocaleDateString()}</td>
-              <td style="text-align: right;"><strong>Interviewer:</strong> ___________________</td>
-            </tr>
-          </table>
-
-          <div class="section-header">A. MEMBER INFORMATION</div>
-          <table class="form-table">
-            <tr><td class="label">Name of Member:</td><td class="value"><strong>${name}</strong></td></tr>
-            <tr>
-              <td class="label">Sex:</td>
-              <td class="value checkbox-group">
-                <span>${isChecked(sex, 'Male')} Male</span>
-                <span>${isChecked(sex, 'Female')} Female</span>
-                <span>${isChecked(sex, 'Prefer not to say')} Prefer not to say</span>
-              </td>
-            </tr>
-            <tr><td class="label">Age:</td><td class="value">${age} years old</td></tr>
-            <tr><td class="label">Complete Address:</td><td class="value">${address}</td></tr>
-            <tr><td class="label">Contact Number:</td><td class="value">${contact}</td></tr>
-            <tr><td class="label">Classification of Solo Parent:</td><td class="value">${classification}</td></tr>
-            <tr><td class="label">Source of Income / Livelihood:</td><td class="value">${incomeSource}</td></tr>
-            <tr><td class="label">No. of Dependents:</td><td class="value">${dependents}</td></tr>
-          </table>
-
-          <div class="section-header">B. DISABILITY INFORMATION</div>
-          <table class="form-table">
-            <tr>
-              <td class="label">Does the member have a disability?</td>
-              <td class="value checkbox-group">
-                <span>${isChecked(memberDisability, 'Yes')} Yes</span>
-                <span>${isChecked(memberDisability, 'No')} No</span>
-              </td>
-            </tr>
-            <tr><td class="label">Type of Disability (if any):</td><td class="value">${typeDisabilityMember}</td></tr>
-            <tr>
-              <td class="label">Does any dependent have a disability?</td>
-              <td class="value checkbox-group">
-                <span>${isChecked(depDisability, 'Yes')} Yes</span>
-                <span>${isChecked(depDisability, 'No')} No</span>
-              </td>
-            </tr>
-            <tr><td class="label">Type of Disability (if any):</td><td class="value">${typeDisabilityDep}</td></tr>
-          </table>
-
-          <div class="section-header">C. SOLO PARENT ID DETAILS</div>
-          <table class="form-table">
-            <tr><td class="label">ID Number:</td><td class="value"><strong>${idNum}</strong></td></tr>
-            <tr><td class="label">Expiration Date:</td><td class="value">${expDate}</td></tr>
-            <tr>
-              <td class="label">ID Status:</td>
-              <td class="value checkbox-group">
-                <span>${isChecked(getField('ID Status'), 'Valid')} Valid</span>
-                <span>${isChecked(getField('ID Status'), 'Expired')} Expired</span>
-              </td>
-            </tr>
-            <tr>
-              <td class="label">For Renewal:</td>
-              <td class="value checkbox-group">
-                <span>${isChecked(getField('For Renewal'), 'Yes')} Yes</span>
-                <span>${isChecked(getField('For Renewal'), 'No')} No</span>
-              </td>
-            </tr>
-          </table>
-
-          <div class="footer">Solo Parent Federation - City of Biñan | Member Survey Form</div>
-        </div>
-
-        <!-- PAGE 2 -->
-        <div class="page">
-          <div class="logos-header">
-            <img src="${logoBiNaN}" alt="City of Biñan Seal">
-            <img src="${logoCSWD}" alt="CSWD Logo">
-          </div>
-
-          <div class="form-title">
-            SOLO PARENT FEDERATION - CITY OF BIÑAN<br>
-            <span style="font-size: 12px; font-weight: normal;">MEMBER PROFILE AND SURVEY FORM - PAGE 2</span>
-          </div>
-
-          <div class="section-header">D. ASSISTANCE/PROGRAM STATUS</div>
-          <table class="form-table">
-            <tr>
-              <td class="label">Subsidy Recipient:</td>
-              <td class="value checkbox-group">
-                <span>${isChecked(subsidy, 'Yes')} Yes</span>
-                <span>${isChecked(subsidy, 'No')} No</span>
-              </td>
-            </tr>
-            <tr>
-              <td class="label">INB:</td>
-              <td class="value checkbox-group">
-                <span>${isChecked(inb, 'Yes')} Yes</span>
-                <span>${isChecked(inb, 'No')} No</span>
-              </td>
-            </tr>
-            <tr>
-              <td class="label">4Ps:</td>
-              <td class="value checkbox-group">
-                <span>${isChecked(fourPs, 'Yes')} Yes</span>
-                <span>${isChecked(fourPs, 'No')} No</span>
-              </td>
-            </tr>
-          </table>
-
-          <div class="section-header">E. SKILLS AND LIVELIHOOD PROFILE</div>
-          <table class="form-table">
-            <tr><td class="label">Skill Set / Existing Skills:</td><td class="value">${skills}</td></tr>
-            <tr><td class="label">Skills Training Interested In:</td><td class="value">${trainingInterested}</td></tr>
-            <tr><td class="label">Preferred Livelihood / Income Opportunity:</td><td class="value">${livelihoodPref}</td></tr>
-          </table>
-
-          <div class="section-header">F. REMARKS / OTHER CONCERNS</div>
-          <table class="form-table">
-            <tr><td style="height: 60px; vertical-align: top;">${remarks}</td></tr>
-          </table>
-
-          <div style="margin-top: 15px; font-size: 10px; line-height: 1.4; text-align: justify;">
-            <strong>Certification:</strong> I certify that the information provided above is true and correct to the best of my knowledge and may be used for updating the Solo Parent Federation database and program planning.
-          </div>
-
-          <table class="signature-box">
-            <tr>
-              <td style="width: 50%; border: none;">
-                <br><br>
-                <div class="signature-line">Signature over Printed Name of Member</div>
-              </td>
-              <td style="width: 50%; border: none;">
-                <br><br>
-                <div class="signature-line">Signature of Interviewer / Officer</div>
-              </td>
-            </tr>
-          </table>
-
-          <div class="footer">Solo Parent Federation - City of Biñan | Member Survey Form</div>
-        </div>
-
-        <script>
-          window.onload = function() {
-            setTimeout(() => {
-              window.print();
-              window.onafterprint = function() { window.close(); };
-            }, 300);
-          };
-        <\/script>
-      </body>
-      </html>
-    `;
-
-    printWindow.document.write(printContent);
-    printWindow.document.close();
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </body></html>
+    `);
+    printWin.document.close();
+    setTimeout(() => printWin.print(), 300);
   }
 
-  // DOM Event Listeners & Login Handler
+  function printIndividualForm(index) {
+    const row = window.sheet5Data[index];
+    if (!row) return;
+
+    const printWin = window.open('', '_blank');
+    if (!printWin) return showNotification("Pop-up blocked!", "error");
+
+    printWin.document.write(`
+      <html><head><title>Profile - ${row.member_name}</title></head>
+      <body style="font-family:sans-serif; padding:30px; line-height:1.6;">
+        <h2 style="text-align:center;">CSWD SOLO PARENT MEMBER PROFILE</h2>
+        <hr>
+        <p><strong>Name:</strong> ${row.member_name || ''}</p>
+        <p><strong>Sex:</strong> ${row.sex || ''} | <strong>Age:</strong> ${row.age || ''}</p>
+        <p><strong>Address:</strong> ${row.address || ''}</p>
+        <p><strong>Contact:</strong> ${row.contact_number || ''}</p>
+        <p><strong>Classification:</strong> ${row.classification || ''}</p>
+        <p><strong>Source of Income:</strong> ${row.source_of_income || ''}</p>
+        <br><br>
+        <div style="margin-top:40px; text-align:right;">_______________________<br>Signature</div>
+      </body></html>
+    `);
+    printWin.document.close();
+    setTimeout(() => printWin.print(), 300);
+  }
+
+  // ==========================================
+  // PART 6: EVENT INITIALIZATION & LOGIN/FORMS
+  // ==========================================
   document.addEventListener('DOMContentLoaded', () => {
-    // Auto-login session restore
+    // 1. Session Restoration
     if (currentUser) {
       const role = String(currentUser.role || '').toLowerCase();
       showPage(role === 'admin' ? 'page-admin' : 'page-client');
+    } else {
+      showPage('page-login');
     }
 
+    // 2. Login Form Submission Handler
     const loginForm = document.getElementById('loginForm');
-    if (!loginForm) return;
+    if (loginForm) {
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const usernameVal = document.getElementById('loginUser')?.value.trim() || '';
+        const passwordVal = document.getElementById('loginPassword')?.value.trim() || '';
+        const submitBtn = document.getElementById('loginBtn');
 
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const usernameVal = document.getElementById('loginUser')?.value.trim() || '';
-      const passwordVal = document.getElementById('loginPassword')?.value.trim() || '';
-      const submitBtn = document.getElementById('loginBtn');
-
-      if (!usernameVal || !passwordVal) {
-        showNotification('Please enter both username and password.', 'error');
-        return;
-      }
-
-      if (submitBtn) {
-        submitBtn.innerText = 'Signing in...';
-        submitBtn.disabled = true;
-      }
-
-      try {
-        const { data: user, error } = await window.db
-          .from('users')
-          .select('*')
-          .ilike('username', usernameVal)
-          .eq('password', passwordVal)
-          .maybeSingle();
-
-        if (error) throw error;
-
-        if (user) {
-          localStorage.setItem('cswd_user', JSON.stringify(user));
-          localStorage.setItem('cswd_active_session', JSON.stringify(user));
-          currentUser = user;
-
-          showNotification(`Welcome back, ${user.fullname || user.username}!`, 'success');
-
-          const userRole = String(user.role || '').toLowerCase();
-          const targetPageId = (userRole === 'admin') ? 'page-admin' : 'page-client';
-
-          showPage(targetPageId);
-        } else {
-          showNotification('Invalid username or password.', 'error');
+        if (!usernameVal || !passwordVal) {
+          showNotification('Please enter username and password.', 'error');
+          return;
         }
-      } catch (err) {
-        console.error('Login Error:', err);
-        showNotification('Login failed: ' + (err.message || 'Unable to connect.'), 'error');
-      } finally {
-        if (submitBtn) {
-          submitBtn.innerText = 'Sign In';
-          submitBtn.disabled = false;
+
+        if (submitBtn) { submitBtn.innerText = 'Signing in...'; submitBtn.disabled = true; }
+
+        try {
+          const { data: user, error } = await window.db
+            .from('users')
+            .select('*')
+            .ilike('username', usernameVal)
+            .eq('password', passwordVal)
+            .maybeSingle();
+
+          if (error) throw error;
+
+          if (user) {
+            localStorage.setItem('cswd_user', JSON.stringify(user));
+            localStorage.setItem('cswd_active_session', JSON.stringify(user));
+            currentUser = user;
+
+            showNotification(`Welcome, ${user.fullname || user.username}!`, 'success');
+            showPage(String(user.role || '').toLowerCase() === 'admin' ? 'page-admin' : 'page-client');
+          } else {
+            showNotification('Invalid credentials.', 'error');
+          }
+        } catch (err) {
+          showNotification('Login error: ' + err.message, 'error');
+        } finally {
+          if (submitBtn) { submitBtn.innerText = 'Sign In'; submitBtn.disabled = false; }
         }
-      }
-    });
+      });
+    }
+
+    // 3. Add Admin Form Handler
+    const addAdminForm = document.getElementById('addAdminForm');
+    if (addAdminForm) {
+      addAdminForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(addAdminForm);
+        const newAdmin = {
+          username: formData.get('username') || formData.get('adminUsername'),
+          password: formData.get('password') || formData.get('adminPassword'),
+          fullname: formData.get('fullname') || formData.get('adminFullname'),
+          role: 'admin'
+        };
+
+        try {
+          const { error } = await window.db.from('users').insert([newAdmin]);
+          if (error) throw error;
+          showNotification('New Admin added successfully!', 'success');
+          closeAddAdminModal();
+          addAdminForm.reset();
+        } catch (err) {
+          showNotification('Failed to add admin: ' + err.message, 'error');
+        }
+      });
+    }
   });
 </script>
 </body>
