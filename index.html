@@ -1445,72 +1445,72 @@
     }
   }
    // SIGN IN SUBMIT HANDLER
-  document.addEventListener('DOMContentLoaded', () => {
-    // 1. Target login or sign-in form
-    const loginForm = document.getElementById('loginForm') || document.getElementById('signInForm');
-    
-    if (loginForm) {
-      loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+ document.addEventListener('DOMContentLoaded', () => {
+  const loginForm = document.getElementById('loginForm') || document.getElementById('signInForm');
 
-        // Target button and show loading state
-        const submitBtn = loginForm.querySelector('button[type="submit"]') || document.getElementById('loginBtn');
-        const originalText = submitBtn ? submitBtn.innerText : 'Sign In';
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const submitBtn = loginForm.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.innerText = "Signing in...";
+        submitBtn.disabled = true;
+      }
+
+      // Explicitly pull values from specific element IDs
+      const usernameInput = document.getElementById('loginUsername');
+      const passwordInput = document.getElementById('loginPassword');
+
+      const credentials = {
+        username: usernameInput ? usernameInput.value.trim() : '',
+        password: passwordInput ? passwordInput.value.trim() : ''
+      };
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          redirect: 'follow',
+          body: JSON.stringify({ action: 'login', credentials })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          showNotification("Login successful!", 'success');
+          currentUser = data.user;
+          localStorage.setItem('cswd_active_session', JSON.stringify(data.user));
+
+          if (typeof showPage === 'function') {
+            const targetPage = data.user.role === 'Admin' ? 'page-admin-dashboard' : 'page-client-dashboard';
+            showPage(targetPage);
+          }
+        } else {
+          showNotification(data.message || "Invalid username or password.", 'error');
+        }
+      } catch (err) {
+        console.error("Login Error:", err);
+        showNotification("Unable to connect to server.", 'error');
+      } finally {
         if (submitBtn) {
-          submitBtn.innerText = "Signing in...";
-          submitBtn.disabled = true;
+          submitBtn.innerText = "Sign In";
+          submitBtn.disabled = false;
         }
+      }
+    });
+  }
+});
 
-        // Retrieve credentials safely across varying input IDs
-        const usernameInput = document.getElementById('loginUsername') || document.getElementById('siUsername') || loginForm.querySelector('input[type="text"]');
-        const passwordInput = document.getElementById('loginPassword') || document.getElementById('siPassword') || loginForm.querySelector('input[type="password"]');
-
-        const credentials = {
-          username: usernameInput ? usernameInput.value.trim() : '',
-          password: passwordInput ? passwordInput.value : ''
-        };
-
-        try {
-          const res = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            redirect: 'follow',
-            body: JSON.stringify({ action: 'login', credentials })
-          });
-
-          const textResult = await res.text();
-          let data;
-          try {
-            data = JSON.parse(textResult);
-          } catch (parseErr) {
-            throw new Error("Server returned an invalid JSON response.");
-          }
-
-          if (data.success) {
-            showNotification("Login successful!", 'success');
-            currentUser = data.user;
-            localStorage.setItem('cswd_active_session', JSON.stringify(data.user));
-
-            // Navigate to appropriate dashboard based on role
-            if (typeof showPage === 'function') {
-              const targetPage = data.user.role === 'Admin' ? 'page-admin-dashboard' : 'page-client-dashboard';
-              showPage(targetPage);
-            }
-          } else {
-            showNotification(data.message || "Invalid username or password.", 'error');
-          }
-        } catch (err) {
-          console.error("Login Error:", err);
-          showNotification("Unable to connect to server.", 'error');
-        } finally {
-          if (submitBtn) {
-            submitBtn.innerText = originalText;
-            submitBtn.disabled = false;
-          }
-        }
-      });
-    }
-  });
+   function handleRadioToggle(element) {
+  if (element.dataset.checked === "true") {
+    element.checked = false;
+    element.dataset.checked = "false";
+  } else {
+    element.checked = true;
+    element.dataset.checked = "true";
+  }
+}
 </script>
 </body>
 </html>
