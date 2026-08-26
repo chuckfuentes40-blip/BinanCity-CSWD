@@ -1445,12 +1445,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
    // SIGN IN SUBMIT HANDLER
- document.addEventListener('DOMContentLoaded', () => {
-  const loginForm = document.getElementById('loginForm') || document.getElementById('signInForm');
+document.addEventListener('DOMContentLoaded', () => {
+  const loginForm = document.getElementById('loginForm') || document.querySelector('form');
 
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
+      // Prevent browser default form GET reload (fixes the ? in URL)
       e.preventDefault();
+
+      // Extract values dynamically using FormData and Fallbacks
+      const formData = new FormData(loginForm);
+      
+      const usernameVal = (
+        formData.get('username') || 
+        formData.get('loginUsername') || 
+        document.getElementById('loginUsername')?.value || 
+        document.querySelector('input[type="text"]')?.value || 
+        ''
+      ).trim();
+
+      const passwordVal = (
+        formData.get('password') || 
+        formData.get('loginPassword') || 
+        document.getElementById('loginPassword')?.value || 
+        document.querySelector('input[type="password"]')?.value || 
+        ''
+      ).trim();
+
+      if (!usernameVal || !passwordVal) {
+        alert("Please fill in both username and password fields.");
+        return;
+      }
 
       const submitBtn = loginForm.querySelector('button[type="submit"]');
       if (submitBtn) {
@@ -1458,40 +1483,39 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.disabled = true;
       }
 
-      // Explicitly pull values from specific element IDs
-      const usernameInput = document.getElementById('loginUsername');
-      const passwordInput = document.getElementById('loginPassword');
-
-      const credentials = {
-        username: usernameInput ? usernameInput.value.trim() : '',
-        password: passwordInput ? passwordInput.value.trim() : ''
-      };
-
       try {
         const res = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           redirect: 'follow',
-          body: JSON.stringify({ action: 'login', credentials })
+          body: JSON.stringify({
+            action: 'login',
+            credentials: {
+              username: usernameVal,
+              password: passwordVal
+            }
+          })
         });
 
-        const data = await res.json();
+        const rawText = await res.text();
+        if (rawText.trim().startsWith('<')) {
+          throw new Error("Received HTML error page from server. Re-check Google Apps Script permissions.");
+        }
+
+        const data = JSON.parse(rawText);
 
         if (data.success) {
-          showNotification("Login successful!", 'success');
-          currentUser = data.user;
-          localStorage.setItem('cswd_active_session', JSON.stringify(data.user));
-
-          if (typeof showPage === 'function') {
-            const targetPage = data.user.role === 'Admin' ? 'page-admin-dashboard' : 'page-client-dashboard';
-            showPage(targetPage);
-          }
+          alert("Login successful!");
+          localStorage.setItem('cswd_user', JSON.stringify(data.user));
+          // Route user based on role
+          const targetPage = data.user.role === 'Admin' ? 'page-admin-dashboard' : 'page-client-dashboard';
+          if (typeof showPage === 'function') showPage(targetPage);
         } else {
-          showNotification(data.message || "Invalid username or password.", 'error');
+          alert(data.message || "Invalid credentials.");
         }
       } catch (err) {
         console.error("Login Error:", err);
-        showNotification("Unable to connect to server.", 'error');
+        alert(err.message || "Unable to process login request.");
       } finally {
         if (submitBtn) {
           submitBtn.innerText = "Sign In";
