@@ -382,297 +382,310 @@
       style="z-index: 999999 !important;"
     ></div>
 
-  <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbw1O3MPFomu4LoHN-oj0fhAc8lhp3aWDkOlCtjVYvOefeTKyT3M7WbR2AFlEokby_te/exec"; 
+ <script>
+  // Configuration & Global State
+  const API_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL";
+  let currentUser = JSON.parse(localStorage.getItem('cswd_active_session')) || null;
+  window.sheet5Data = [];
+  let currentPage = 1;
+  const rowsPerPage = 25;
+  let searchQuery = '';
 
-    let currentUser = null;
-
-    function showPage(pageId) {
-      ['page-login', 'page-admin', 'page-client'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.classList.add('hidden');
-      });
-
-      const target = document.getElementById(pageId);
-      if (target) {
-        target.classList.remove('hidden');
-      } else {
-        document.getElementById('page-login').classList.remove('hidden');
-      }
-    }
-
-  function showNotification(message, type = 'success') {
-  const container = document.getElementById('toast-container');
-  if (!container) return;
-
-  const toast = document.createElement('div');
-  const isSuccess = type === 'success';
-
-  const icon = isSuccess 
-    ? `<div class="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-md">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-       </div>`
-    : `<div class="w-8 h-8 rounded-xl bg-rose-500 text-white flex items-center justify-center shrink-0 shadow-md">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-       </div>`;
-
-  toast.className = `pointer-events-auto flex items-center space-x-3 p-4 bg-white text-slate-800 rounded-2xl shadow-2xl border ${isSuccess ? 'border-emerald-200' : 'border-rose-200'} transition-all duration-300 ease-out w-full`;
-  toast.style.zIndex = "999999";
-
-  toast.innerHTML = `
-    ${icon}
-    <div class="flex-1 pr-2">
-      <h4 class="text-xs font-extrabold uppercase tracking-wider ${isSuccess ? 'text-emerald-600' : 'text-rose-600'}">${isSuccess ? 'Success' : 'Notice'}</h4>
-      <p class="text-xs font-semibold text-slate-700 mt-0.5">${message}</p>
-    </div>
-    <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg transition">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-    </button>
-  `;
-
-  container.appendChild(toast);
-  setTimeout(() => { if (toast.parentNode) toast.remove(); }, 4000);
-}
-
-    function dismissToast(toast) {
-      if (!toast || !toast.parentElement) return;
-      toast.classList.remove('toast-show');
-      toast.classList.add('toast-enter');
+  // Utility Notifications
+  function showNotification(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `fixed bottom-5 right-5 px-4 py-3 rounded-xl text-white text-sm font-semibold shadow-2xl z-50 transition-all transform translate-y-2 opacity-0 ${
+      type === 'error' ? 'bg-rose-600' : type === 'success' ? 'bg-emerald-600' : 'bg-indigo-600'
+    }`;
+    toast.innerText = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+    setTimeout(() => {
+      toast.classList.add('opacity-0', 'translate-y-2');
       setTimeout(() => toast.remove(), 300);
-    }
+    }, 3000);
+  }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      const activeSession = localStorage.getItem('cswd_active_session');
-      if (activeSession) {
-        try {
-          currentUser = JSON.parse(activeSession);
-          routeUser(currentUser);
-          return;
-        } catch (err) {
-          localStorage.removeItem('cswd_active_session');
-        }
-      }
-
-      showPage('page-login');
-
-      const savedUser = localStorage.getItem('cswd_remembered_user');
-      const savedPass = localStorage.getItem('cswd_remembered_pass');
-      if (savedUser && savedPass) {
-        document.getElementById('loginUser').value = savedUser;
-        document.getElementById('loginPass').value = savedPass;
-        const radio = document.getElementById('rememberRadio');
-        if (radio) {
-          radio.checked = true;
-          radio.dataset.wasChecked = "true";
-        }
-      }
-    });
-
-    function togglePasswordVisibility() {
-      const passInput = document.getElementById('loginPass');
-      const eyeIcon = document.getElementById('eyeIcon');
-      if (passInput.type === 'password') {
-        passInput.type = 'text';
-        eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858-5.908a10.018 10.018 0 014.122-.963c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21M3 3l18 18"/>`;
-      } else {
-        passInput.type = 'password';
-        eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
-      }
-    }
-
-    function handleRadioToggle(radio) {
-      if (radio.dataset.wasChecked === "true") {
-        radio.checked = false;
-        radio.dataset.wasChecked = "false";
-      } else {
-        radio.dataset.wasChecked = "true";
-      }
-    }
-
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const loginBtn = document.getElementById('loginBtn');
-      loginBtn.innerText = "Authenticating...";
-
-      const username = document.getElementById('loginUser').value;
-      const password = document.getElementById('loginPass').value;
-      const rememberChecked = document.getElementById('rememberRadio').checked;
-
-      try {
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          redirect: 'follow',
-          body: JSON.stringify({ action: 'login', username, password })
+  // PRINT ENTIRE SHEET5 MASTER LIST
+  async function printSheet5Data() {
+    try {
+      const res = await fetch(`${API_URL}?action=getData&tabName=Sheet5`, { redirect: 'follow' });
+      const data = await res.json();
+      
+      let cleanData = data;
+      if (data && data.length) {
+        // Filter out duplicate sub-header row
+        cleanData = data.filter(row => {
+          const isSubheaderRow = Object.values(row).some(val => {
+            const str = String(val).trim().toUpperCase();
+            return str === 'ID NUMBER' || str === 'EXPIRATION DATE';
+          });
+          return !isSubheaderRow;
         });
-        const data = await res.json();
-
-        if (data.success) {
-          if (rememberChecked) {
-            localStorage.setItem('cswd_remembered_user', username);
-            localStorage.setItem('cswd_remembered_pass', password);
-          } else {
-            localStorage.removeItem('cswd_remembered_user');
-            localStorage.removeItem('cswd_remembered_pass');
-          }
-
-          currentUser = data.user || { role: 'Client', fullname: username };
-          localStorage.setItem('cswd_active_session', JSON.stringify(currentUser));
-
-          const displayName = currentUser.fullname || currentUser.username || 'User';
-          showNotification(`Welcome back, ${displayName}!`, 'success');
-
-          routeUser(currentUser);
-        } else {
-          showNotification(data.message || 'Invalid credentials.', 'error');
-        }
-      } catch (err) {
-        showNotification("Connection error: Unable to reach server.", 'error');
-      } finally {
-        loginBtn.innerText = "Sign In";
       }
-    });
 
-    function routeUser(user) {
-      if (!user) {
-        showPage('page-login');
+      if (!cleanData || !cleanData.length) {
+        showNotification("No records found in Sheet5 to print.", "error");
         return;
       }
 
-      const role = String(user.role || '').trim().toLowerCase();
-      const displayName = user.fullname || user.username || 'User';
+      const headers = Object.keys(cleanData[0]);
 
-      if (role === 'admin') {
-        showPage('page-admin');
-        document.getElementById('adminUserName').innerText = displayName;
-        switchAdminSubpage('home');
+      let row1Html = '';
+      let row2Html = '';
+      let hasSubheaders = false;
+
+      // Build 2-tier merged header structure
+      for (let i = 0; i < headers.length; i++) {
+        const h = headers[i];
+
+        if (h.trim().toUpperCase() === 'SOLO PARENT ID DETAILS') {
+          hasSubheaders = true;
+          row1Html += `
+            <th colspan="2" style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: center; background-color: #f1f5f9; font-size: 8pt; text-transform: uppercase;">
+              SOLO PARENT ID DETAILS
+            </th>`;
+          
+          row2Html += `
+            <th style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: center; background-color: #f8fafc; font-size: 7.5pt; text-transform: uppercase;">
+              ID NUMBER
+            </th>
+            <th style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: center; background-color: #f8fafc; font-size: 7.5pt; text-transform: uppercase;">
+              EXPIRATION DATE
+            </th>`;
+
+          // Skip placeholder secondary header (e.g., 'Col_15') from top row
+          if (i + 1 < headers.length && (headers[i + 1].startsWith('Col_') || headers[i + 1] === '')) {
+            i++;
+          }
+        } else {
+          row1Html += `
+            <th rowspan="2" style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: left; background-color: #f1f5f9; vertical-align: middle; font-size: 8pt; text-transform: uppercase;">
+              ${h}
+            </th>`;
+        }
+      }
+
+      // Generate clean HTML document for print
+      const printHtml = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <title>CSWD Community Portal - Sheet5 Data Sheet</title>
+          <style>
+            body { font-family: 'Arial', sans-serif; margin: 15px; color: #1e293b; }
+            .header { text-align: center; margin-bottom: 20px; }
+            .header h1 { margin: 0; font-size: 18pt; color: #0f172a; }
+            .header p { margin: 4px 0 0; font-size: 10pt; color: #64748b; }
+            table { width: 100%; border-collapse: collapse; font-size: 8pt; margin-top: 10px; }
+            th, td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; word-break: break-word; }
+            tr:nth-child(even) { background-color: #f8fafc; }
+            @page { size: landscape; margin: 10mm; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>CSWD Solo Parents Master List (Sheet5)</h1>
+            <p>City Social Welfare and Development Office - Generated on ${new Date().toLocaleString()}</p>
+          </div>
+          <table>
+            <thead>
+              <tr>${row1Html}</tr>
+              ${hasSubheaders ? `<tr>${row2Html}</tr>` : ''}
+            </thead>
+            <tbody>
+              ${cleanData.map(row => `
+                <tr>
+                  ${headers.map(h => `<td>${row[h] !== undefined && row[h] !== null ? row[h] : ''}</td>`).join('')}
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `;
+
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(printHtml);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => {
+          printWindow.print();
+        }, 300);
       } else {
-        showPage('page-client');
-        document.getElementById('clientUserName').innerText = displayName;
-        switchClientSubpage('home');
-        loadAnnouncements();
-        renderClientForm(user);
+        showNotification("Pop-up blocked! Please allow pop-ups for this site to print.", "error");
       }
+    } catch (err) {
+      console.error("Print Error:", err);
+      showNotification("Failed to prepare Sheet5 data for printing.", "error");
     }
-
-    function switchAdminSubpage(tab) {
-      ['home', 'announcement', 'soloparent'].forEach(t => {
-        document.getElementById(`admin-sub-${t}`).classList.add('hidden');
-        const btn = document.getElementById(`admin-nav-${t}`);
-        if(btn) btn.className = "w-full text-left px-4 py-3 rounded-xl font-medium flex items-center space-x-3 hover:bg-slate-800/60 hover:text-white transition text-slate-300";
-      });
-
-      document.getElementById(`admin-sub-${tab}`).classList.remove('hidden');
-      const activeBtn = document.getElementById(`admin-nav-${tab}`);
-      if(activeBtn) activeBtn.className = "sidebar-active w-full text-left px-4 py-3 rounded-xl font-medium flex items-center space-x-3 text-white transition";
-
-      if (tab === 'soloparent') {
-        loadAdminTableData('Sheet5', 'data-soloparent-table');
-      }
-    }
-
-    function switchClientSubpage(tab) {
-      document.getElementById('client-sub-home').classList.add('hidden');
-      document.getElementById('client-sub-form').classList.add('hidden');
-
-      document.getElementById(`client-nav-home`).className = "w-full text-left px-4 py-3 rounded-xl font-medium flex items-center space-x-3 hover:bg-slate-800/60 hover:text-white transition text-slate-300";
-      document.getElementById(`client-nav-form`).className = "w-full text-left px-4 py-3 rounded-xl font-medium flex items-center space-x-3 hover:bg-slate-800/60 hover:text-white transition text-slate-300";
-
-      document.getElementById(`client-sub-${tab}`).classList.remove('hidden');
-      document.getElementById(`client-nav-${tab}`).className = "sidebar-active w-full text-left px-4 py-3 rounded-xl font-medium flex items-center space-x-3 text-white transition";
-
-      if (tab === 'form') {
-        renderClientForm(currentUser);
-      }
-    }
-
-    // MODAL CONTROL FUNCTIONS
-    function openSignUpModal() {
-      document.getElementById('signUpModal').classList.remove('hidden');
-    }
-
-    function closeSignUpModal() {
-      document.getElementById('signUpModal').classList.add('hidden');
-      document.getElementById('signUpForm').reset();
-    }
-
-    function openAddAdminModal() {
-      document.getElementById('addAdminModal').classList.remove('hidden');
-    }
-
-    function closeAddAdminModal() {
-      document.getElementById('addAdminModal').classList.add('hidden');
-      document.getElementById('addAdminForm').reset();
-    }
-
-    // SIGN UP SUBMIT HANDLER
-document.getElementById('signUpForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const btn = document.getElementById('suSubmitBtn');
-  btn.innerText = "Registering...";
-  btn.disabled = true;
-
-  const payload = {
-    action: 'registerUser',
-    userData: {
-      username: document.getElementById('suUsername').value.trim(),
-      password: document.getElementById('suPassword').value,
-      fullname: document.getElementById('suFullname').value.trim(),
-      houseNo: document.getElementById('suHouseNo').value.trim(),
-      barangay: document.getElementById('suBarangay').value.trim(),
-      contactNo: document.getElementById('suContactNo').value.trim(),
-      role: "Client",
-      typeOfClient: "Solo Parent"
-    }
-  };
-
-  try {
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      redirect: 'follow',
-      body: JSON.stringify(payload)
-    });
-
-    const textResult = await res.text();
-    let data;
-    try {
-      data = JSON.parse(textResult);
-    } catch(err) {
-      throw new Error("Invalid response format from Google Apps Script.");
-    }
-
-    if (data.success) {
-      showNotification("Account registered successfully! You can now log in.", 'success');
-      closeSignUpModal();
-    } else {
-      showNotification(data.message || "Failed to register account.", 'error');
-    }
-  } catch (err) {
-    console.error("Registration Error:", err);
-    showNotification("Could not save to Users sheet. Check connection.", 'error');
-  } finally {
-    btn.innerText = "Register Account";
-    btn.disabled = false;
   }
-});
 
-    // ADD ADMIN SUBMIT HANDLER
-    document.getElementById('addAdminForm').addEventListener('submit', async (e) => {
+  // RENDER CLIENT REGISTRATION / DATA ENTRY FORM
+  function renderClientForm(user) {
+    const container = document.getElementById('formContainer');
+    if (!container) return;
+
+    const userNameVal = user ? (user.fullname || user.username || '') : '';
+    const userContactVal = user ? (user.contact || '') : '';
+
+    container.innerHTML = `
+      <form id="soloParentForm" class="space-y-6">
+        <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
+          <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">A. Member Details</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="md:col-span-2">
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Name of Member (Col B)</label>
+              <input type="text" name="memberName" value="${userNameVal}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]" required>
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Sex (Col C)</label>
+              <select name="sex" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                <option value="Female">Female</option>
+                <option value="Male">Male</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Age (Col D)</label>
+              <input type="number" name="age" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Address (Col E)</label>
+              <input type="text" name="address" placeholder="House No, Street, Barangay, City" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Contact Number (Col F)</label>
+              <input type="text" name="contactNumber" value="${userContactVal}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Classification of Solo Parent (Col G)</label>
+              <input type="text" name="classification" placeholder="e.g. Death of spouse, Abandonment" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Source of Income (Col H)</label>
+              <input type="text" name="sourceOfIncome" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">No. of Dependents (Col I)</label>
+              <input type="number" name="noOfDependents" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
+          <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">B. Disability Information</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">If Member Has Disability (Col J)</label>
+              <select name="memberDisability" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Type of Disability (Col K)</label>
+              <input type="text" name="memberDisabilityType" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">If Dependent Has Disability (Col L)</label>
+              <select name="dependentDisability" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Type of Disability (Col M)</label>
+              <input type="text" name="dependentDisabilityType" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
+          <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">C. Solo Parent ID Details</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">ID Number (Col N)</label>
+              <input type="text" name="idNumber" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Expiration Date (Col O)</label>
+              <input type="date" name="idExpirationDate" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
+          <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">D. Subsidies & Benefits Status</h3>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Cash Subsidy (Col P)</label>
+              <select name="cashSubsidyRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">INB (Col Q)</label>
+              <select name="inbRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">4Ps (Col R)</label>
+              <select name="fourPsRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Rice Subsidy (Col S)</label>
+              <select name="riceSubsidyRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
+          <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">E. Additional Information</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Skill Set (Col T)</label>
+              <input type="text" name="skillSet" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Remarks (Col U)</label>
+              <textarea name="remarks" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff] h-24"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" id="submitSoloBtn" class="btn-palette text-white py-4 rounded-xl font-bold tracking-wide shadow-lg shadow-blue-500/25 w-full text-center">
+          Submit Record to Sheet5
+        </button>
+      </form>
+    `;
+
+    document.getElementById('soloParentForm').onsubmit = async (e) => {
       e.preventDefault();
-      const btn = document.getElementById('admSubmitBtn');
-      btn.innerText = "Creating Admin...";
+      const btn = document.getElementById('submitSoloBtn');
+      btn.innerText = "Saving to Sheet5...";
       btn.disabled = true;
 
-      const userData = {
-        username: document.getElementById('admUsername').value,
-        password: document.getElementById('admPassword').value,
-        fullname: document.getElementById('admFullname').value,
-        houseNoStreetSubdivision: document.getElementById('admHouseNo').value,
-        barangay: document.getElementById('admBarangay').value,
-        contactNo: document.getElementById('admContactNo').value,
-        role: "Admin",
-        typeOfClient: ""
+      const f = e.target;
+      const formData = {
+        memberName: f.memberName.value,
+        sex: f.sex.value,
+        age: f.age.value,
+        address: f.address.value,
+        contactNumber: f.contactNumber.value,
+        classification: f.classification.value,
+        sourceOfIncome: f.sourceOfIncome.value,
+        noOfDependents: f.noOfDependents.value,
+        memberDisability: f.memberDisability.value,
+        memberDisabilityType: f.memberDisabilityType.value,
+        dependentDisability: f.dependentDisability.value,
+        dependentDisabilityType: f.dependentDisabilityType.value,
+        idNumber: f.idNumber.value,
+        idExpirationDate: f.idExpirationDate.value,
+        cashSubsidyRecipient: f.cashSubsidyRecipient.value,
+        inbRecipient: f.inbRecipient.value,
+        fourPsRecipient: f.fourPsRecipient.value,
+        riceSubsidyRecipient: f.riceSubsidyRecipient.value,
+        skillSet: f.skillSet.value,
+        remarks: f.remarks.value
       };
 
       try {
@@ -680,312 +693,43 @@ document.getElementById('signUpForm').addEventListener('submit', async (e) => {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           redirect: 'follow',
-          body: JSON.stringify({ action: 'registerUser', userData })
+          body: JSON.stringify({ action: 'submitSoloParent', formData })
         });
-        const data = await res.json();
-
-        if (data.success) {
-          showNotification("Admin account created successfully!", 'success');
-          closeAddAdminModal();
+        const result = await res.json();
+        if (result.success) {
+          showNotification(result.message || "Record successfully added to Sheet5!", 'success');
+          f.reset();
         } else {
-          showNotification(data.message || "Failed to create Admin account.", 'error');
+          showNotification(result.message || "Failed to save record.", 'error');
         }
-      } catch (err) {
-        showNotification("Error connecting to server.", 'error');
+      } catch(err) {
+        showNotification("Network error submitting record.", 'error');
       } finally {
-        btn.innerText = "Create Admin Account";
+        btn.innerText = "Submit Record to Sheet5";
         btn.disabled = false;
       }
-    });
-
-  // PRINT SHEET5 DATA FUNCTION (OPTIMIZED & INSTANT)
-async function printDataSheet() {
-  showNotification("Preparing Sheet5 data for printing...", "success");
-
-  try {
-    let cleanData = window.sheet5Data;
-
-    // Fallback: If cache is empty, fetch directly from API
-    if (!cleanData || !cleanData.length) {
-      const res = await fetch(`${API_URL}?action=getData&tabName=Sheet5`, { redirect: 'follow' });
-      const data = await res.json();
-
-      if (!data || !data.length) {
-        showNotification("No records found in Sheet5 to print.", "error");
-        return;
-      }
-
-      // Filter out duplicate sub-header row
-      cleanData = data.filter(row => {
-        const isSubheaderRow = Object.values(row).some(val => {
-          const str = String(val).trim().toUpperCase();
-          return str === 'ID NUMBER' || str === 'EXPIRATION DATE';
-        });
-        return !isSubheaderRow;
-      });
-    }
-
-    if (!cleanData || !cleanData.length) {
-      showNotification("No records found in Sheet5 to print.", "error");
-      return;
-    }
-
-    const headers = Object.keys(cleanData[0]);
-
-    let row1Html = '';
-    let row2Html = '';
-    let hasSubheaders = false;
-
-    // Build 2-tier merged header structure
-    for (let i = 0; i < headers.length; i++) {
-      const h = headers[i];
-
-      if (h.trim().toUpperCase() === 'SOLO PARENT ID DETAILS') {
-        hasSubheaders = true;
-        row1Html += `
-          <th colspan="2" style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: center; background-color: #f1f5f9; font-size: 8pt; text-transform: uppercase;">
-            SOLO PARENT ID DETAILS
-          </th>`;
-        
-        row2Html += `
-          <th style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: center; background-color: #f8fafc; font-size: 7.5pt; text-transform: uppercase;">
-            ID NUMBER
-          </th>
-          <th style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: center; background-color: #f8fafc; font-size: 7.5pt; text-transform: uppercase;">
-            EXPIRATION DATE
-          </th>`;
-
-        // Skip placeholder secondary header (e.g., 'Col_15') from top row
-        if (i + 1 < headers.length && (headers[i + 1].startsWith('Col_') || headers[i + 1] === '')) {
-          i++;
-        }
-      } else {
-        row1Html += `
-          <th rowspan="2" style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; text-align: left; background-color: #f1f5f9; vertical-align: middle; font-size: 8pt; text-transform: uppercase;">
-            ${h}
-          </th>`;
-      }
-    }
-
-    // Generate clean HTML document for print
-    const printHtml = `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <title>CSWD Community Portal - Sheet5 Data Sheet</title>
-        <style>
-          body { font-family: 'Arial', sans-serif; margin: 15px; color: #1e293b; }
-          .header { text-align: center; margin-bottom: 20px; }
-          .header h1 { margin: 0; font-size: 18pt; color: #0f172a; }
-          .header p { margin: 4px 0 0; font-size: 10pt; color: #64748b; }
-          table { width: 100%; border-collapse: collapse; font-size: 8pt; margin-top: 10px; }
-          th, td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; word-break: break-word; }
-          tr:nth-child(even) { background-color: #f8fafc; }
-          @page { size: landscape; margin: 10mm; }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>CSWD Solo Parents Master List (Sheet5)</h1>
-          <p>City Social Welfare and Development Office - Generated on ${new Date().toLocaleString()}</p>
-        </div>
-        <table>
-          <thead>
-            <tr>${row1Html}</tr>
-            ${hasSubheaders ? `<tr>${row2Html}</tr>` : ''}
-          </thead>
-          <tbody>
-            ${cleanData.map(row => `
-              <tr>
-                ${headers.map(h => `<td>${row[h] !== undefined && row[h] !== null ? row[h] : ''}</td>`).join('')}
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </body>
-      </html>
-    `;
-
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(printHtml);
-      printWindow.document.close();
-      printWindow.focus();
-      setTimeout(() => {
-        printWindow.print();
-      }, 300);
-    } else {
-      showNotification("Pop-up blocked! Please allow pop-ups for this site to print.", "error");
-    }
-  } catch (err) {
-    console.error("Print Error:", err);
-    showNotification("Failed to prepare Sheet5 data for printing.", "error");
+    };
   }
-}
 
-    function renderClientForm(user) {
-      const container = document.getElementById('formContainer');
-      if (!container) return;
-
-      const userNameVal = user ? (user.fullname || user.username || '') : '';
-      const userContactVal = user ? (user.contact || '') : '';
-
-      container.innerHTML = `
-        <form id="soloParentForm" class="space-y-6">
-          <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
-            <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">A. Member Details</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div class="md:col-span-2">
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Name of Member (Col B)</label>
-                <input type="text" name="memberName" value="${userNameVal}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]" required>
-              </div>
-              <div>
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Sex (Col C)</label>
-                <select name="sex" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                  <option value="Female">Female</option>
-                  <option value="Male">Male</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Age (Col D)</label>
-                <input type="number" name="age" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-              </div>
-              <div class="md:col-span-2">
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Address (Col E)</label>
-                <input type="text" name="address" placeholder="House No, Street, Barangay, City" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-              </div>
-              <div>
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Contact Number (Col F)</label>
-                <input type="text" name="contactNumber" value="${userContactVal}" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-              </div>
-              <div class="md:col-span-2">
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Classification of Solo Parent (Col G)</label>
-                <input type="text" name="classification" placeholder="e.g. Death of spouse, Abandonment" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-              </div>
-              <div>
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Source of Income (Col H)</label>
-                <input type="text" name="sourceOfIncome" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-              </div>
-              <div>
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">No. of Dependents (Col I)</label>
-                <input type="number" name="noOfDependents" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-              </div>
-            </div>
-          </div>
-
-          <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
-            <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">B. Disability Information</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">If Member Has Disability (Col J)</label>
-                <select name="memberDisability" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                  <option value="No">No</option>
-                  <option value="Yes">Yes</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Type of Disability (Col K)</label>
-                <input type="text" name="memberDisabilityType" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-              </div>
-              <div>
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">If Dependent Has Disability (Col L)</label>
-                <select name="dependentDisability" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-                  <option value="No">No</option>
-                  <option value="Yes">Yes</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Type of Disability (Col M)</label>
-                <input type="text" name="dependentDisabilityType" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-              </div>
-            </div>
-          </div>
-
-          <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
-            <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">C. Solo Parent ID Details</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">ID Number (Col N)</label>
-                <input type="text" name="idNumber" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-              </div>
-              <div>
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Expiration Date (Col O)</label>
-                <input type="date" name="idExpirationDate" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-              </div>
-            </div>
-          </div>
-
-          <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
-            <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">D. Subsidies & Benefits Status</h3>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Cash Subsidy (Col P)</label>
-                <select name="cashSubsidyRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
-              </div>
-              <div>
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">INB (Col Q)</label>
-                <select name="inbRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
-              </div>
-              <div>
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">4Ps (Col R)</label>
-                <select name="fourPsRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
-              </div>
-              <div>
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Rice Subsidy (Col S)</label>
-                <select name="riceSubsidyRecipient" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]"><option value="No">No</option><option value="Yes">Yes</option></select>
-              </div>
-            </div>
-          </div>
-
-          <div class="glass-card p-6 rounded-3xl shadow-lg border border-slate-200/80 space-y-4">
-            <h3 class="text-base font-extrabold text-[#575aff] tracking-wider uppercase border-b border-slate-200/80 pb-2">E. Additional Information</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Skill Set (Col T)</label>
-                <input type="text" name="skillSet" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff]">
-              </div>
-              <div>
-                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Remarks (Col U)</label>
-                <textarea name="remarks" class="w-full p-3 bg-slate-100/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#575aff] h-24"></textarea>
-              </div>
-            </div>
-          </div>
-
-          <button type="submit" id="submitSoloBtn" class="btn-palette text-white py-4 rounded-xl font-bold tracking-wide shadow-lg shadow-blue-500/25 w-full text-center">
-            Submit Record to Sheet5
-          </button>
-        </form>
-      `;
-
-      document.getElementById('soloParentForm').onsubmit = async (e) => {
+  // SIGN UP SUBMIT HANDLER
+  document.addEventListener('DOMContentLoaded', () => {
+    const signUpForm = document.getElementById('signUpForm');
+    if (signUpForm) {
+      signUpForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const btn = document.getElementById('submitSoloBtn');
-        btn.innerText = "Saving to Sheet5...";
+        const btn = document.getElementById('suSubmitBtn');
+        btn.innerText = "Registering...";
         btn.disabled = true;
 
-        const f = e.target;
-        const formData = {
-          memberName: f.memberName.value,
-          sex: f.sex.value,
-          age: f.age.value,
-          address: f.address.value,
-          contactNumber: f.contactNumber.value,
-          classification: f.classification.value,
-          sourceOfIncome: f.sourceOfIncome.value,
-          noOfDependents: f.noOfDependents.value,
-          memberDisability: f.memberDisability.value,
-          memberDisabilityType: f.memberDisabilityType.value,
-          dependentDisability: f.dependentDisability.value,
-          dependentDisabilityType: f.dependentDisabilityType.value,
-          idNumber: f.idNumber.value,
-          idExpirationDate: f.idExpirationDate.value,
-          cashSubsidyRecipient: f.cashSubsidyRecipient.value,
-          inbRecipient: f.inbRecipient.value,
-          fourPsRecipient: f.fourPsRecipient.value,
-          riceSubsidyRecipient: f.riceSubsidyRecipient.value,
-          skillSet: f.skillSet.value,
-          remarks: f.remarks.value
+        const userData = {
+          username: document.getElementById('suUsername').value.trim(),
+          password: document.getElementById('suPassword').value,
+          fullname: document.getElementById('suFullname').value.trim(),
+          houseNoStreetSubdivision: document.getElementById('suHouseNo').value.trim(),
+          barangay: document.getElementById('suBarangay').value.trim(),
+          contactNo: document.getElementById('suContactNo').value.trim(),
+          role: "Client",
+          typeOfClient: "Solo Parent"
         };
 
         try {
@@ -993,724 +737,685 @@ async function printDataSheet() {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             redirect: 'follow',
-            body: JSON.stringify({ action: 'submitSoloParent', formData })
+            body: JSON.stringify({ action: 'registerUser', userData })
           });
-          const result = await res.json();
-          if (result.success) {
-            showNotification(result.message || "Record successfully added to Sheet5!", 'success');
-            f.reset();
-          } else {
-            showNotification(result.message || "Failed to save record.", 'error');
+
+          const textResult = await res.text();
+          let data;
+          try {
+            data = JSON.parse(textResult);
+          } catch (parseErr) {
+            throw new Error("Server returned non-JSON response. Check Apps Script logs.");
           }
-        } catch(err) {
-          showNotification("Network error submitting record.", 'error');
+
+          if (data.success) {
+            showNotification("Solo Parent account registered successfully!", 'success');
+            if (typeof closeSignUpModal === 'function') closeSignUpModal();
+          } else {
+            showNotification(data.message || "Failed to register account.", 'error');
+          }
+        } catch (err) {
+          console.error("Sign-up request error:", err);
+          showNotification("Error connecting to server. Please try again.", 'error');
         } finally {
-          btn.innerText = "Submit Record to Sheet5";
+          btn.innerText = "Register Account";
           btn.disabled = false;
         }
-      };
+      });
     }
+  });
 
-    // SIGN UP SUBMIT HANDLER (Updated & Robust)
-document.getElementById('signUpForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const btn = document.getElementById('suSubmitBtn');
-  btn.innerText = "Registering...";
-  btn.disabled = true;
+  // LOAD ANNOUNCEMENTS FEED
+  async function loadAnnouncements() {
+    try {
+      const res = await fetch(`${API_URL}?action=getAnnouncements`, { redirect: 'follow' });
+      const data = await res.json();
+      const container = document.getElementById('client-announcements-list');
 
-  const userData = {
-    username: document.getElementById('suUsername').value.trim(),
-    password: document.getElementById('suPassword').value,
-    fullname: document.getElementById('suFullname').value.trim(),
-    houseNoStreetSubdivision: document.getElementById('suHouseNo').value.trim(),
-    barangay: document.getElementById('suBarangay').value.trim(),
-    contactNo: document.getElementById('suContactNo').value.trim(),
-    role: "Client",
-    typeOfClient: "Solo Parent"
-  };
+      if (!container) return;
 
-  try {
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      redirect: 'follow',
-      body: JSON.stringify({ action: 'registerUser', userData })
+      if (!data.length) {
+        container.innerHTML = "<p class='text-slate-500'>No announcements posted yet.</p>";
+        return;
+      }
+
+      container.innerHTML = data.map(item => `
+        <div class="glass-card p-6 rounded-2xl shadow-md space-y-2">
+          <div class="flex justify-between items-start">
+            <h3 class="font-bold text-lg text-slate-900">${item.Title || ''}</h3>
+            <span class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-semibold">${item.Timestamp || ''}</span>
+          </div>
+          <p class="text-slate-600 leading-relaxed">${item.Content || ''}</p>
+        </div>
+      `).join('');
+    } catch(err) {
+      showNotification("Could not load announcements.", 'error');
+    }
+  }
+
+  // FETCH ADMIN DATA TABLE WITH FILTERING
+  async function loadAdminTableData(tabName, targetId) {
+    const container = document.getElementById(targetId);
+    if (!container) return;
+
+    // 1. SHOW INSTANT SKELETON LOADER
+    container.innerHTML = `
+      <div class="p-8 text-center">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-600 border-t-transparent mb-2"></div>
+        <p class="text-slate-500 font-medium text-sm">Loading ${tabName} records...</p>
+      </div>
+    `;
+
+    try {
+      const res = await fetch(`${API_URL}?action=getData&tabName=${tabName}`, { redirect: 'follow' });
+
+      if (!res.ok) {
+        throw new Error(`Server returned HTTP ${res.status} error.`);
+      }
+
+      const responseText = await res.text();
+      let data;
+
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseErr) {
+        console.error("Non-JSON Response Received:", responseText);
+        throw new Error("Server returned HTML or invalid response instead of JSON.");
+      }
+
+      if (!data || !Array.isArray(data) || !data.length) {
+        container.innerHTML = "<p class='text-slate-500 p-4 text-center'>No records found in Sheet5.</p>";
+        return;
+      }
+
+      // 2. FAST FILTERING OF SUB-HEADERS
+      const cleanData = data.filter(row => {
+        const isSubheaderRow = Object.values(row).some(val => {
+          const str = String(val).trim().toUpperCase();
+          return str === 'ID NUMBER' || str === 'EXPIRATION DATE';
+        });
+        return !isSubheaderRow;
+      });
+
+      // Store cleaned data in global array
+      window.sheet5Data = cleanData;
+      currentPage = 1;
+      searchQuery = '';
+
+      // 3. RENDER TABLE WITH PAGINATION
+      renderAdminTable(targetId);
+
+    } catch(err) {
+      console.error("Error loading table data:", err);
+      showNotification("Error loading sheet records.", 'error');
+      container.innerHTML = "<p class='text-rose-500 p-4 text-center font-medium'>Failed to load table data. Please try again.</p>";
+    }
+  }
+
+  // HIGH-PERFORMANCE TABLE RENDERER WITH PAGINATION
+  function renderAdminTable(targetId) {
+    const container = document.getElementById(targetId);
+    if (!container || !window.sheet5Data || !window.sheet5Data.length) return;
+
+    const headers = Object.keys(window.sheet5Data[0]);
+
+    // Filter dataset by search query
+    const filteredData = window.sheet5Data.filter(row => {
+      if (!searchQuery) return true;
+      return Object.values(row).some(val => 
+        String(val).toLowerCase().includes(searchQuery.toLowerCase())
+      );
     });
 
-    const textResult = await res.text();
-    let data;
-    try {
-      data = JSON.parse(textResult);
-    } catch (parseErr) {
-      throw new Error("Server returned non-JSON response. Check Apps Script logs.");
-    }
+    // Calculate Pagination slice
+    const totalRecords = filteredData.length;
+    const totalPages = Math.ceil(totalRecords / rowsPerPage) || 1;
+    if (currentPage > totalPages) currentPage = totalPages;
 
-    if (data.success) {
-      showNotification("Solo Parent account registered successfully!", 'success');
-      closeSignUpModal();
-    } else {
-      showNotification(data.message || "Failed to register account.", 'error');
-    }
-  } catch (err) {
-    console.error("Sign-up request error:", err);
-    showNotification("Error connecting to server. Please try again.", 'error');
-  } finally {
-    btn.innerText = "Register Account";
-    btn.disabled = false;
-  }
-});
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const pageData = filteredData.slice(startIndex, startIndex + rowsPerPage);
 
-    async function loadAnnouncements() {
-      try {
-        const res = await fetch(`${API_URL}?action=getAnnouncements`, { redirect: 'follow' });
-        const data = await res.json();
-        const container = document.getElementById('client-announcements-list');
+    // Build 2-Tier Headers
+    let row1Html = '';
+    let row2Html = '';
+    let hasSubheaders = false;
 
-        if (!data.length) {
-          container.innerHTML = "<p class='text-slate-500'>No announcements posted yet.</p>";
-          return;
+    for (let i = 0; i < headers.length; i++) {
+      const h = headers[i];
+
+      if (h.trim().toUpperCase() === 'SOLO PARENT ID DETAILS') {
+        hasSubheaders = true;
+        row1Html += `
+          <th colspan="2" class="p-2 font-bold text-slate-800 text-center border border-slate-300 bg-slate-100 uppercase tracking-wider text-xs">
+            SOLO PARENT ID DETAILS
+          </th>`;
+        
+        row2Html += `
+          <th class="p-2 font-bold text-slate-700 text-center border border-slate-300 bg-slate-50 text-xs uppercase tracking-wider whitespace-nowrap">
+            ID NUMBER
+          </th>
+          <th class="p-2 font-bold text-slate-700 text-center border border-slate-300 bg-slate-50 text-xs uppercase tracking-wider whitespace-nowrap">
+            EXPIRATION DATE
+          </th>`;
+
+        if (i + 1 < headers.length && (headers[i + 1].startsWith('Col_') || headers[i + 1] === '')) {
+          i++;
         }
-
-        container.innerHTML = data.map(item => `
-          <div class="glass-card p-6 rounded-2xl shadow-md space-y-2">
-            <div class="flex justify-between items-start">
-              <h3 class="font-bold text-lg text-slate-900">${item.Title || ''}</h3>
-              <span class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-semibold">${item.Timestamp || ''}</span>
-            </div>
-            <p class="text-slate-600 leading-relaxed">${item.Content || ''}</p>
-          </div>
-        `).join('');
-      } catch(err) {
-        showNotification("Could not load announcements.", 'error');
+      } else {
+        row1Html += `
+          <th rowspan="2" class="p-3 font-bold text-slate-700 border border-slate-300 bg-slate-100 whitespace-nowrap align-middle text-left text-xs uppercase tracking-wider">
+            ${h}
+          </th>`;
       }
     }
 
-// Global states for high-performance table rendering
-window.sheet5Data = [];
-let currentPage = 1;
-const rowsPerPage = 25;
-let searchQuery = '';
+    // Sticky Action Header
+    row1Html += `
+      <th rowspan="2" class="p-3 font-bold text-slate-700 border border-slate-300 bg-slate-100 whitespace-nowrap align-middle text-center text-xs uppercase tracking-wider sticky right-0 bg-slate-100 shadow-sm">
+        ACTION
+      </th>`;
 
-async function loadAdminTableData(tabName, targetId) {
-  const container = document.getElementById(targetId);
+    // Control Header (Search Bar & Stats)
+    let controlsHtml = `
+      <div class="p-3 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-3">
+        <div class="relative w-full sm:w-64">
+          <input 
+            type="text" 
+            placeholder="🔍 Search records..." 
+            value="${searchQuery}"
+            oninput="handleTableSearch(this.value, '${targetId}')"
+            class="w-full pl-3 pr-3 py-1.5 text-xs border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+          />
+        </div>
+        <div class="text-xs text-slate-500 font-medium">
+          Showing ${totalRecords > 0 ? startIndex + 1 : 0} to ${Math.min(startIndex + rowsPerPage, totalRecords)} of ${totalRecords} records
+        </div>
+      </div>
+    `;
 
-  // 1. SHOW INSTANT SKELETON LOADER
-  container.innerHTML = `
-    <div class="p-8 text-center">
-      <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-600 border-t-transparent mb-2"></div>
-      <p class="text-slate-500 font-medium text-sm">Loading ${tabName} records...</p>
-    </div>
-  `;
+    // Build Table Body
+    let tableHtml = `<div class="overflow-x-auto"><table class="w-full text-left text-sm border-collapse border border-slate-300"><thead>`;
+    tableHtml += `<tr>${row1Html}</tr>`;
+    if (hasSubheaders) {
+      tableHtml += `<tr>${row2Html}</tr>`;
+    }
+    tableHtml += `</thead><tbody class="divide-y divide-slate-200">`;
 
-  try {
-    const res = await fetch(`${API_URL}?action=getData&tabName=${tabName}`, { redirect: 'follow' });
+    if (pageData.length === 0) {
+      tableHtml += `<tr><td colspan="${headers.length + 1}" class="p-6 text-center text-slate-500">No matching records found.</td></tr>`;
+    } else {
+      pageData.forEach((row) => {
+        // Find original index in global dataset to keep print Form linked correctly
+        const originalIndex = window.sheet5Data.indexOf(row);
 
-    if (!res.ok) {
-      throw new Error(`Server returned HTTP ${res.status} error.`);
+        tableHtml += `<tr class="hover:bg-slate-50/80 transition">`;
+        headers.forEach(h => {
+          const val = row[h] !== undefined && row[h] !== null ? row[h] : '';
+          tableHtml += `<td class="p-3 text-slate-600 border border-slate-200 whitespace-nowrap">${val}</td>`;
+        });
+        
+        tableHtml += `
+          <td class="p-2 border border-slate-200 text-center sticky right-0 bg-white">
+            <button onclick="printIndividualForm(${originalIndex})" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1.5 rounded transition font-medium shadow-sm flex items-center justify-center gap-1 mx-auto whitespace-nowrap">
+              🖨️ Print Form
+            </button>
+          </td>`;
+        tableHtml += `</tr>`;
+      });
     }
 
-    const responseText = await res.text();
-    let data;
+    tableHtml += `</tbody></table></div>`;
 
-    try {
-      data = JSON.parse(responseText);
-    } catch (parseErr) {
-      console.error("Non-JSON Response Received:", responseText);
-      throw new Error("Server returned HTML or invalid response instead of JSON.");
-    }
+    // Build Pagination Footer Controls
+    let paginationHtml = `
+      <div class="p-3 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-xs">
+        <button 
+          onclick="changeTablePage(-1, '${targetId}')" 
+          ${currentPage === 1 ? 'disabled' : ''} 
+          class="px-3 py-1.5 bg-white border border-slate-300 rounded font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">
+          ◀ Previous
+        </button>
 
-    if (!data || !Array.isArray(data) || !data.length) {
-      container.innerHTML = "<p class='text-slate-500 p-4 text-center'>No records found in Sheet5.</p>";
+        <span class="font-semibold text-slate-600">
+          Page ${currentPage} of ${totalPages}
+        </span>
+
+        <button 
+          onclick="changeTablePage(1, '${targetId}')" 
+          ${currentPage >= totalPages ? 'disabled' : ''} 
+          class="px-3 py-1.5 bg-white border border-slate-300 rounded font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">
+          Next ▶
+        </button>
+      </div>
+    `;
+
+    container.innerHTML = controlsHtml + tableHtml + paginationHtml;
+  }
+
+  // PAGINATION HELPER
+  function changeTablePage(direction, targetId) {
+    currentPage += direction;
+    renderAdminTable(targetId);
+  }
+
+  // INSTANT SEARCH HELPER
+  function handleTableSearch(query, targetId) {
+    searchQuery = query;
+    currentPage = 1;
+    renderAdminTable(targetId);
+  }
+
+  // PRINT INDIVIDUAL MEMBER SURVEY FORM WITH LOGOS (2 PAGES)
+  function printIndividualForm(rowIndex) {
+    const row = window.sheet5Data[rowIndex];
+    if (!row) {
+      showNotification("Error: Member data not found.", "error");
       return;
     }
 
-    // 2. FAST FILTERING OF SUB-HEADERS
-    const cleanData = data.filter(row => {
-      const isSubheaderRow = Object.values(row).some(val => {
-        const str = String(val).trim().toUpperCase();
-        return str === 'ID NUMBER' || str === 'EXPIRATION DATE';
-      });
-      return !isSubheaderRow;
-    });
+    // Direct raw image URLs for printing
+    const logoBiNaN = "https://raw.githubusercontent.com/chuckfuentes40-blip/BinanCity-CSWD/main/Binan_City_Seal.png";
+    const logoCSWD = "https://raw.githubusercontent.com/chuckfuentes40-blip/BinanCity-CSWD/main/cswd.png";
 
-    // Store cleaned data in global array
-    window.sheet5Data = cleanData;
-    currentPage = 1;
-    searchQuery = '';
-
-    // 3. RENDER TABLE WITH PAGINATION
-    renderAdminTable(targetId);
-
-  } catch(err) {
-    console.error("Error loading table data:", err);
-    showNotification("Error loading sheet records.", 'error');
-    container.innerHTML = "<p class='text-rose-500 p-4 text-center font-medium'>Failed to load table data. Please try again.</p>";
-  }
-}
-
-// HIGH-PERFORMANCE TABLE RENDERER WITH PAGINATION
-function renderAdminTable(targetId) {
-  const container = document.getElementById(targetId);
-  if (!window.sheet5Data || !window.sheet5Data.length) return;
-
-  const headers = Object.keys(window.sheet5Data[0]);
-
-  // Filter dataset by search query
-  const filteredData = window.sheet5Data.filter(row => {
-    if (!searchQuery) return true;
-    return Object.values(row).some(val => 
-      String(val).toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  });
-
-  // Calculate Pagination slice
-  const totalRecords = filteredData.length;
-  const totalPages = Math.ceil(totalRecords / rowsPerPage) || 1;
-  if (currentPage > totalPages) currentPage = totalPages;
-
-  const startIndex = (currentPage - 1) * rowsPerPage;
-  const pageData = filteredData.slice(startIndex, startIndex + rowsPerPage);
-
-  // Build 2-Tier Headers
-  let row1Html = '';
-  let row2Html = '';
-  let hasSubheaders = false;
-
-  for (let i = 0; i < headers.length; i++) {
-    const h = headers[i];
-
-    if (h.trim().toUpperCase() === 'SOLO PARENT ID DETAILS') {
-      hasSubheaders = true;
-      row1Html += `
-        <th colspan="2" class="p-2 font-bold text-slate-800 text-center border border-slate-300 bg-slate-100 uppercase tracking-wider text-xs">
-          SOLO PARENT ID DETAILS
-        </th>`;
-      
-      row2Html += `
-        <th class="p-2 font-bold text-slate-700 text-center border border-slate-300 bg-slate-50 text-xs uppercase tracking-wider whitespace-nowrap">
-          ID NUMBER
-        </th>
-        <th class="p-2 font-bold text-slate-700 text-center border border-slate-300 bg-slate-50 text-xs uppercase tracking-wider whitespace-nowrap">
-          EXPIRATION DATE
-        </th>`;
-
-      if (i + 1 < headers.length && (headers[i + 1].startsWith('Col_') || headers[i + 1] === '')) {
-        i++;
-      }
-    } else {
-      row1Html += `
-        <th rowspan="2" class="p-3 font-bold text-slate-700 border border-slate-300 bg-slate-100 whitespace-nowrap align-middle text-left text-xs uppercase tracking-wider">
-          ${h}
-        </th>`;
-    }
-  }
-
-  // Sticky Action Header
-  row1Html += `
-    <th rowspan="2" class="p-3 font-bold text-slate-700 border border-slate-300 bg-slate-100 whitespace-nowrap align-middle text-center text-xs uppercase tracking-wider sticky right-0 bg-slate-100 shadow-sm">
-      ACTION
-    </th>`;
-
-  // Control Header (Search Bar & Stats)
-  let controlsHtml = `
-    <div class="p-3 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-3">
-      <div class="relative w-full sm:w-64">
-        <input 
-          type="text" 
-          placeholder="🔍 Search records..." 
-          value="${searchQuery}"
-          oninput="handleTableSearch(this.value, '${targetId}')"
-          class="w-full pl-3 pr-3 py-1.5 text-xs border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-        />
-      </div>
-      <div class="text-xs text-slate-500 font-medium">
-        Showing ${totalRecords > 0 ? startIndex + 1 : 0} to ${Math.min(startIndex + rowsPerPage, totalRecords)} of ${totalRecords} records
-      </div>
-    </div>
-  `;
-
-  // Build Table Body
-  let tableHtml = `<div class="overflow-x-auto"><table class="w-full text-left text-sm border-collapse border border-slate-300"><thead>`;
-  tableHtml += `<tr>${row1Html}</tr>`;
-  if (hasSubheaders) {
-    tableHtml += `<tr>${row2Html}</tr>`;
-  }
-  tableHtml += `</thead><tbody class="divide-y divide-slate-200">`;
-
-  if (pageData.length === 0) {
-    tableHtml += `<tr><td colspan="${headers.length + 1}" class="p-6 text-center text-slate-500">No matching records found.</td></tr>`;
-  } else {
-    pageData.forEach((row) => {
-      // Find original index in global dataset to keep print Form linked correctly
-      const originalIndex = window.sheet5Data.indexOf(row);
-
-      tableHtml += `<tr class="hover:bg-slate-50/80 transition">`;
-      headers.forEach(h => {
-        const val = row[h] !== undefined && row[h] !== null ? row[h] : '';
-        tableHtml += `<td class="p-3 text-slate-600 border border-slate-200 whitespace-nowrap">${val}</td>`;
-      });
-      
-      tableHtml += `
-        <td class="p-2 border border-slate-200 text-center sticky right-0 bg-white">
-          <button onclick="printIndividualForm(${originalIndex})" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1.5 rounded transition font-medium shadow-sm flex items-center justify-center gap-1 mx-auto whitespace-nowrap">
-            🖨️ Print Form
-          </button>
-        </td>`;
-      tableHtml += `</tr>`;
-    });
-  }
-
-  tableHtml += `</tbody></table></div>`;
-
-  // Build Pagination Footer Controls
-  let paginationHtml = `
-    <div class="p-3 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-xs">
-      <button 
-        onclick="changeTablePage(-1, '${targetId}')" 
-        ${currentPage === 1 ? 'disabled' : ''} 
-        class="px-3 py-1.5 bg-white border border-slate-300 rounded font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">
-        ◀ Previous
-      </button>
-
-      <span class="font-semibold text-slate-600">
-        Page ${currentPage} of ${totalPages}
-      </span>
-
-      <button 
-        onclick="changeTablePage(1, '${targetId}')" 
-        ${currentPage >= totalPages ? 'disabled' : ''} 
-        class="px-3 py-1.5 bg-white border border-slate-300 rounded font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">
-        Next ▶
-      </button>
-    </div>
-  `;
-
-  container.innerHTML = controlsHtml + tableHtml + paginationHtml;
-}
-
-// PAGINATION HELPER
-function changeTablePage(direction, targetId) {
-  currentPage += direction;
-  renderAdminTable(targetId);
-}
-
-// INSTANT SEARCH HELPER
-function handleTableSearch(query, targetId) {
-  searchQuery = query;
-  currentPage = 1;
-  renderAdminTable(targetId);
-}
-  // PRINT INDIVIDUAL MEMBER SURVEY FORM WITH LOGOS (2 PAGES)
-function printIndividualForm(rowIndex) {
-  const row = window.sheet5Data[rowIndex];
-  if (!row) {
-    showNotification("Error: Member data not found.", "error");
-    return;
-  }
-
-  // Direct raw image URLs for printing
-  const logoBiNaN = "https://raw.githubusercontent.com/chuckfuentes40-blip/BinanCity-CSWD/main/Binan_City_Seal.png";
-  const logoCSWD = "https://raw.githubusercontent.com/chuckfuentes40-blip/BinanCity-CSWD/main/cswd.png";
-
-  // Helper function to safely read sheet fields case-insensitively
-  const getField = (...possibleKeys) => {
-    for (let key of Object.keys(row)) {
-      for (let pKey of possibleKeys) {
-        if (key.toLowerCase().trim() === pKey.toLowerCase().trim()) {
-          return row[key] !== undefined && row[key] !== null ? String(row[key]) : '';
+    // Helper function to safely read sheet fields case-insensitively
+    const getField = (...possibleKeys) => {
+      for (let key of Object.keys(row)) {
+        for (let pKey of possibleKeys) {
+          if (key.toLowerCase().trim() === pKey.toLowerCase().trim()) {
+            return row[key] !== undefined && row[key] !== null ? String(row[key]) : '';
+          }
         }
       }
+      return '';
+    };
+
+    // Helper function to check/uncheck PDF checkboxes
+    const isChecked = (fieldValue, expectedVal) => {
+      if (!fieldValue) return '☐';
+      const cleanStr = String(fieldValue).trim().toLowerCase();
+      const cleanExp = String(expectedVal).trim().toLowerCase();
+      return cleanStr === cleanExp || cleanStr.startsWith(cleanExp) ? '☑' : '☐';
+    };
+
+    // Data mapping
+    const name = getField('NAME OF MEMBER', 'NAME', 'MEMBER NAME');
+    const sex = getField('SEX', 'GENDER');
+    const age = getField('AGE');
+    const address = getField('ADDRESS', 'COMPLETE ADDRESS');
+    const contact = getField('CONTACT NUMBER', 'CONTACT NO.', 'PHONE');
+    const classification = getField('CLASSIFICATION OF SOLO PARENT', 'CLASSIFICATION');
+    const incomeSource = getField('SOURCE OF INCOME', 'SOURCE OF INCOME / LIVELIHOOD', 'LIVELIHOOD');
+    const dependents = getField('NO. OF DEPENDENTS', 'DEPENDENTS');
+
+    const memberDisability = getField('IF MEMBER HAS DISABILITY', 'DOES THE MEMBER HAVE A DISABILITY?', 'MEMBER DISABILITY');
+    const typeDisabilityMember = getField('TYPE OF DISABILITY', 'MEMBER DISABILITY TYPE');
+    const depDisability = getField('IF DEPENDENT HAS DISABILITY', 'DOES ANY DEPENDENT HAVE A DISABILITY?', 'DEPENDENT DISABILITY');
+    const typeDisabilityDep = getField('TYPE OF DISABILITY (DEPENDENT)', 'DEPENDENT DISABILITY TYPE');
+
+    const idNum = getField('ID NUMBER', 'ID NO');
+    const expDate = getField('EXPIRATION DATE', 'EXPIRATION');
+    
+    const subsidy = getField('CASH SUBSIDY RECIPIENT', 'SUBSIDY RECIPIENT');
+    const inb = getField('INB');
+    const fourPs = getField('4PS', '4PS RECIPIENT');
+
+    const skills = getField('SKILL SET / EXISTING SKILLS', 'SKILL SET', 'EXISTING SKILLS');
+    const trainingInterested = getField('SKILLS TRAINING INTERESTED IN', 'TRAINING INTERESTED');
+    const livelihoodPref = getField('PREFERRED LIVELIHOOD / INCOME OPPORTUNITY', 'PREFERRED LIVELIHOOD');
+    const remarks = getField('REMARKS / OTHER CONCERNS', 'REMARKS');
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      showNotification("Pop-up blocked! Allow pop-ups to print the form.", "error");
+      return;
     }
-    return '';
-  };
 
-  // Helper function to check/uncheck PDF checkboxes
-  const isChecked = (fieldValue, expectedVal) => {
-    if (!fieldValue) return '☐';
-    const cleanStr = String(fieldValue).trim().toLowerCase();
-    const cleanExp = String(expectedVal).trim().toLowerCase();
-    return cleanStr === cleanExp || cleanStr.startsWith(cleanExp) ? '☑' : '☐';
-  };
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Member Profile & Survey Form - ${name}</title>
+        <style>
+          @page {
+            size: A4 portrait;
+            margin: 10mm;
+          }
+          body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            color: #000;
+            margin: 0;
+            padding: 0;
+          }
+          .page {
+            width: 100%;
+            box-sizing: border-box;
+            min-height: 270mm;
+            position: relative;
+            page-break-after: always;
+          }
+          .logos-header {
+            text-align: center;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+          }
+          .logos-header img {
+            height: 55px;
+            width: auto;
+            object-fit: contain;
+          }
+          .header-meta {
+            width: 100%;
+            margin-bottom: 10px;
+          }
+          .header-meta td {
+            font-size: 11px;
+            padding: 3px 0;
+          }
+          .form-title {
+            text-align: center;
+            border: 2px solid #000;
+            padding: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 10px;
+            background-color: #f8fafc;
+          }
+          .section-header {
+            background-color: #e2e8f0;
+            border: 1px solid #000;
+            font-weight: bold;
+            padding: 5px 8px;
+            font-size: 12px;
+            margin-top: 10px;
+          }
+          .form-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 5px;
+          }
+          .form-table td, .form-table th {
+            border: 1px solid #000;
+            padding: 6px 8px;
+            vertical-align: middle;
+          }
+          .label {
+            font-weight: bold;
+            background-color: #f1f5f9;
+            width: 35%;
+          }
+          .value {
+            width: 65%;
+          }
+          .checkbox-group span {
+            margin-right: 15px;
+          }
+          .footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 9px;
+            border-top: 1px solid #000;
+            padding-top: 4px;
+          }
+          .signature-box {
+            margin-top: 30px;
+            width: 100%;
+          }
+          .signature-line {
+            border-top: 1px solid #000;
+            text-align: center;
+            padding-top: 4px;
+            font-weight: bold;
+            width: 80%;
+            margin: 0 auto;
+          }
+        </style>
+      </head>
+      <body>
+        <!-- PAGE 1 -->
+        <div class="page">
+          <div class="logos-header">
+            <img src="${logoBiNaN}" alt="City of Biñan Seal">
+            <img src="${logoCSWD}" alt="CSWD Logo">
+          </div>
 
-  // Data mapping
-  const name = getField('NAME OF MEMBER', 'NAME', 'MEMBER NAME');
-  const sex = getField('SEX', 'GENDER');
-  const age = getField('AGE');
-  const address = getField('ADDRESS', 'COMPLETE ADDRESS');
-  const contact = getField('CONTACT NUMBER', 'CONTACT NO.', 'PHONE');
-  const classification = getField('CLASSIFICATION OF SOLO PARENT', 'CLASSIFICATION');
-  const incomeSource = getField('SOURCE OF INCOME', 'SOURCE OF INCOME / LIVELIHOOD', 'LIVELIHOOD');
-  const dependents = getField('NO. OF DEPENDENTS', 'DEPENDENTS');
+          <table class="header-meta">
+            <tr>
+              <td><strong>Barangay:</strong> ___________________</td>
+              <td style="text-align: right;"><strong>Control No.:</strong> ___________________</td>
+            </tr>
+          </table>
 
-  const memberDisability = getField('IF MEMBER HAS DISABILITY', 'DOES THE MEMBER HAVE A DISABILITY?', 'MEMBER DISABILITY');
-  const typeDisabilityMember = getField('TYPE OF DISABILITY', 'MEMBER DISABILITY TYPE');
-  const depDisability = getField('IF DEPENDENT HAS DISABILITY', 'DOES ANY DEPENDENT HAVE A DISABILITY?', 'DEPENDENT DISABILITY');
-  const typeDisabilityDep = getField('TYPE OF DISABILITY (DEPENDENT)', 'DEPENDENT DISABILITY TYPE');
+          <div class="form-title">
+            SOLO PARENT FEDERATION - CITY OF BIÑAN<br>
+            <span style="font-size: 12px; font-weight: normal;">MEMBER PROFILE AND SURVEY FORM</span>
+          </div>
 
-  const idNum = getField('ID NUMBER', 'ID NO');
-  const expDate = getField('EXPIRATION DATE', 'EXPIRATION');
-  
-  const subsidy = getField('CASH SUBSIDY RECIPIENT', 'SUBSIDY RECIPIENT');
-  const inb = getField('INB');
-  const fourPs = getField('4PS', '4PS RECIPIENT');
+          <table class="header-meta">
+            <tr>
+              <td><strong>Date:</strong> ${new Date().toLocaleDateString()}</td>
+              <td style="text-align: right;"><strong>Interviewer:</strong> ___________________</td>
+            </tr>
+          </table>
 
-  const skills = getField('SKILL SET / EXISTING SKILLS', 'SKILL SET', 'EXISTING SKILLS');
-  const trainingInterested = getField('SKILLS TRAINING INTERESTED IN', 'TRAINING INTERESTED');
-  const livelihoodPref = getField('PREFERRED LIVELIHOOD / INCOME OPPORTUNITY', 'PREFERRED LIVELIHOOD');
-  const remarks = getField('REMARKS / OTHER CONCERNS', 'REMARKS');
+          <!-- A. MEMBER INFORMATION -->
+          <div class="section-header">A. MEMBER INFORMATION</div>
+          <table class="form-table">
+            <tr>
+              <td class="label">Name of Member:</td>
+              <td class="value"><strong>${name}</strong></td>
+            </tr>
+            <tr>
+              <td class="label">Sex:</td>
+              <td class="value checkbox-group">
+                <span>${isChecked(sex, 'Male')} Male</span>
+                <span>${isChecked(sex, 'Female')} Female</span>
+                <span>${isChecked(sex, 'Prefer not to say')} Prefer not to say</span>
+              </td>
+            </tr>
+            <tr>
+              <td class="label">Age:</td>
+              <td class="value">${age} years old</td>
+            </tr>
+            <tr>
+              <td class="label">Complete Address:</td>
+              <td class="value">${address}</td>
+            </tr>
+            <tr>
+              <td class="label">Contact Number:</td>
+              <td class="value">${contact}</td>
+            </tr>
+            <tr>
+              <td class="label">Classification of Solo Parent:</td>
+              <td class="value">${classification}</td>
+            </tr>
+            <tr>
+              <td class="label">Source of Income / Livelihood:</td>
+              <td class="value">${incomeSource}</td>
+            </tr>
+            <tr>
+              <td class="label">No. of Dependents:</td>
+              <td class="value">${dependents}</td>
+            </tr>
+          </table>
 
-  const printWindow = window.open('', '_blank');
-  if (!printWindow) {
-    showNotification("Pop-up blocked! Allow pop-ups to print the form.", "error");
-    return;
+          <!-- B. DISABILITY INFORMATION -->
+          <div class="section-header">B. DISABILITY INFORMATION</div>
+          <table class="form-table">
+            <tr>
+              <td class="label">Does the member have a disability?</td>
+              <td class="value checkbox-group">
+                <span>${isChecked(memberDisability, 'Yes')} Yes</span>
+                <span>${isChecked(memberDisability, 'No')} No</span>
+              </td>
+            </tr>
+            <tr>
+              <td class="label">Type of Disability (if any):</td>
+              <td class="value">${typeDisabilityMember}</td>
+            </tr>
+            <tr>
+              <td class="label">Does any dependent have a disability?</td>
+              <td class="value checkbox-group">
+                <span>${isChecked(depDisability, 'Yes')} Yes</span>
+                <span>${isChecked(depDisability, 'No')} No</span>
+              </td>
+            </tr>
+            <tr>
+              <td class="label">Type of Disability (if any):</td>
+              <td class="value">${typeDisabilityDep}</td>
+            </tr>
+          </table>
+
+          <!-- C. SOLO PARENT ID DETAILS -->
+          <div class="section-header">C. SOLO PARENT ID DETAILS</div>
+          <table class="form-table">
+            <tr>
+              <td class="label">ID Number:</td>
+              <td class="value"><strong>${idNum}</strong></td>
+            </tr>
+            <tr>
+              <td class="label">Expiration Date:</td>
+              <td class="value">${expDate}</td>
+            </tr>
+            <tr>
+              <td class="label">ID Status:</td>
+              <td class="value checkbox-group">
+                <span>${isChecked(getField('ID Status'), 'Valid')} Valid</span>
+                <span>${isChecked(getField('ID Status'), 'Expired')} Expired</span>
+              </td>
+            </tr>
+            <tr>
+              <td class="label">For Renewal:</td>
+              <td class="value checkbox-group">
+                <span>${isChecked(getField('For Renewal'), 'Yes')} Yes</span>
+                <span>${isChecked(getField('For Renewal'), 'No')} No</span>
+              </td>
+            </tr>
+          </table>
+
+          <div class="footer">
+            Solo Parent Federation - City of Biñan | Member Survey Form
+          </div>
+        </div>
+
+        <!-- PAGE 2 -->
+        <div class="page">
+          <div class="logos-header">
+            <img src="${logoBiNaN}" alt="City of Biñan Seal">
+            <img src="${logoCSWD}" alt="CSWD Logo">
+          </div>
+
+          <div class="form-title">
+            SOLO PARENT FEDERATION - CITY OF BIÑAN<br>
+            <span style="font-size: 12px; font-weight: normal;">MEMBER PROFILE AND SURVEY FORM - PAGE 2</span>
+          </div>
+
+          <!-- D. ASSISTANCE/PROGRAM STATUS -->
+          <div class="section-header">D. ASSISTANCE/PROGRAM STATUS</div>
+          <table class="form-table">
+            <tr>
+              <td class="label">Subsidy Recipient:</td>
+              <td class="value checkbox-group">
+                <span>${isChecked(subsidy, 'Yes')} Yes</span>
+                <span>${isChecked(subsidy, 'No')} No</span>
+              </td>
+            </tr>
+            <tr>
+              <td class="label">INB:</td>
+              <td class="value checkbox-group">
+                <span>${isChecked(inb, 'Yes')} Yes</span>
+                <span>${isChecked(inb, 'No')} No</span>
+              </td>
+            </tr>
+            <tr>
+              <td class="label">4Ps:</td>
+              <td class="value checkbox-group">
+                <span>${isChecked(fourPs, 'Yes')} Yes</span>
+                <span>${isChecked(fourPs, 'No')} No</span>
+              </td>
+            </tr>
+          </table>
+
+          <!-- E. SKILLS AND LIVELIHOOD PROFILE -->
+          <div class="section-header">E. SKILLS AND LIVELIHOOD PROFILE</div>
+          <table class="form-table">
+            <tr>
+              <td class="label">Skill Set / Existing Skills:</td>
+              <td class="value">${skills}</td>
+            </tr>
+            <tr>
+              <td class="label">Skills Training Interested In:</td>
+              <td class="value">${trainingInterested}</td>
+            </tr>
+            <tr>
+              <td class="label">Preferred Livelihood / Income Opportunity:</td>
+              <td class="value">${livelihoodPref}</td>
+            </tr>
+          </table>
+
+          <!-- F. REMARKS / OTHER CONCERNS -->
+          <div class="section-header">F. REMARKS / OTHER CONCERNS</div>
+          <table class="form-table">
+            <tr>
+              <td style="height: 60px; vertical-align: top;">${remarks}</td>
+            </tr>
+          </table>
+
+          <div style="margin-top: 15px; font-size: 10px; line-height: 1.4; text-align: justify;">
+            <strong>Certification:</strong> I certify that the information provided above is true and correct to the best of my knowledge and may be used for updating the Solo Parent Federation database and program planning.
+          </div>
+
+          <table class="signature-box">
+            <tr>
+              <td style="width: 50%; border: none;">
+                <br><br>
+                <div class="signature-line">Signature over Printed Name of Member</div>
+              </td>
+              <td style="width: 50%; border: none;">
+                <br><br>
+                <div class="signature-line">Signature of Interviewer / Officer</div>
+              </td>
+            </tr>
+          </table>
+
+          <div class="footer">
+            Solo Parent Federation - City of Biñan | Member Survey Form
+          </div>
+        </div>
+
+        <script>
+          window.onload = function() {
+            setTimeout(() => {
+              window.print();
+              window.onafterprint = function() { window.close(); };
+            }, 300);
+          };
+        <\/script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(printContent);
+    printWindow.document.close();
   }
 
-  const printContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Member Profile & Survey Form - ${name}</title>
-      <style>
-        @page {
-          size: A4 portrait;
-          margin: 10mm;
-        }
-        body {
-          font-family: Arial, sans-serif;
-          font-size: 12px;
-          color: #000;
-          margin: 0;
-          padding: 0;
-        }
-        .page {
-          width: 100%;
-          box-sizing: border-box;
-          min-height: 270mm;
-          position: relative;
-          page-break-after: always;
-        }
-        .logos-header {
-          text-align: center;
-          margin-bottom: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 15px;
-        }
-        .logos-header img {
-          height: 55px;
-          width: auto;
-          object-fit: contain;
-        }
-        .header-meta {
-          width: 100%;
-          margin-bottom: 10px;
-        }
-        .header-meta td {
-          font-size: 14px;
-          padding: 3px 0;
-        }
-        .form-title {
-          text-align: center;
-          border: 2px solid #000;
-          padding: 8px;
-          font-weight: bold;
-          font-size: 14px;
-          margin-bottom: 10px;
-          background-color: #f8fafc;
-        }
-        .section-header {
-          background-color: #e2e8f0;
-          border: 1px solid #000;
-          font-weight: bold;
-          padding: 5px 8px;
-          font-size: 14px;
-          margin-top: 10px;
-        }
-        .form-table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-bottom: 5px;
-        }
-        .form-table td, .form-table th {
-          border: 1px solid #000;
-          padding: 6px 8px;
-          vertical-align: middle;
-        }
-        .label {
-          font-weight: bold;
-          background-color: #f1f5f9;
-          width: 30%;
-        }
-        .value {
-          width: 70%;
-        }
-        .checkbox-group span {
-          margin-right: 15px;
-        }
-        .footer {
-          position: absolute;
-          bottom: 0;
-          width: 100%;
-          text-align: center;
-          font-size: 9px;
-          border-top: 1px solid #000;
-          padding-top: 4px;
-        }
-        .signature-box {
-          margin-top: 40px;
-          width: 100%;
-        }
-        .signature-line {
-          border-top: 1px solid #000;
-          text-align: center;
-          padding-top: 4px;
-          font-weight: bold;
-          width: 80%;
-          margin: 0 auto;
-        }
-      </style>
-    </head>
-    <body>
+  // NAVIGATION AND UI TOGGLES
+  function toggleMobileMenu(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('hidden');
+  }
 
-      <!-- PAGE 1 -->
-      <div class="page">
-        <!-- CENTERED LOGOS ABOVE TITLE -->
-        <div class="logos-header">
-          <img src="${logoBiNaN}" alt="City of Biñan Seal">
-          <img src="${logoCSWD}" alt="CSWD Logo">
-        </div>
-
-        <table class="header-meta">
-          <tr>
-            <td><strong>Barangay:</strong> ___________________</td>
-            <td style="text-align: right;"><strong>Control No.:</strong> ___________________</td>
-          </tr>
-        </table>
-
-        <div class="form-title">
-          SOLO PARENT FEDERATION - CITY OF BIÑAN<br>
-          <span style="font-size: 12px; font-weight: normal;">MEMBER PROFILE AND SURVEY FORM</span>
-        </div>
-
-        <table class="header-meta">
-          <tr>
-            <td><strong>Date:</strong> ${new Date().toLocaleDateString()}</td>
-            <td style="text-align: right;"><strong>Interviewer:</strong> ___________________</td>
-          </tr>
-        </table>
-
-        <!-- A. MEMBER INFORMATION -->
-        <div class="section-header">A. MEMBER INFORMATION</div>
-        <table class="form-table">
-          <tr>
-            <td class="label">Name of Member:</td>
-            <td class="value"><strong>${name}</strong></td>
-          </tr>
-          <tr>
-            <td class="label">Sex:</td>
-            <td class="value checkbox-group">
-              <span>${isChecked(sex, 'Male')} Male</span>
-              <span>${isChecked(sex, 'Female')} Female</span>
-              <span>${isChecked(sex, 'Prefer not to say')} Prefer not to say</span>
-            </td>
-          </tr>
-          <tr>
-            <td class="label">Age:</td>
-            <td class="value">${age} years old</td>
-          </tr>
-          <tr>
-            <td class="label">Complete Address:</td>
-            <td class="value">${address}</td>
-          </tr>
-          <tr>
-            <td class="label">Contact Number:</td>
-            <td class="value">${contact}</td>
-          </tr>
-          <tr>
-            <td class="label">Classification of Solo Parent:</td>
-            <td class="value">${classification}</td>
-          </tr>
-          <tr>
-            <td class="label">Source of Income / Livelihood:</td>
-            <td class="value">${incomeSource}</td>
-          </tr>
-          <tr>
-            <td class="label">No. of Dependents:</td>
-            <td class="value">${dependents}</td>
-          </tr>
-        </table>
-
-        <!-- B. DISABILITY INFORMATION -->
-        <div class="section-header">B. DISABILITY INFORMATION</div>
-        <table class="form-table">
-          <tr>
-            <td class="label">Does the member have a disability?</td>
-            <td class="value checkbox-group">
-              <span>${isChecked(memberDisability, 'Yes')} Yes</span>
-              <span>${isChecked(memberDisability, 'No')} No</span>
-            </td>
-          </tr>
-          <tr>
-            <td class="label">Type of Disability (if any):</td>
-            <td class="value">${typeDisabilityMember}</td>
-          </tr>
-          <tr>
-            <td class="label">Does any dependent have a disability?</td>
-            <td class="value checkbox-group">
-              <span>${isChecked(depDisability, 'Yes')} Yes</span>
-              <span>${isChecked(depDisability, 'No')} No</span>
-            </td>
-          </tr>
-          <tr>
-            <td class="label">Type of Disability (if any):</td>
-            <td class="value">${typeDisabilityDep}</td>
-          </tr>
-        </table>
-
-        <!-- C. SOLO PARENT ID DETAILS -->
-        <div class="section-header">C. SOLO PARENT ID DETAILS</div>
-        <table class="form-table">
-          <tr>
-            <td class="label">ID Number:</td>
-            <td class="value"><strong>${idNum}</strong></td>
-          </tr>
-          <tr>
-            <td class="label">Expiration Date:</td>
-            <td class="value">${expDate}</td>
-          </tr>
-          <tr>
-            <td class="label">ID Status:</td>
-            <td class="value checkbox-group">
-              <span>${isChecked(getField('ID Status'), 'Valid')} Valid</span>
-              <span>${isChecked(getField('ID Status'), 'Expired')} Expired</span>
-            </td>
-          </tr>
-          <tr>
-            <td class="label">For Renewal:</td>
-            <td class="value checkbox-group">
-              <span>${isChecked(getField('For Renewal'), 'Yes')} Yes</span>
-              <span>${isChecked(getField('For Renewal'), 'No')} No</span>
-            </td>
-          </tr>
-        </table>
-
-        <div class="footer">
-          Solo Parent Federation - City of Biñan | Member Survey Form
-        </div>
-      </div>
-
-      <!-- PAGE 2 -->
-      <div class="page">
-        <!-- CENTERED LOGOS ABOVE PAGE 2 TITLE -->
-        <div class="logos-header">
-          <img src="${logoBiNaN}" alt="City of Biñan Seal">
-          <img src="${logoCSWD}" alt="CSWD Logo">
-        </div>
-
-        <div class="form-title">
-          SOLO PARENT FEDERATION - CITY OF BIÑAN<br>
-          <span style="font-size: 12px; font-weight: normal;">MEMBER PROFILE AND SURVEY FORM - PAGE 2</span>
-        </div>
-
-        <!-- D. ASSISTANCE/PROGRAM STATUS -->
-        <div class="section-header">D. ASSISTANCE/PROGRAM STATUS</div>
-        <table class="form-table">
-          <tr>
-            <td class="label">Subsidy Recipient:</td>
-            <td class="value checkbox-group">
-              <span>${isChecked(subsidy, 'Yes')} Yes</span>
-              <span>${isChecked(subsidy, 'No')} No</span>
-            </td>
-          </tr>
-          <tr>
-            <td class="label">INB:</td>
-            <td class="value checkbox-group">
-              <span>${isChecked(inb, 'Yes')} Yes</span>
-              <span>${isChecked(inb, 'No')} No</span>
-            </td>
-          </tr>
-          <tr>
-            <td class="label">4Ps:</td>
-            <td class="value checkbox-group">
-              <span>${isChecked(fourPs, 'Yes')} Yes</span>
-              <span>${isChecked(fourPs, 'No')} No</span>
-            </td>
-          </tr>
-        </table>
-
-        <!-- E. SKILLS AND LIVELIHOOD PROFILE -->
-        <div class="section-header">E. SKILLS AND LIVELIHOOD PROFILE</div>
-        <table class="form-table">
-          <tr>
-            <td class="label">Skill Set / Existing Skills:</td>
-            <td class="value">${skills}</td>
-          </tr>
-          <tr>
-            <td class="label">Skills Training Interested In:</td>
-            <td class="value">${trainingInterested}</td>
-          </tr>
-          <tr>
-            <td class="label">Preferred Livelihood / Income Opportunity:</td>
-            <td class="value">${livelihoodPref}</td>
-          </tr>
-        </table>
-
-        <!-- F. REMARKS / OTHER CONCERNS -->
-        <div class="section-header">F. REMARKS / OTHER CONCERNS</div>
-        <table class="form-table">
-          <tr>
-            <td style="height: 60px; vertical-align: top;">${remarks}</td>
-          </tr>
-        </table>
-
-        <div style="margin-top: 15px; font-size: 10px; line-height: 1.4; text-align: justify;">
-          <strong>Certification:</strong> I certify that the information provided above is true and correct to the best of my knowledge and may be used for updating the Solo Parent Federation database and program planning.
-        </div>
-
-        <table class="signature-box">
-          <tr>
-            <td style="width: 50%; border: none;">
-              <br><br>
-              <div class="signature-line">Signature over Printed Name of Member</div>
-            </td>
-            <td style="width: 50%; border: none;">
-              <br><br>
-              <div class="signature-line">Signature of Interviewer / Officer</div>
-            </td>
-          </tr>
-        </table>
-
-        <div class="footer">
-          Solo Parent Federation - City of Biñan | Member Survey Form
-        </div>
-      </div>
-
-      <script>
-        window.onload = function() {
-          setTimeout(() => {
-            window.print();
-            window.onafterprint = function() { window.close(); };
-          }, 300);
-        };
-      <\/script>
-    </body>
-    </html>
-  `;
-
-  printWindow.document.write(printContent);
-  printWindow.document.close();
-}
-    function toggleMobileMenu(id) {
-      document.getElementById(id).classList.toggle('hidden');
-    }
-
-    function logout() {
-      currentUser = null;
-      localStorage.removeItem('cswd_active_session');
-      showPage('page-login');
-      showNotification("You have been logged out.", 'success');
-    }
-  </script>
+  function logout() {
+    currentUser = null;
+    localStorage.removeItem('cswd_active_session');
+    if (typeof showPage === 'function') showPage('page-login');
+    showNotification("You have been logged out.", 'success');
+  }
+</script>
 </body>
 </html>
