@@ -1266,69 +1266,97 @@
     printWindow.document.close();
   }
 
-  // DOM Event Listeners & Login Handler
-  document.addEventListener('DOMContentLoaded', () => {
-    const loginForm = document.getElementById('loginForm');
-    if (!loginForm) return;
+ document.addEventListener('DOMContentLoaded', () => {
+  // Auto-redirect if an active session already exists
+  if (currentUser) {
+    const role = String(currentUser.role || '').toLowerCase();
+    showPage(role === 'admin' ? 'page-admin-dashboard' : 'page-client-dashboard');
+  }
 
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
+  const loginForm = document.getElementById('loginForm');
+  if (!loginForm) return;
 
-      const usernameVal = document.getElementById('loginUser')?.value.trim() || '';
-      const passwordVal = document.getElementById('loginPassword')?.value.trim() || '';
-      const submitBtn = document.getElementById('loginBtn');
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-      if (!usernameVal || !passwordVal) {
-        alert('Please enter both username and password.');
-        return;
+    const usernameVal = document.getElementById('loginUser')?.value.trim() || '';
+    const passwordVal = document.getElementById('loginPassword')?.value.trim() || '';
+    const submitBtn = document.getElementById('loginBtn');
+
+    if (!usernameVal || !passwordVal) {
+      showNotification('Please enter both username and password.', 'error');
+      return;
+    }
+
+    if (submitBtn) {
+      submitBtn.innerText = 'Signing in...';
+      submitBtn.disabled = true;
+    }
+
+    try {
+      const { data: user, error } = await window.db
+        .from('users')
+        .select('*')
+        .ilike('username', usernameVal)
+        .eq('password', passwordVal)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (user) {
+        localStorage.setItem('cswd_user', JSON.stringify(user));
+        localStorage.setItem('cswd_active_session', JSON.stringify(user));
+        currentUser = user;
+
+        showNotification(`Welcome back, ${user.fullname || user.username}!`, 'success');
+
+        // Redirect to appropriate dashboard based on role
+        const userRole = String(user.role || '').toLowerCase();
+        const targetPageId = (userRole === 'admin') ? 'page-admin-dashboard' : 'page-client-dashboard';
+
+        showPage(targetPageId);
+      } else {
+        showNotification('Invalid username or password.', 'error');
       }
-
+    } catch (err) {
+      console.error('Login Error:', err);
+      showNotification('Login failed: ' + (err.message || 'Unable to connect.'), 'error');
+    } finally {
       if (submitBtn) {
-        submitBtn.innerText = 'Signing in...';
-        submitBtn.disabled = true;
+        submitBtn.innerText = 'Sign In';
+        submitBtn.disabled = false;
       }
-
-      try {
-        const { data: user, error } = await window.db
-          .from('users')
-          .select('*')
-          .ilike('username', usernameVal)
-          .eq('password', passwordVal)
-          .maybeSingle();
-
-        if (error) throw error;
-
-        if (user) {
-          localStorage.setItem('cswd_user', JSON.stringify(user));
-          localStorage.setItem('cswd_active_session', JSON.stringify(user));
-          currentUser = user;
-
-          showNotification(`Login Successful! Welcome ${user.fullname || user.username}`, 'success');
-
-          const userRole = String(user.role || '').toLowerCase();
-          const targetPageId = (userRole === 'admin') ? 'page-admin-dashboard' : 'page-client-dashboard';
-
-          if (typeof showPage === 'function') {
-            showPage(targetPageId);
-          } else {
-            document.querySelectorAll('.page-section').forEach(p => p.style.display = 'none');
-            const target = document.getElementById(targetPageId);
-            if (target) target.style.display = 'block';
-          }
-        } else {
-          alert('Invalid username or password.');
-        }
-      } catch (err) {
-        console.error('Login Error:', err);
-        alert('Login failed: ' + (err.message || 'Unable to connect to database.'));
-      } finally {
-        if (submitBtn) {
-          submitBtn.innerText = 'Sign In';
-          submitBtn.disabled = false;
-        }
-      }
-    });
+    }
   });
+});
+
+   function showPage(pageId) {
+  // Hide all sections using both CSS display and Tailwind classes
+  const sections = document.querySelectorAll('.page-section, [id^="page-"]');
+  sections.forEach(sec => {
+    sec.classList.add('hidden');
+    sec.style.display = 'none';
+  });
+
+  // Target and show the selected page
+  const target = document.getElementById(pageId);
+  if (target) {
+    target.classList.remove('hidden');
+    target.style.display = 'block';
+  } else {
+    console.error(`Page container with ID "${pageId}" not found.`);
+    return;
+  }
+
+  // Trigger content population based on destination
+  if (pageId === 'page-client-dashboard') {
+    if (typeof renderClientForm === 'function') renderClientForm(currentUser);
+    if (typeof loadAnnouncements === 'function') loadAnnouncements();
+  } else if (pageId === 'page-admin-dashboard') {
+    // Replace 'adminTableContainer' with your HTML container ID if different
+    if (typeof loadAdminTableData === 'function') loadAdminTableData('Sheet5', 'adminTableContainer'); 
+  }
+}
 </script>
 </body>
 </html>
