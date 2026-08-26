@@ -721,59 +721,61 @@
     };
   }
 
-  // SIGN UP SUBMIT HANDLER
-  document.addEventListener('DOMContentLoaded', () => {
-    const signUpForm = document.getElementById('signUpForm');
-    if (signUpForm) {
-      signUpForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn = document.getElementById('suSubmitBtn');
-        btn.innerText = "Registering...";
-        btn.disabled = true;
+ // Replace with your actual Web App URL (must end in /exec)
+const API_URL = "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec";
 
-        const userData = {
-          username: document.getElementById('suUsername').value.trim(),
-          password: document.getElementById('suPassword').value,
-          fullname: document.getElementById('suFullname').value.trim(),
-          houseNoStreetSubdivision: document.getElementById('suHouseNo').value.trim(),
-          barangay: document.getElementById('suBarangay').value.trim(),
-          contactNo: document.getElementById('suContactNo').value.trim(),
-          role: "Client",
-          typeOfClient: "Solo Parent"
-        };
+document.addEventListener('DOMContentLoaded', () => {
+  const loginForm = document.getElementById('loginForm') || document.querySelector('form');
 
-       try {
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    redirect: 'follow',
-    body: JSON.stringify({
-      action: 'login',
-      credentials: { username: usernameVal, password: passwordVal }
-    })
-  });
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      // PREVENT NATIVE GET SUBMISSION (Fixes ?rememberOption=on reload)
+      e.preventDefault();
 
-  const rawText = await res.text();
-  
-  // Verify if Google returned HTML instead of JSON
-  if (rawText.trim().startsWith('<')) {
-    throw new Error("Received HTML error page from Google. Re-check deployment permissions.");
+      const usernameVal = (document.getElementById('loginUsername') || document.querySelector('input[name="username"]'))?.value || '';
+      const passwordVal = (document.getElementById('loginPassword') || document.querySelector('input[name="password"]'))?.value || '';
+
+      const submitBtn = loginForm.querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = true;
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          redirect: 'follow',
+          body: JSON.stringify({
+            action: 'login',
+            credentials: {
+              username: usernameVal.trim(),
+              password: passwordVal.trim()
+            }
+          })
+        });
+
+        const rawText = await res.text();
+
+        // Guard against HTML error pages
+        if (rawText.trim().startsWith('<')) {
+          throw new Error("Server returned HTML instead of JSON. Verify Apps Script deployment permissions.");
+        }
+
+        const data = JSON.parse(rawText);
+
+        if (data.success) {
+          alert("Login Successful! Welcome " + data.user.fullname);
+          // Redirect or update UI here
+        } else {
+          alert(data.message || "Invalid credentials.");
+        }
+      } catch (err) {
+        console.error("Login Error:", err);
+        alert(err.message || "Login request failed.");
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
+    });
   }
-
-  const data = JSON.parse(rawText);
-  if (data.success) {
-    showNotification("Login successful!", "success");
-    // Handle login success
-  } else {
-    showNotification(data.message || "Invalid credentials", "error");
-  }
-} catch (err) {
-  console.error("Login Error:", err);
-  showNotification(err.message || "Unable to connect to server.", "error");
-}
-      });
-    }
-  });
+});
 
   // LOAD ANNOUNCEMENTS FEED
   async function loadAnnouncements() {
