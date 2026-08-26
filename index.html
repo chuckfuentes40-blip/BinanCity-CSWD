@@ -396,7 +396,7 @@
    // Initialize Supabase Client
 
   const SUPABASE_URL = "https://gfnvmbxzmxxsguaqihvz.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_dBrlQfriRIdMPW8ueyhh4Q_IGKMt..."; // Your full key
+  const SUPABASE_ANON_KEY = "sb_publishable_dBrlQfriRIdMPW8ueyhh4Q_IGKMtkIz"; // Your full key
 
   // Attach to window.db to avoid name collisions
   window.db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -676,113 +676,129 @@
       </form>
     `;
 
-    document.getElementById('soloParentForm').onsubmit = async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('submitSoloBtn');
-      btn.innerText = "Saving to Sheet5...";
+   document.addEventListener('DOMContentLoaded', () => {
+  const soloParentForm = document.getElementById('soloParentForm');
+  if (!soloParentForm) return;
+
+  soloParentForm.onsubmit = async (e) => {
+    e.preventDefault();
+
+    const btn = document.getElementById('submitSoloBtn');
+    if (btn) {
+      btn.innerText = "Saving to Database...";
       btn.disabled = true;
+    }
 
-      const f = e.target;
-      const formData = {
-        memberName: f.memberName.value,
-        sex: f.sex.value,
-        age: f.age.value,
-        address: f.address.value,
-        contactNumber: f.contactNumber.value,
-        classification: f.classification.value,
-        sourceOfIncome: f.sourceOfIncome.value,
-        noOfDependents: f.noOfDependents.value,
-        memberDisability: f.memberDisability.value,
-        memberDisabilityType: f.memberDisabilityType.value,
-        dependentDisability: f.dependentDisability.value,
-        dependentDisabilityType: f.dependentDisabilityType.value,
-        idNumber: f.idNumber.value,
-        idExpirationDate: f.idExpirationDate.value,
-        cashSubsidyRecipient: f.cashSubsidyRecipient.value,
-        inbRecipient: f.inbRecipient.value,
-        fourPsRecipient: f.fourPsRecipient.value,
-        riceSubsidyRecipient: f.riceSubsidyRecipient.value,
-        skillSet: f.skillSet.value,
-        remarks: f.remarks.value
-      };
+    const f = e.target;
 
-      try {
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          redirect: 'follow',
-          body: JSON.stringify({ action: 'submitSoloParent', formData })
-        });
-        const result = await res.json();
-        if (result.success) {
-          showNotification(result.message || "Record successfully added to Sheet5!", 'success');
-          f.reset();
-        } else {
-          showNotification(result.message || "Failed to save record.", 'error');
-        }
-      } catch(err) {
-        showNotification("Network error submitting record.", 'error');
-      } finally {
-        btn.innerText = "Submit Record to Sheet5";
+    // Map form fields to Supabase column names
+    const applicationData = {
+      member_name: f.memberName?.value || '',
+      sex: f.sex?.value || '',
+      age: f.age?.value || '',
+      address: f.address?.value || '',
+      contact_number: f.contactNumber?.value || '',
+      classification: f.classification?.value || '',
+      source_of_income: f.sourceOfIncome?.value || '',
+      no_of_dependents: f.noOfDependents?.value || '',
+      member_disability: f.memberDisability?.value || 'No',
+      member_disability_type: f.memberDisabilityType?.value || '',
+      dependent_disability: f.dependentDisability?.value || 'No',
+      dependent_disability_type: f.dependentDisabilityType?.value || '',
+      id_number: f.idNumber?.value || '',
+      id_expiration_date: f.idExpirationDate?.value || '',
+      cash_subsidy_recipient: f.cashSubsidyRecipient?.value || 'No',
+      inb_recipient: f.inbRecipient?.value || 'No',
+      four_ps_recipient: f.fourPsRecipient?.value || 'No',
+      rice_subsidy_recipient: f.riceSubsidyRecipient?.value || 'No',
+      skill_set: f.skillSet?.value || '',
+      remarks: f.remarks?.value || 'Pending'
+    };
+
+    try {
+      // Insert record into Supabase applications table
+      const { data, error } = await window.db
+        .from('applications')
+        .insert([applicationData])
+        .select();
+
+      if (error) throw error;
+
+      showNotification("Record successfully added!", 'success');
+      f.reset();
+    } catch (err) {
+      console.error("Submission Error:", err);
+      showNotification("Error submitting record: " + (err.message || 'Database error'), 'error');
+    } finally {
+      if (btn) {
+        btn.innerText = "Submit Record";
         btn.disabled = false;
       }
-    };
-  }
-
-
-document.addEventListener('DOMContentLoaded', () => {
-  const loginForm = document.getElementById('loginForm') || document.querySelector('form');
-
-  if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
-      // PREVENT NATIVE GET SUBMISSION (Fixes ?rememberOption=on reload)
-      e.preventDefault();
-
-      const usernameVal = (document.getElementById('loginUsername') || document.querySelector('input[name="username"]'))?.value || '';
-      const passwordVal = (document.getElementById('loginPassword') || document.querySelector('input[name="password"]'))?.value || '';
-
-      const submitBtn = loginForm.querySelector('button[type="submit"]');
-      if (submitBtn) submitBtn.disabled = true;
-
-      try {
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          redirect: 'follow',
-          body: JSON.stringify({
-            action: 'login',
-            credentials: {
-              username: usernameVal.trim(),
-              password: passwordVal.trim()
-            }
-          })
-        });
-
-        const rawText = await res.text();
-
-        // Guard against HTML error pages
-        if (rawText.trim().startsWith('<')) {
-          throw new Error("Server returned HTML instead of JSON. Verify Apps Script deployment permissions.");
-        }
-
-        const data = JSON.parse(rawText);
-
-        if (data.success) {
-          alert("Login Successful! Welcome " + data.user.fullname);
-          // Redirect or update UI here
-        } else {
-          alert(data.message || "Invalid credentials.");
-        }
-      } catch (err) {
-        console.error("Login Error:", err);
-        alert(err.message || "Login request failed.");
-      } finally {
-        if (submitBtn) submitBtn.disabled = false;
-      }
-    });
-  }
+    }
+  };
 });
 
+
+// Login handler
+document.addEventListener('DOMContentLoaded', () => {
+  const loginForm = document.getElementById('loginForm');
+  if (!loginForm) return;
+
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const usernameVal = document.getElementById('loginUser')?.value.trim() || '';
+    const passwordVal = document.getElementById('loginPassword')?.value.trim() || '';
+    const submitBtn = document.getElementById('loginBtn');
+
+    if (!usernameVal || !passwordVal) {
+      alert('Please enter both username and password.');
+      return;
+    }
+
+    if (submitBtn) {
+      submitBtn.innerText = 'Signing in...';
+      submitBtn.disabled = true;
+    }
+
+    try {
+      // Query Supabase using window.db
+      const { data: user, error } = await window.db
+        .from('users')
+        .select('*')
+        .ilike('username', usernameVal)
+        .eq('password', passwordVal)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (user) {
+        localStorage.setItem('cswd_user', JSON.stringify(user));
+
+        const userRole = String(user.role || '').toLowerCase();
+        const targetPageId = (userRole === 'admin') ? 'page-admin-dashboard' : 'page-client-dashboard';
+
+        if (typeof showPage === 'function') {
+          showPage(targetPageId);
+        } else {
+          document.querySelectorAll('.page-section').forEach(p => p.style.display = 'none');
+          const target = document.getElementById(targetPageId);
+          if (target) target.style.display = 'block';
+        }
+      } else {
+        alert('Invalid username or password.');
+      }
+    } catch (err) {
+      console.error('Login Error:', err);
+      alert('Login failed: ' + (err.message || 'Unable to connect to database.'));
+    } finally {
+      if (submitBtn) {
+        submitBtn.innerText = 'Sign In';
+        submitBtn.disabled = false;
+      }
+    }
+  });
+});
   // LOAD ANNOUNCEMENTS FEED
   async function loadAnnouncements() {
     try {
