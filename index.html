@@ -393,6 +393,11 @@
     ></div>
 
  <script>
+   // Initialize Supabase Client
+const SUPABASE_URL = "https://gfnvmbxzmxxsguaqihvz.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_dBrlQfriRIdMPW8ueyhh4Q_IGKMtkIz";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
   // Configuration & Global State
   let currentUser = JSON.parse(localStorage.getItem('cswd_active_session')) || null;
   window.sheet5Data = [];
@@ -1447,11 +1452,6 @@ function handleRadioToggle(radio) {
     radio.dataset.wasChecked = "true";
   }
 }
-
-// Initialize Supabase Client
-const SUPABASE_URL = "https://gfnvmbxzmxxsguaqihvz.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_dBrlQfriRIdMPW8ueyhh4Q_IGKMtkIz";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Clean Login Handler
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
